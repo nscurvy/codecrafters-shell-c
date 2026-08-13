@@ -16,3 +16,5 @@ typedef struct BuiltinCmd {
 extern const BuiltinCmd builtins[NUMBUILTINS];
 
 BuiltinCmd* find_builtin(const char* name);
+
+char* find_on_path(char* dest, char* command);

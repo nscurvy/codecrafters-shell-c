@@ -2,8 +2,11 @@
 // Created by nkinder on 8/13/26.
 //
 #include "builtins.h"
-#include <stdlib.h>
+#include "parser.h"
+
+#include <linux/limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 int builtin_exit(int argc, char** argv);
@@ -36,7 +39,13 @@ int builtin_type(int argc, char** argv) {
   if (argc >= 2) {
     BuiltinCmd* cmd = find_builtin(argv[1]);
     if (cmd == nullptr) {
-      printf("%s: not found\n", argv[1]);
+      char buf[PATH_MAX + 1] = {0};
+      char* executable = find_on_path(buf, argv[1]);
+      if (executable) {
+        printf("%s is %s\n", argv[1], buf);
+      } else {
+        printf("%s: not found\n", argv[1]);
+      }
     } else {
       printf("%s is a shell builtin\n", argv[1]);
     }

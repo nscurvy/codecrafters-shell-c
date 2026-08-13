@@ -17,6 +17,38 @@ typedef struct Command {
 
 static constexpr size_t ARGC_MAX = 50;
 
+char* find_on_path(char* dest, char* command) {
+  const char* name = "PATH";
+  const char* env_p = getenv(name);
+  char* result = nullptr;
+  if (env_p) {
+    char path_buffer[PATH_MAX + 1];
+    WordList* path = tokenize_path(env_p);
+    WordNode* p = path->head;
+    {
+      for (int i = 0; i < path->size; ++i) {
+        memset(path_buffer, 0, sizeof(path_buffer));
+        strcpy(path_buffer, p->value);
+        strcat(path_buffer, "/");
+        strcat(path_buffer, command);
+        struct stat buffer;
+
+        if (stat(path_buffer, &buffer) == 0) {
+          //printf("%s is %s\n", command, path_buffer);
+          strcpy(dest, path_buffer);
+          result = dest;
+          goto CLEANUP_WORDS;
+        }
+        p = p->next;
+      }
+      memset(dest, 0, 1);
+    }
+  CLEANUP_WORDS:
+    cleanup_wordlist(path);
+  }
+  return result;
+}
+
 int repl();
 
 //int tokenize_input(char** dest, char* input);

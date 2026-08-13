@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+#include "builtins.h"
+#include "parser.h"
+#define TMPDISABLED
 
 typedef struct Command {
   const char* command;
@@ -14,7 +17,7 @@ static constexpr size_t ARGC_MAX = 50;
 
 int repl();
 
-int tokenize_input(char** dest, char* input);
+//int tokenize_input(char** dest, char* input);
 
 Command* make_command(char* command, int argc, char** argp);
 
@@ -32,6 +35,7 @@ int repl() {
     char input[1024];
     char* args[ARGC_MAX] = {{}};
     bool running = true;
+#ifndef TMPDISABLED
     while (running) {
       printf("$ ");
       setbuf(stdout, NULL);
@@ -69,35 +73,62 @@ int repl() {
         cleanup_command(command);
       }
     }
+#endif
+    while (true) {
+      printf("$ ");
+      setbuf(stdout, nullptr);
+
+      const char* input_line = fgets(input, sizeof(input), stdin);
+      if (input_line && !ferror(stdin)) {
+        WordList* tokens = tokenize_input(input);
+        WordNode* iter = tokens->head;
+        while (iter != nullptr) {
+          iter = iter->next;
+        }
+        BuiltinCmd* cmd = find_builtin(tokens->head->value);
+        if (cmd) {
+          WordNode* arg = tokens->head;
+          for (int i = 0; i < tokens->size; ++i) {
+            args[i] = arg->value;
+            arg = arg->next;
+          }
+          int return_code = cmd->builtin(tokens->size, args);
+        } else {
+          printf("%s: command not found\n", tokens->head->value);
+        }
+
+        cleanup_wordlist(tokens);
+      }
+    }
     return 0;
 }
 
-/**
- *
- * @param dest buffer to hold the tokens
- * @param input the raw input line
- * @return the number of tokens created.
- */
-int tokenize_input(char** dest, char* input) {
-  errno = 0;
-  strtok(input, "\n");
-
-  dest[0] = strtok(input, " ");
-  int i = 1;
-  while (true) {
-    char* tmp = strtok(nullptr, " ");
-    if (tmp == nullptr || strcmp(tmp, "") == 0) {
-      break;
-    }
-    if (i == ARGC_MAX) {
-      errno = EINVAL;
-      return -1;
-    }
-    dest[i++] = tmp;
-  }
-
-  return i;
-}
+///**
+// *
+// * @param dest buffer to hold the tokens
+// * @param input the raw input line
+// * @return the number of tokens created.
+// */
+//int tokenize_input(char** dest, char* input) {
+//  errno = 0;
+//  strtok(input, "\n");
+//
+//  dest[0] = strtok(input, " ");
+//  int i = 1;
+//  while (true) {
+//    char* tmp = strtok(nullptr, " ");
+//    if (tmp == nullptr || strcmp(tmp, "") == 0) {
+//      break;
+//    }
+//    if (i == ARGC_MAX) {
+//      errno = EINVAL;
+//      return -1;
+//    }
+//    dest[i++] = tmp;
+//  }
+//
+//  return i;
+//}
 
 Command* make_command(char* command, int argc, char** argp) {
   errno = 0;

@@ -35,9 +35,13 @@ char* find_on_path(char* dest, char* command) {
 
         if (stat(path_buffer, &buffer) == 0) {
           //printf("%s is %s\n", command, path_buffer);
-          strcpy(dest, path_buffer);
-          result = dest;
-          goto CLEANUP_WORDS;
+          if ((buffer.st_mode & S_IXUSR)
+        || (buffer.st_mode & S_IXGRP)
+        || (buffer.st_mode & S_IXOTH)) {
+            strcpy(dest, path_buffer);
+            result = dest;
+            goto CLEANUP_WORDS;
+          }
         }
         p = p->next;
       }

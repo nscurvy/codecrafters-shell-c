@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <stdbool.h>
+#include <linux/limits.h>
 #include <errno.h>
 #include "builtins.h"
 #include "parser.h"
@@ -74,7 +76,8 @@ int repl() {
       }
     }
 #endif
-    while (true) {
+CMD_LOOP:
+      while (true) {
       printf("$ ");
       setbuf(stdout, nullptr);
 
@@ -94,8 +97,35 @@ int repl() {
           }
           int return_code = cmd->builtin(tokens->size, args);
         } else {
-          printf("%s: command not found\n", tokens->head->value);
+          const char* name = "PATH";
+          const char* env_p = getenv(name);
+          if (env_p) {
+            char path_buffer[PATH_MAX + 1];
+            WordList* path = tokenize_path(env_p);
+            WordNode* p = path->head;
+            {
+            for (int i = 0; i < path->size; ++i) {
+              memset(path_buffer, 0, sizeof(path_buffer));
+              strcpy(path_buffer, p->value);
+              strcat(path_buffer, "/");
+              strcat(path_buffer, tokens->head->value);
+              struct stat buffer;
+
+              if (stat(path_buffer, &buffer) == 0) {
+                printf("%s is %s\n", tokens->head->value, path_buffer);
+                goto CLEANUP_SEARCH_PATH;
+              }
+              p = p->next;
+            }
+              printf("%s: not found\n", tokens->head->value);
+            }
+
+CLEANUP_SEARCH_PATH:
+            cleanup_wordlist(path);
+          }
         }
+
+CLEANUP:
 
         cleanup_wordlist(tokens);
       }

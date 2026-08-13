@@ -30,3 +30,5 @@ WordNode* append_wordlist(WordList* list, const char* word);
 int next_token(char* dest, char* buf);
 
 WordList* tokenize_input(char* buf);
+
+WordList* tokenize_path(const char* path);

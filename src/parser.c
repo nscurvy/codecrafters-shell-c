@@ -3,6 +3,7 @@
 //
 #include "parser.h"
 
+#include <stddef.h>
 #include <string.h>
 
 WordNode *init_wordnode(const char *initial_word) {
@@ -120,6 +121,25 @@ WordList *tokenize_input(char *input) {
     }
 
   } while (readchars != 0);
+
+  return result;
+}
+
+WordList* tokenize_path(const char* path) {
+  WordList* result = empty_wordlist();
+  char* tok = calloc((strlen(path) + 1),  sizeof(char));
+
+  char* end = path + strlen(path);
+  char* iter = path;
+  ptrdiff_t bytesremaining = end - path;
+  while (!(iter >= end)) {
+    memset(tok, '\0', strlen(tok));
+    memccpy(tok, iter, ':', bytesremaining);
+    tok[strcspn(tok, ":")] = '\0';
+    append_wordlist(result, tok);
+    bytesremaining = end - iter;
+    iter = iter + strlen(tok) + 1;
+  }
 
   return result;
 }

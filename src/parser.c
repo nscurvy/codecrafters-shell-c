@@ -93,7 +93,6 @@ WordNode *append_wordlist(WordList *list, const char *word) {
 size_t next_token(char* dest, char *input, QuoteFlagE* flag) {
   char* i = input;
   int destidx= 0;
-  size_t readchars = 0;
 
 
   while (*i) {
@@ -101,18 +100,15 @@ size_t next_token(char* dest, char *input, QuoteFlagE* flag) {
     if (*flag == UNQUOTED || *flag == DOUBLE_QUOTED) {
 
       if (c == '\\') {
-        ++i;
-        readchars++;
+        dest[destidx++] = *i++;
         if (*i == '\0') {
           break;
         }
         if (*flag == UNQUOTED || strchr("\\$`\"\n", *i)) {
-          dest[destidx++] = *(i++);
-          ++readchars;
+          dest[destidx++] = *i++;
           continue;
         }
         dest[destidx++] = '\\';
-        ++readchars;
         continue;
       }
     }

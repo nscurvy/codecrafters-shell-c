@@ -161,6 +161,7 @@ WordList *tokenize_input(char *input) {
       size_t jumpsize = readchars;
       iter += jumpsize;
       append_wordlist(result, buf);
+      memset(buf, 0, readchars);
     }
 
   } while (readchars != 0);

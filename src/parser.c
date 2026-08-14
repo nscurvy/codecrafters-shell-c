@@ -2,9 +2,12 @@
 // Created by nkinder on 8/13/26.
 //
 #include "parser.h"
+#include "expand.h"
 
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
+
 
 WordNode *init_wordnode(const char *initial_word) {
   char* word_copy = strdup(initial_word);
@@ -87,14 +90,33 @@ WordNode *append_wordlist(WordList *list, const char *word) {
   return new_node;
 }
 
-int next_token(char* dest, char *input) {
+int next_token(char* dest, char *input, QuoteFlagE* flag) {
   char* i = input;
   int count = 0;
-  while (*i != '\0' && *i != ' ' && *i != '\n' && count < 1024 - 1) {
-    dest[count] = *i;
-    ++i;
-    ++count;
+
+  while (*i != '\0') {
+    if (*i == '\'') {
+      if (*flag == SINGLE_QUOTED) {
+        *flag = UNQUOTED;
+        dest[count++] = *i++;
+      } else if (*flag == UNQUOTED) {
+        *flag = SINGLE_QUOTED;
+        dest[count++] = *i++;
+      }
+    } else if (*flag == UNQUOTED && (*i == ' ' || *i == '\n')) {
+      break;
+    } else {
+      dest[count] = *i;
+      ++i;
+      ++count;
+    }
   }
+
+  //while (*i != '\0' && *i != ' ' && *i != '\n' && count < 1024 - 1) {
+  //  dest[count] = *i;
+  //  ++i;
+  //  ++count;
+  //}
   if (count == 0) {
     return 0;
   }
@@ -103,7 +125,21 @@ int next_token(char* dest, char *input) {
   return  count;
 }
 
+int exppass(WordList* list) {
+  WordNode* iter = list->head;
+
+  for (int i = 0; i < list->size; ++i) {
+    const char* s = iter->value;
+    const char* expanded = exptok(s);
+    iter->value = expanded;
+    free(s);
+    iter = iter->next;
+  }
+  return 0;
+}
+
 WordList *tokenize_input(char *input) {
+  QuoteFlagE flag = UNQUOTED;
   char buf[1024] = {};
   char* iter = input;
   WordList* result = empty_wordlist();
@@ -113,7 +149,7 @@ WordList *tokenize_input(char *input) {
 
   do {
 
-    readchars = next_token(buf, iter);
+    readchars = next_token(buf, iter, &flag);
     if (readchars > 0) {
       size_t jumpsize = strlen(buf);
       iter += jumpsize + 1;
@@ -121,6 +157,14 @@ WordList *tokenize_input(char *input) {
     }
 
   } while (readchars != 0);
+  if (flag == SINGLE_QUOTED) {
+    cleanup_wordlist(result);
+    fprintf(stderr, "syntax error: unterminated quote\n");
+    setbuf(stderr, nullptr);
+    return nullptr;
+  }
+
+  exppass(result);
 
   return result;
 }

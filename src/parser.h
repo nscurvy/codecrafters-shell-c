@@ -5,6 +5,12 @@
 #pragma once
 #include <stdlib.h>
 
+typedef enum QuoteFlagE {
+  UNQUOTED,
+  SINGLE_QUOTED
+
+} QuoteFlagE;
+
 typedef struct WordNode {
   const char* value;
   struct WordNode* next;
@@ -27,7 +33,7 @@ void cleanup_wordlist(WordList* list);
 
 WordNode* append_wordlist(WordList* list, const char* word);
 
-int next_token(char* dest, char* buf);
+int next_token(char* dest, char* buf, QuoteFlagE* flag);
 
 WordList* tokenize_input(char* buf);
 

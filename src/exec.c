@@ -78,6 +78,7 @@ BuiltinCmd* find_builtin(const char* name) {
 int repl() {
   char input[1024];
   char* args[50] = {{}};
+  int exit_status = 0;
 
   while (true) {
     printf("$ ");
@@ -86,6 +87,11 @@ int repl() {
 
     if (input_line && !ferror(stdin)) {
       WordList* tokens = tokenize_input(input);
+      if (!tokens) {
+        exit_status = -1;
+        setbuf(stderr, nullptr);
+        continue;
+      }
 
       WordNode* iter = tokens->head;
       while (iter != nullptr) {
@@ -100,7 +106,7 @@ int repl() {
           args[i] = arg->value;
           arg = arg->next;
         }
-        cmd->builtin((const int)tokens->size, (const char**)args);
+        exit_status = cmd->builtin((const int)tokens->size, (const char**)args);
 
 
       } else {
@@ -113,7 +119,7 @@ int repl() {
             dest[i] = argbuf[i];
           }
           prepare_args(dest, tokens);
-          execc(tokens->size, dest);
+          exit_status = execc(tokens->size, dest);
         } else {
           printf("%s: command not found\n", tokens->head->value);
         }

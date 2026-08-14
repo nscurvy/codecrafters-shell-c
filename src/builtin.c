@@ -35,12 +35,13 @@ int builtin_cd(const int argc, const char** argv) {
     result = -1;
     return result;
   }
-  if (target[0] == '~') {
-    char* expanded = expand_home(buf, target);
-    result = chdir(expanded);
-  } else {
-    result = chdir(target);
-  }
+  //if (target[0] == '~') {
+  //  char* expanded = expand_home(buf, target);
+  //  result = chdir(expanded);
+  //} else {
+  //  result = chdir(target);
+  //}
+  result = chdir(target);
 
   if (result == -1) {
 

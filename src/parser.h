@@ -7,7 +7,8 @@
 
 typedef enum QuoteFlagE {
   UNQUOTED,
-  SINGLE_QUOTED
+  SINGLE_QUOTED,
+  DOUBLE_QUOTED = 0x3
 
 } QuoteFlagE;
 

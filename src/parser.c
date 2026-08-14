@@ -97,14 +97,40 @@ int next_token(char* dest, char *input, QuoteFlagE* flag) {
 
   while (*i != '\0') {
     if (*i == '\'') {
-      if (*flag == SINGLE_QUOTED) {
+      switch (*flag) {
+      case SINGLE_QUOTED:
+          *flag = UNQUOTED;
+          dest[count++] = *i++;
+        break;
+
+      case UNQUOTED:
+          *flag = SINGLE_QUOTED;
+          dest[count++] = *i++;
+        break;
+
+      case DOUBLE_QUOTED:
+        dest[count++] = *i++;
+        break;
+
+      }
+    } else if (*i == '"') {
+      switch (*flag) {
+      case SINGLE_QUOTED:
+        dest[count++] = *i++;
+        break;
+
+      case UNQUOTED:
+        *flag = DOUBLE_QUOTED;
+        dest[count++] = *i++;
+        break;
+
+      case DOUBLE_QUOTED:
         *flag = UNQUOTED;
         dest[count++] = *i++;
-      } else if (*flag == UNQUOTED) {
-        *flag = SINGLE_QUOTED;
-        dest[count++] = *i++;
+        break;
+
       }
-    } else if (*flag == UNQUOTED && (*i == ' ' || *i == '\n')) {
+    }else if (*flag == UNQUOTED && (*i == ' ' || *i == '\n')) {
       if (*i == ' ') {
         do {
           ++count;

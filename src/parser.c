@@ -117,8 +117,9 @@ void parse_redir(Redirect* dest, WordList* words) {
     do {
       ++iter;
     } while (isdigit(*iter));
-    char** a = &iter;
-    fd = (int)strtol(start, a, 10);
+    char* cpy = strdup(iter);
+    fd = (int)strtol(start, &cpy, 10);
+    free(cpy);
   }
   char* target = strdup(words->head->next->value);
   dest->fd = fd;
@@ -227,7 +228,7 @@ WordNode *init_wordnode(const char *initial_word) {
 }
 
 void cleanup_wordnode(WordNode *node) {
-  free(node->value);
+  free((void*)node->value);
   free(node);
 }
 
@@ -382,7 +383,7 @@ int exppass(WordList* list) {
     const char* s = iter->value;
     const char* expanded = exptok(s);
     iter->value = expanded;
-    free(s);
+    free((void*)s);
     iter = iter->next;
   }
   return 0;

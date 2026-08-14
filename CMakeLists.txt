@@ -10,6 +10,8 @@ add_executable(shell ${SOURCE_FILES}
         src/builtins.h
         src/builtin.c
         src/parser.h
-        src/parser.c)
+        src/parser.c
+        src/exec.c
+        src/exec.h)
 
 target_link_libraries(shell PRIVATE readline)

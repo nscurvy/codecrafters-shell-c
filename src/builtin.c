@@ -3,6 +3,7 @@
 //
 #include "builtins.h"
 #include "parser.h"
+#include "exec.h"
 
 #include <linux/limits.h>
 #include <stdio.h>
@@ -40,7 +41,7 @@ int builtin_type(int argc, char** argv) {
     BuiltinCmd* cmd = find_builtin(argv[1]);
     if (cmd == nullptr) {
       char buf[PATH_MAX + 1] = {0};
-      char* executable = find_on_path(buf, argv[1]);
+      char* executable = find_command(buf, argv[1]);
       if (executable) {
         printf("%s is %s\n", argv[1], buf);
       } else {
@@ -57,10 +58,3 @@ int pstrcmp(const void* a, const void* b) {
   return strcmp(*(const char* const *)a, *(const char *const * ) b);
 }
 
-
-BuiltinCmd* find_builtin(const char* name) {
-  BuiltinCmd* cmd;
-
-  cmd = bsearch(&name, builtins, NUMBUILTINS, sizeof(BuiltinCmd), &pstrcmp);
-  return cmd;
-}

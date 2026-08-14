@@ -94,6 +94,7 @@ int next_token(char* dest, char *input, QuoteFlagE* flag) {
   char* i = input;
   int count = 0;
 
+
   while (*i != '\0') {
     if (*i == '\'') {
       if (*flag == SINGLE_QUOTED) {
@@ -104,6 +105,12 @@ int next_token(char* dest, char *input, QuoteFlagE* flag) {
         dest[count++] = *i++;
       }
     } else if (*flag == UNQUOTED && (*i == ' ' || *i == '\n')) {
+      if (*i == ' ') {
+        do {
+          ++count;
+          ++i;
+        } while (*i == ' ');
+      }
       break;
     } else {
       dest[count] = *i;
@@ -151,8 +158,8 @@ WordList *tokenize_input(char *input) {
 
     readchars = next_token(buf, iter, &flag);
     if (readchars > 0) {
-      size_t jumpsize = strlen(buf);
-      iter += jumpsize + 1;
+      size_t jumpsize = readchars;
+      iter += jumpsize;
       append_wordlist(result, buf);
     }
 

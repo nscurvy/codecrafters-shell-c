@@ -92,7 +92,7 @@ bool is_redir(const char* str) {
   while (*iter) {
     if (*iter == '>') {
       if (iter != str) {
-        if (*(iter - 1) == '1') {
+        if (isdigit(*(iter - 1))) {
           return true;
         } else {
           return false;

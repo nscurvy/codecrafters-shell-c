@@ -59,11 +59,12 @@ int execc(Command* command) {
     return 1;
   } else if (pid == 0) {
     if (command->nredirs != 0) {
+      int redirected_fd = command->redirs[0].fd;
       int fd = open(command->redirs[0].target, O_WRONLY | O_CREAT | O_TRUNC, 0644);
       if (fd < 0) {
         return 1;
       }
-      if (dup2(fd, STDOUT_FILENO) < 0) {
+      if (dup2(fd, redirected_fd) < 0) {
         return 1;
       }
       close(fd);
@@ -135,20 +136,21 @@ int repl() {
         //  args[i] = arg->value;
         //  arg = arg->next;
         //}
-        int saved_stdout = 0;
+        int saved_fd = 0;
         int fd = 0;
         if (command->nredirs != 0) {
           for (int i = 0; i < command->nredirs; ++i) {
             Redirect redirect = command->redirs[i];
-            saved_stdout = dup(STDOUT_FILENO);
+            int redirected_fd = redirect.fd;
+            saved_fd = dup(redirected_fd);
             fd = open(redirect.target, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-            dup2(fd, STDOUT_FILENO);
+            dup2(fd, redirected_fd);
             close(fd);
 
             exit_status |= cmd->builtin((const int)count_command_args(command->argv), (const char**)command->argv);
 
-            dup2(saved_stdout, STDOUT_FILENO);
-            close(saved_stdout);
+            dup2(saved_fd, redirected_fd);
+            close(saved_fd);
           }
         } else {
           exit_status = cmd->builtin((const int)count_command_args(command->argv), (const char**)command->argv);

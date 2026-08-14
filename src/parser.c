@@ -90,58 +90,79 @@ WordNode *append_wordlist(WordList *list, const char *word) {
   return new_node;
 }
 
-int next_token(char* dest, char *input, QuoteFlagE* flag) {
+size_t next_token(char* dest, char *input, QuoteFlagE* flag) {
   char* i = input;
-  int count = 0;
+  int destidx= 0;
+  size_t readchars = 0;
 
 
-  while (*i != '\0') {
-    if (*i == '\'') {
+  while (*i) {
+    char c = *i;
+    if (*flag == UNQUOTED || *flag == DOUBLE_QUOTED) {
+
+      if (c == '\\') {
+        ++i;
+        readchars++;
+        if (*i == '\0') {
+          break;
+        }
+        if (*flag == UNQUOTED || strchr("\\$`\"\n", *i)) {
+          dest[destidx++] = *(i++);
+          ++readchars;
+          continue;
+        }
+        dest[destidx++] = '\\';
+        ++readchars;
+        continue;
+      }
+    }
+    if (c == '\'') {
       switch (*flag) {
       case SINGLE_QUOTED:
           *flag = UNQUOTED;
-          dest[count++] = *i++;
+          dest[destidx++] = c;
         break;
 
       case UNQUOTED:
           *flag = SINGLE_QUOTED;
-          dest[count++] = *i++;
+          dest[destidx++] = c;
         break;
 
       case DOUBLE_QUOTED:
-        dest[count++] = *i++;
+        dest[destidx++] = c;
         break;
 
       }
-    } else if (*i == '"') {
+      ++i;
+    } else if (c == '"') {
       switch (*flag) {
       case SINGLE_QUOTED:
-        dest[count++] = *i++;
+        dest[destidx++] = c;
         break;
 
       case UNQUOTED:
         *flag = DOUBLE_QUOTED;
-        dest[count++] = *i++;
+        dest[destidx++] = c;
         break;
 
       case DOUBLE_QUOTED:
         *flag = UNQUOTED;
-        dest[count++] = *i++;
+        dest[destidx++] = c;
         break;
 
       }
-    }else if (*flag == UNQUOTED && (*i == ' ' || *i == '\n')) {
-      if (*i == ' ') {
+      ++i;
+    }else if (*flag == UNQUOTED && (c == ' ' || c == '\n')) {
+      if (c == ' ') {
         do {
-          ++count;
+          //++destidx;
           ++i;
         } while (*i == ' ');
       }
       break;
     } else {
-      dest[count] = *i;
+      dest[destidx++] = c;
       ++i;
-      ++count;
     }
   }
 
@@ -150,12 +171,12 @@ int next_token(char* dest, char *input, QuoteFlagE* flag) {
   //  ++i;
   //  ++count;
   //}
-  if (count == 0) {
+  if (destidx == 0) {
     return 0;
   }
 
-  dest[count] = '\0';
-  return  count;
+  dest[destidx] = '\0';
+  return (size_t)(i - input);
 }
 
 int exppass(WordList* list) {
@@ -178,7 +199,7 @@ WordList *tokenize_input(char *input) {
   WordList* result = empty_wordlist();
 
   char* token = nullptr;
-  int readchars;
+  size_t readchars;
 
   do {
 

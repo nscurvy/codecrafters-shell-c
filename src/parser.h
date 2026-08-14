@@ -34,7 +34,7 @@ void cleanup_wordlist(WordList* list);
 
 WordNode* append_wordlist(WordList* list, const char* word);
 
-int next_token(char* dest, char* buf, QuoteFlagE* flag);
+size_t next_token(char* dest, char* buf, QuoteFlagE* flag);
 
 WordList* tokenize_input(char* buf);
 

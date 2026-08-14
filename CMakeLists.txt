@@ -12,6 +12,8 @@ add_executable(shell ${SOURCE_FILES}
         src/parser.h
         src/parser.c
         src/exec.c
-        src/exec.h)
+        src/exec.h
+        src/expand.c
+        src/expand.h)
 
 target_link_libraries(shell PRIVATE readline)

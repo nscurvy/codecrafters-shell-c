@@ -4,6 +4,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include "builtins.h"
 #include "exec.h"
+#include "expand.h"
 #include "parser.h"
 
 #include <errno.h>
@@ -23,6 +24,7 @@ const BuiltinCmd builtins[NUMBUILTINS] = {
 };
 
 int builtin_cd(const int argc, const char** argv) {
+  char buf[PATH_MAX] = {0};
   errno = 0;
   const char* target;
   int result = 0;
@@ -33,8 +35,13 @@ int builtin_cd(const int argc, const char** argv) {
     result = -1;
     return result;
   }
+  if (target[0] == '~') {
+    char* expanded = expand_home(buf, target);
+    result = chdir(expanded);
+  } else {
+    result = chdir(target);
+  }
 
-  result = chdir(target);
   if (result == -1) {
 
     const char* errmsg = strerror(ENOENT);

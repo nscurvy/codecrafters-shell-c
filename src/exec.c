@@ -5,6 +5,7 @@
 #include "exec.h"
 #include "parser.h"
 #include <linux/limits.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -51,15 +52,30 @@ char* find_command(char* dest, const char* command) {
 }
 
 
-int execc(int argc, char** argv) {
+int execc(Command* command) {
   pid_t pid = fork();
 
   if (pid < 0) {
     return 1;
   } else if (pid == 0) {
-    execvp(argv[0], argv);
-    perror("execvp");
-    exit(1);
+    if (command->nredirs != 0) {
+      int fd = open(command->redirs[0].target, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+      if (fd < 0) {
+        return 1;
+      }
+      if (dup2(fd, STDOUT_FILENO) < 0) {
+        return 1;
+      }
+      close(fd);
+
+      execvp(command->argv[0], command->argv);
+
+      return 1;
+    } else {
+      execvp(command->argv[0], command->argv);
+      perror("execvp");
+      exit(1);
+    }
   } else {
     int status;
     waitpid(pid, &status, 0);
@@ -73,6 +89,17 @@ BuiltinCmd* find_builtin(const char* name) {
 
   cmd = bsearch(&name, builtins, NUMBUILTINS, sizeof(BuiltinCmd), &pstrcmp);
   return cmd;
+}
+
+size_t count_command_args(char** argv) {
+  size_t len = 0;
+  char** iter = argv;
+  while (*iter != nullptr) {
+    ++iter;
+    ++len;
+  }
+
+  return len;
 }
 
 int repl() {
@@ -97,29 +124,42 @@ int repl() {
       while (iter != nullptr) {
         iter = iter->next;
       }
-      BuiltinCmd* cmd = find_builtin(tokens->head->value);
+      Command* command = build_command(tokens);
+      BuiltinCmd* cmd = find_builtin(command->argv[0]);
+
 
       if (cmd) {
-        WordNode* arg = tokens->head;
+        //WordNode* arg = tokens->head;
+        char** args = command->argv;
+        //for (int i = 0; i < tokens->size; ++i) {
+        //  args[i] = arg->value;
+        //  arg = arg->next;
+        //}
+        int saved_stdout = 0;
+        int fd = 0;
+        if (command->nredirs != 0) {
+          for (int i = 0; i < command->nredirs; ++i) {
+            Redirect redirect = command->redirs[i];
+            saved_stdout = dup(STDOUT_FILENO);
+            fd = open(redirect.target, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
 
-        for (int i = 0; i < tokens->size; ++i) {
-          args[i] = arg->value;
-          arg = arg->next;
+            exit_status |= cmd->builtin((const int)count_command_args(command->argv), (const char**)command->argv);
+
+            dup2(saved_stdout, STDOUT_FILENO);
+            close(saved_stdout);
+          }
+        } else {
+          exit_status = cmd->builtin((const int)count_command_args(command->argv), (const char**)command->argv);
         }
-        exit_status = cmd->builtin((const int)tokens->size, (const char**)args);
 
 
       } else {
         char cmd_path[PATH_MAX];
-        char* res = find_command(cmd_path, tokens->head->value);
+        char* res = find_command(cmd_path, command->argv[0]);
         if (res) {
-          char argbuf[50][50];
-          char* dest[50];
-          for (int i = 0; i < 50; ++i) {
-            dest[i] = argbuf[i];
-          }
-          prepare_args(dest, tokens);
-          exit_status = execc(tokens->size, dest);
+          exit_status = execc(command);
         } else {
           printf("%s: command not found\n", tokens->head->value);
         }
@@ -129,11 +169,13 @@ int repl() {
   }
 }
 
-void prepare_args(char** dest, WordList* words) {
-  WordNode* iter = words->head;
-  for (int i = 0; i < words->size; ++i) {
-    memcpy(dest[i], iter->value, strlen(iter->value) + 1);
-    iter = iter->next;
-  }
-  dest[words->size] = nullptr;
-}
+
+
+//void prepare_args(char** dest, WordList* words) {
+//  WordNode* iter = words->head;
+//  for (int i = 0; i < words->size; ++i) {
+//    memcpy(dest[i], iter->value, strlen(iter->value) + 1);
+//    iter = iter->next;
+//  }
+//  dest[words->size] = nullptr;
+//}

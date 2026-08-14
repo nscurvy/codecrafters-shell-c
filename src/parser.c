@@ -2,12 +2,213 @@
 // Created by nkinder on 8/13/26.
 //
 #include "parser.h"
+
+#include <ctype.h>
+
 #include "expand.h"
 
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
+
+void prepare_args(char** dest, WordList* words) {
+  WordNode* iter = words->head;
+  for (int i = 0; i < words->size; ++i) {
+    memcpy(dest[i], iter->value, strlen(iter->value) + 1);
+    iter = iter->next;
+  }
+  dest[words->size] = nullptr;
+}
+
+size_t argvlen(char** argv) {
+  size_t len = 0;
+  char** iter = argv;
+  while (*iter != nullptr) {
+    len++;
+    iter++;
+  }
+  return ++len;
+}
+
+Command* init_command(char** argv, size_t nredirs, Redirect redirs[]) {
+  char** iter = argv;
+  size_t len = argvlen(argv);
+  char** args = malloc(sizeof(char*) * len);
+
+  for (int i = 0; i < len; ++i) {
+    if (i == len - 1) {
+      args[i] = nullptr;
+      break;
+    }
+    char* tmp = strdup(argv[i]);
+    if (!tmp) {
+      for (int j = 0; j < i; ++j) {
+        free(args[j]);
+      }
+      free(args);
+      return nullptr;
+    } else {
+      args[i] = tmp;
+    }
+  }
+
+  Command* command = malloc(sizeof(Command) + (sizeof(Redirect) * nredirs));
+  if (!command) {
+    for (int i = 0; i < len - 1; ++i) {
+      free(args[i]);
+    }
+    free(args);
+    return nullptr;
+  }
+
+  command->argv = args;
+  command->nredirs = nredirs;
+  memmove(command->redirs, redirs, sizeof(Redirect) * nredirs);
+
+
+  return command;
+}
+
+WordList* new_from_nodes(WordNode* head) {
+  WordList* result = empty_wordlist();
+  if (!result) {
+    return nullptr;
+  }
+  size_t size = 0;
+  WordNode* iter = head;
+  while (iter != nullptr) {
+    ++size;
+    iter = iter->next;
+  }
+
+  result->size = size;
+  result->head = head;
+
+  return result;
+}
+
+bool is_redir(const char* str) {
+  char* iter = str;
+  while (*iter) {
+    if (*iter == '>') {
+      if (iter != str) {
+        if (*(iter - 1) == '1') {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return true;
+      }
+    } else {
+      ++iter;
+    }
+  }
+
+  return false;
+}
+
+void parse_redir(Redirect* dest, WordList* words) {
+  int fd = 1;
+  RedirMode mode = REDIR_OUT;
+  const char* iter = words->head->value;
+  if (isdigit(*iter)) {
+    char* start = iter;
+    do {
+      ++iter;
+    } while (isdigit(*iter));
+    fd = (int)strtol(start, &iter, 10);
+  }
+  char* target = strdup(words->head->next->value);
+  dest->fd = fd;
+  dest->mode = mode;
+  dest->target = target;
+
+}
+
+WordList* copy_wordlist(WordList* original) {
+  WordNode* iter = original->head;
+  WordNode* new_head = init_wordnode(iter->value);
+  WordNode* new_iter = new_head;
+  iter = iter->next;
+  while (iter != nullptr) {
+      new_iter->next = init_wordnode(iter->value);
+      new_iter = new_iter->next;
+      iter = iter->next;
+  }
+  WordList* newlist = empty_wordlist();
+  newlist->size = original->size;
+  newlist->head = new_head;
+  return newlist;
+}
+
+Command* build_command(WordList* words) {
+  char argbuf[50][50];
+  char* argdest[50];
+  for (int i = 0; i < 50; ++i) {
+    argdest[i] = argbuf[i];
+  }
+  Redirect redirs [5];
+  WordList* wordcopy = copy_wordlist(words);
+
+  size_t nredirs = 0;
+
+  WordNode* iter = wordcopy->head;
+  size_t current_size = 0;;
+  while (iter != nullptr) {
+    if (is_redir(iter->value)) {
+      WordList* redirected = new_from_nodes(iter);
+      wordcopy->size = wordcopy->size - redirected->size;
+      parse_redir(&redirs[nredirs++], redirected);
+    }
+    iter = iter->next;
+  }
+  prepare_args(argdest, wordcopy);
+  Command* result = init_command(argdest, nredirs, redirs);
+  if (!result) {
+    for (int i = 0; i < nredirs; ++i) {
+      free(redirs[i].target);
+    }
+    cleanup_wordlist(wordcopy);
+    return nullptr;
+  }
+  return result;
+}
+
+void cleanup_command(Command* command) {
+  char** iter = command->argv;
+  while (*iter != nullptr) {
+    free(*iter);
+  }
+  free(command->argv);
+  free(command);
+
+}
+
+Redirect* init_redirect(int fd, RedirMode mode, const char* target) {
+  Redirect* result = malloc(sizeof(Redirect));
+  if (!result) {
+    return nullptr;
+  }
+
+  char* redirect_target = strdup(target);
+  if (!redirect_target) {
+    free(result);
+    return nullptr;
+  }
+
+  result->fd = fd;
+  result->mode = mode;
+  result->target = redirect_target;
+
+  return result;
+}
+
+void cleanup_redirect(Redirect* redir) {
+  free(redir->target) ;
+  free(redir);
+}
 
 WordNode *init_wordnode(const char *initial_word) {
   char* word_copy = strdup(initial_word);

@@ -100,7 +100,7 @@ int repl() {
           args[i] = arg->value;
           arg = arg->next;
         }
-        cmd->builtin(tokens->size, args);
+        cmd->builtin((const int)tokens->size, (const char**)args);
 
 
       } else {

@@ -32,7 +32,6 @@ size_t argvlen(char** argv) {
 }
 
 Command* init_command(char** argv, size_t nredirs, Redirect redirs[]) {
-  char** iter = argv;
   size_t len = argvlen(argv);
   char** args = malloc(sizeof(char*) * len);
 
@@ -89,7 +88,7 @@ WordList* new_from_nodes(WordNode* head) {
 }
 
 bool is_redir(const char* str) {
-  char* iter = str;
+  const char* iter = str;
   while (*iter) {
     if (*iter == '>') {
       if (iter != str) {
@@ -114,11 +113,12 @@ void parse_redir(Redirect* dest, WordList* words) {
   RedirMode mode = REDIR_OUT;
   const char* iter = words->head->value;
   if (isdigit(*iter)) {
-    char* start = iter;
+    const char* start = iter;
     do {
       ++iter;
     } while (isdigit(*iter));
-    fd = (int)strtol(start, &iter, 10);
+    char** a = &iter;
+    fd = (int)strtol(start, a, 10);
   }
   char* target = strdup(words->head->next->value);
   dest->fd = fd;
@@ -155,7 +155,6 @@ Command* build_command(WordList* words) {
   size_t nredirs = 0;
 
   WordNode* iter = wordcopy->head;
-  size_t current_size = 0;;
   while (iter != nullptr) {
     if (is_redir(iter->value)) {
       WordList* redirected = new_from_nodes(iter);
@@ -395,7 +394,6 @@ WordList *tokenize_input(char *input) {
   char* iter = input;
   WordList* result = empty_wordlist();
 
-  char* token = nullptr;
   size_t readchars;
 
   do {
@@ -425,8 +423,8 @@ WordList* tokenize_path(const char* path) {
   WordList* result = empty_wordlist();
   char* tok = calloc((strlen(path) + 1),  sizeof(char));
 
-  char* end = path + strlen(path);
-  char* iter = path;
+  const char* end = path + strlen(path);
+  const char* iter = path;
   ptrdiff_t bytesremaining = end - path;
   while (!(iter >= end)) {
     memset(tok, '\0', strlen(tok));

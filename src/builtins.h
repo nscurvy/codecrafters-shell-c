@@ -4,7 +4,13 @@
 
 #pragma once
 
-#define NUMBUILTINS 3
+enum BuiltinE {
+  BUILTIN_ECHO,
+  BUILTIN_EXIT,
+  BUILTIN_PWD,
+  BUILTIN_TYPE,
+  NUMBUILTINS
+};
 
 typedef int (*cmd_func)(int,char**);
 

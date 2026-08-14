@@ -1,6 +1,7 @@
 //
 // Created by nkinder on 8/13/26.
 //
+#define REFACTORING_OUT
 
 #include "expand.h"
 
@@ -39,65 +40,70 @@ exptok(const char *word) {
     size_t i = 0;
 
     while (*iter != '\0') {
-    loop_begin:
         char c = *iter;
 
-        switch (c) {
-            case '\\':
+        if (flag == UNQUOTED || flag == DOUBLE_QUOTED) {
+            if (c == '\\') {
                 ++iter;
                 if (*iter == '\0') {
-                    goto loop_exit;
+                    break;
                 }
                 if (flag == UNQUOTED || strchr("\\$`\"\n", *iter)) {
                     buf[i++] = *iter++;
-                    goto loop_begin;
+                    continue;
                 }
                 buf[i++] = '\\';
-                goto loop_begin;
-
-            case '\'':
-                switch (flag) {
-                    case UNQUOTED:
-                        flag = SINGLE_QUOTED;
-                        break;
-
-                    case SINGLE_QUOTED:
-                        flag = UNQUOTED;
-                        break;
-
-                    case DOUBLE_QUOTED:
-                        buf[i++] = c;
-                        break;
-                }
-                break;
-
-            case '"':
-                switch (flag) {
-                    case UNQUOTED:
-                        flag = DOUBLE_QUOTED;
-                        break;
-
-                    case SINGLE_QUOTED:
-                        buf[i++] = c;
-                        break;
-
-                    case DOUBLE_QUOTED:
-                        flag = UNQUOTED;
-                        break;
-                }
-                break;
-
-            case '~':
-                i += exptilde(&buf[i], &flag);
-                break;
-            default:
-                buf[i++] = c;
-                break;
+                continue;
+            }
+        }
+        if (flag == UNQUOTED) {
+            switch (c) {
+                case '\'':
+                    flag = SINGLE_QUOTED;
+                    break;
+                case '"':
+                    flag = DOUBLE_QUOTED;
+                    break;
+                case '~':
+                    i += exptilde(&buf[i], &flag);
+                    break;
+                default:
+                    buf[i++] = c;
+                    break;
+            }
+        } else if (flag == SINGLE_QUOTED) {
+            switch (c) {
+                case '\'':
+                    flag = UNQUOTED;
+                    break;
+                case '"':
+                    buf[i++] = c;
+                    break;
+                case '~':
+                    i += exptilde(&buf[i], &flag);
+                    break;
+                default:
+                    buf[i++] = c;
+                    break;
+            }
+        } else if (flag == DOUBLE_QUOTED) {
+            switch (c) {
+                case '\'':
+                    buf[i++] = c;
+                    break;
+                case '"':
+                    flag = UNQUOTED;
+                    break;
+                case '~':
+                    i += exptilde(&buf[i], &flag);
+                    break;
+                default:
+                    buf[i++] = c;
+                    break;
+            }
         }
         ++iter;
     }
-loop_exit:
-
     char *ret = calloc(strlen(buf) + 1, sizeof(char));
     if (!ret) {
         return nullptr;

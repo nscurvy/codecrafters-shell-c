@@ -113,6 +113,8 @@ int repl() {
           }
           prepare_args(dest, tokens);
           execc(tokens->size, dest);
+        } else {
+          printf("%s: command not found\n", tokens->head->value);
         }
       }
       cleanup_wordlist(tokens);

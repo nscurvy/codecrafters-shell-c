@@ -120,6 +120,11 @@ void parse_redir(Redirect* dest, WordList* words) {
     char* endptr;
     fd = (int)strtol(start, &endptr, 10);
   }
+  if (*(iter + 1) == '>') {
+    mode = REDIR_APPEND;
+  } else if (*(iter + 1) == '\0') {
+    mode = REDIR_OUT;
+  }
   char* target = strdup(words->head->next->value);
   dest->fd = fd;
   dest->mode = mode;

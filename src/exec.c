@@ -60,7 +60,8 @@ int execc(Command* command) {
   } else if (pid == 0) {
     if (command->nredirs != 0) {
       int redirected_fd = command->redirs[0].fd;
-      int fd = open(command->redirs[0].target, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+      unsigned modeflag = (unsigned)command->redirs[0].mode;
+      int fd = open(command->redirs[0].target, O_WRONLY | O_CREAT | modeflag, 0644);
       if (fd < 0) {
         return 1;
       }
@@ -143,7 +144,8 @@ int repl() {
             Redirect redirect = command->redirs[i];
             int redirected_fd = redirect.fd;
             saved_fd = dup(redirected_fd);
-            fd = open(redirect.target, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            unsigned truncflag = (unsigned)redirect.mode;
+            fd = open(redirect.target, O_WRONLY | O_CREAT | truncflag, 0644);
             dup2(fd, redirected_fd);
             close(fd);
 

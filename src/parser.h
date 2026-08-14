@@ -17,8 +17,8 @@ typedef enum QuoteFlagE {
 
 typedef enum RedirMode {
   REDIR_IN,
-  REDIR_OUT,
-  REDIR_APPEND
+  REDIR_OUT = 01000,
+  REDIR_APPEND = 02000
 } RedirMode;
 
 typedef struct Redirect {

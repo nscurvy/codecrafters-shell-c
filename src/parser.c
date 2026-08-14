@@ -117,9 +117,8 @@ void parse_redir(Redirect* dest, WordList* words) {
     do {
       ++iter;
     } while (isdigit(*iter));
-    char* cpy = strdup(iter);
-    fd = (int)strtol(start, &cpy, 10);
-    free(cpy);
+    char* endptr;
+    fd = (int)strtol(start, &endptr, 10);
   }
   char* target = strdup(words->head->next->value);
   dest->fd = fd;

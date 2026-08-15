@@ -19,9 +19,19 @@ int builtin_exit(const int argc, const char **argv);
 int builtin_echo(const int argc, const char **argv);
 int builtin_type(const int argc, const char **argv);
 int builtin_pwd(const int argc, const char **argv);
+int builtin_complete(const int argc, const char **argv);
 const BuiltinCmd builtins[NUMBUILTINS] = {
-    {"cd", &builtin_cd }, {"echo", &builtin_echo}, {"exit", &builtin_exit},  {"pwd", &builtin_pwd},{"type", &builtin_type}
+  {.name = "cd", .builtin = &builtin_cd },
+  {.name = "complete", .builtin = &builtin_complete },
+  {.name = "echo", .builtin = &builtin_echo},
+  {.name = "exit", .builtin = &builtin_exit},
+  {.name = "pwd", .builtin = &builtin_pwd},
+  {.name = "type", .builtin = &builtin_type}
 };
+
+int builtin_complete(const int argc, const char **argv) {
+  return 0;
+}
 
 int builtin_cd(const int argc, const char** argv) {
   char buf[PATH_MAX] = {0};

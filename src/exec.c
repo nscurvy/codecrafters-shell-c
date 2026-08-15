@@ -26,7 +26,7 @@ char* find_command(char* dest, const char* command) {
     char path_buffer[PATH_MAX + 1];
     WordList* path = tokenize_path(env_p);
     WordNode* p = path->head;
-    {
+    if (p) {
       for (int i = 0; i < path->size; ++i) {
         memset(path_buffer, 0, sizeof(path_buffer));
         strcpy(path_buffer, p->value);
@@ -55,8 +55,8 @@ char* find_command(char* dest, const char* command) {
 }
 
 
-// TODO: DOdocs
-int execc(Command* command) {
+// TODO: docs
+int execc(const Command* command) {
   pid_t pid = fork();
 
   if (pid < 0) {
@@ -112,8 +112,6 @@ size_t count_command_args(char** argv) {
 
 // TODO: DOdocs
 int repl() {
-  char input[1024];
-  char* args[50] = {{}};
   int exit_status = 0;
 
   while (true) {
@@ -137,7 +135,6 @@ int repl() {
 
       if (cmd) {
         //WordNode* arg = tokens->head;
-        char** args = command->argv;
         //for (int i = 0; i < tokens->size; ++i) {
         //  args[i] = arg->value;
         //  arg = arg->next;
@@ -175,7 +172,7 @@ int repl() {
       }
       cleanup_wordlist(tokens);
       cleanup_command(command);
-      free(input_line);
+      free((void*)input_line);
     }
   }
 }

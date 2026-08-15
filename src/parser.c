@@ -393,10 +393,10 @@ int exppass(WordList* list) {
   return 0;
 }
 
-WordList *tokenize_input(char *input) {
+WordList *tokenize_input(const char *input) {
   QuoteFlagE flag = UNQUOTED;
   char buf[1024] = {};
-  char* iter = input;
+  const char* iter = input;
   WordList* result = empty_wordlist();
 
   size_t readchars;

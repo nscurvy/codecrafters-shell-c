@@ -4,5 +4,14 @@
     <option name="pythonIntegrationState" value="YES" />
   </component>
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
-  <component name="WestSettings"><![CDATA[{}]]></component>
+  <component name="WestSettings">{}</component>
+  <component name="com.itcodebox.notebooks.projectservice.ProjectUIState">
+    <option name="notebookPaneVisible" value="true" />
+    <option name="chapterPaneVisible" value="true" />
+    <option name="notePaneVisible" value="true" />
+    <option name="layoutMode" value="FULL" />
+    <option name="selectedNotebookId" value="2" />
+    <option name="selectedChapterId" value="1" />
+    <option name="selectedNoteId" value="1" />
+  </component>
 </project>

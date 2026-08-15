@@ -11,4 +11,5 @@
  */
 char * exptok(const char* word);
 
+// TODO: DOCS
 char* expand_home(char* buf, const char* path);

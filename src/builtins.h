@@ -20,8 +20,10 @@ typedef struct BuiltinCmd {
   cmd_func builtin;
 } BuiltinCmd;
 
+// TODO: DOCS
 extern const BuiltinCmd builtins[NUMBUILTINS];
 
+// TODO: DOCS
 int pstrcmp(const void* a, const void* b);
 
 

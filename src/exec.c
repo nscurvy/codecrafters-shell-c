@@ -17,6 +17,7 @@
 #include <readline/readline.h>
 #define TMPDISABLED
 
+// TODO: docs
 char* find_command(char* dest, const char* command) {
   const char* name = "PATH";
   const char* env_p = getenv(name);
@@ -54,6 +55,7 @@ char* find_command(char* dest, const char* command) {
 }
 
 
+// TODO: DOdocs
 int execc(Command* command) {
   pid_t pid = fork();
 
@@ -88,6 +90,7 @@ int execc(Command* command) {
   return 0;
 }
 
+// TODO: DOdocs
 BuiltinCmd* find_builtin(const char* name) {
   BuiltinCmd* cmd;
 
@@ -95,6 +98,7 @@ BuiltinCmd* find_builtin(const char* name) {
   return cmd;
 }
 
+// TODO: DOdocs
 size_t count_command_args(char** argv) {
   size_t len = 0;
   char** iter = argv;
@@ -106,6 +110,7 @@ size_t count_command_args(char** argv) {
   return len;
 }
 
+// TODO: DOdocs
 int repl() {
   char input[1024];
   char* args[50] = {{}};

@@ -34,7 +34,10 @@ typedef enum RedirMode {
     REDIR_APPEND = 02000  /**< Output redirection, appending (`>>`). */
 } RedirMode;
 
-#ifdef __clang__
+#ifndef __clang__
+#define _Nullable ""
+#define _Nonnull ""
+#endif
 #pragma clang assume_nonnull begin
 
 /**
@@ -293,5 +296,3 @@ void
 parse_redir(Redirect* dest, WordList* words);
 
 #pragma clang assume_nonnull end
-
-#endif //ifdef __clang__

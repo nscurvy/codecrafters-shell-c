@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "completion.h"
+
 int builtin_cd(const int argc, const char** argv);
 int builtin_exit(const int argc, const char **argv);
 int builtin_echo(const int argc, const char **argv);
@@ -30,16 +32,32 @@ const BuiltinCmd builtins[NUMBUILTINS] = {
 };
 
 int builtin_complete(const int argc, const char **argv) {
-  const char* target_command = nullptr;
-  if (argc == 3) {
-    if (strcmp(argv[1], "-p") == 0) {
-      target_command = argv[2];
+  if (argc >= 2 && strcmp(argv[1], "-p") == 0) {
+    if (argc < 3) {
+      return 1;
     }
+    const char* path = lookup_completion(argv[2]);
+    if (path) {
+      fprintf(stdout, "complete -C '%s' %s\n", path, argv[2]);
+    } else {
+      fprintf(stderr, "%s: %s: no completion specification\n", argv[0], argv[2]);
+      return 1;
+
+    }
+    return 0;
   }
 
-  fprintf(stderr, "%s: %s: no completion specification\n", argv[0], target_command);
+  if (argc >= 2 && strcmp(argv[1], "-C") == 0) {
+    if (argc < 4) {
+      fprintf(stderr, "complete: -C requires a script path and command\n");
+      return 1;
+    }
+    register_completion(argv[3], argv[2]);
+    return 0;
+  }
 
-  return -1;
+
+  return 1;
 }
 
 int builtin_cd(const int argc, const char** argv) {

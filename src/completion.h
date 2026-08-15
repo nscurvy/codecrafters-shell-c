@@ -2,17 +2,28 @@
 // Created by nkinder on 8/14/26.
 //
 //
-#include <glib-2.0/glib.h>
+#include <readline/readline.h>
 
 
 #pragma once
 
-typedef struct CustomCompletion {
-    const char* name;
+typedef rl_compentry_func_t CompletionGenerator;
 
-};
 
-extern GHashTable* completion_table;
+typedef struct CompletionRegistration {
+    const char* command;
+    const char* script_path;
+} CompletionRegistration;
+
+#define MAX_COMPLETIONS 64
+extern CompletionRegistration completion_registry[MAX_COMPLETIONS];
+extern int registry_count;
+
+void register_completion(const char* command, const char* script_path);
+const char* lookup_completion(const char* command);
+
+
+char* get_command_word();
 
 // TODO: DOCS
 char* builtin_generator(const char* text, int state);

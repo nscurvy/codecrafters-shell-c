@@ -14,6 +14,61 @@
 #include "builtins.h"
 
 
+CompletionRegistration completion_registry[MAX_COMPLETIONS];
+int registry_count = 0;
+
+
+
+void
+register_completion(const char* command, const char* script_path) {
+    for (int i = 0; i < registry_count; ++ i) {
+        if (strcmp(completion_registry[i].command, command) == 0) {
+            free(completion_registry[i].script_path);
+            completion_registry[i].script_path = strdup(script_path);
+            return;
+        }
+    }
+    if (registry_count >= MAX_COMPLETIONS) {
+        return;
+    }
+    completion_registry[registry_count].command = strdup(command);
+    completion_registry[registry_count].script_path = strdup(script_path);
+    registry_count++;
+}
+
+
+
+const char*
+lookup_completion(const char* command) {
+    for (int i = 0; i < registry_count; ++ i) {
+        if (strcmp(completion_registry[i].command, command) == 0) {
+            return completion_registry[i].script_path;
+        }
+    }
+    return nullptr;
+}
+
+
+
+char*
+get_command_word() {
+    if (!rl_line_buffer) {
+        return nullptr;
+    }
+    const char* p = rl_line_buffer;
+    while (*p == ' ') {
+        ++p;
+    }
+    const char* end = p;
+    while (*end && *end != ' ') {
+        ++end;
+    }
+    if (end == p) {
+        return nullptr;
+    }
+
+    return strndup(p, end - p);
+}
 
 char *
 builtin_generator(const char *text, int state) {
@@ -136,6 +191,16 @@ shell_completion_function(const char *text, int start, int end) {
         rl_attempted_completion_over = 1;
         return rl_completion_matches(text, first_word_generator);
     }
+
+    //char* cmd = get_command_word();
+    //if (cmd) {
+    //    CompletionGenerator* gen = lookup_completion(cmd);
+    //    free(cmd);
+    //    if (gen) {
+    //        rl_attempted_completion_over = 1;
+    //        return rl_completion_matches(text, gen);
+    //    }
+    //}
 
     rl_attempted_completion_over = 0;
     return nullptr;

@@ -14,6 +14,8 @@ add_executable(shell ${SOURCE_FILES}
         src/exec.c
         src/exec.h
         src/expand.c
-        src/expand.h)
+        src/expand.h
+        src/completion.c
+        src/completion.h)
 
 target_link_libraries(shell PRIVATE readline)

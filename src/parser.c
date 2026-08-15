@@ -183,7 +183,7 @@ Command* build_command(WordList* words) {
 void cleanup_command(Command* command) {
   char** iter = command->argv;
   while (*iter != nullptr) {
-    free(*iter);
+    free(*iter++);
   }
   free(command->argv);
   free(command);

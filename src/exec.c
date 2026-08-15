@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <readline/history.h>
+#include <readline/readline.h>
 #define TMPDISABLED
 
 char* find_command(char* dest, const char* command) {
@@ -110,12 +112,10 @@ int repl() {
   int exit_status = 0;
 
   while (true) {
-    printf("$ ");
-    setbuf(stdout, nullptr);
-    const char* input_line = fgets(input, sizeof(input), stdin);
-
-    if (input_line && !ferror(stdin)) {
-      WordList* tokens = tokenize_input(input);
+    const char* input_line = readline("$ ");
+    if (input_line && strlen(input_line) > 0) {
+      add_history(input_line);
+      WordList* tokens = tokenize_input(input_line);
       if (!tokens) {
         exit_status = -1;
         setbuf(stderr, nullptr);
@@ -169,6 +169,8 @@ int repl() {
         }
       }
       cleanup_wordlist(tokens);
+      cleanup_command(command);
+      free(input_line);
     }
   }
 }

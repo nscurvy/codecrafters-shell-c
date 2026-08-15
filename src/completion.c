@@ -52,6 +52,87 @@ lookup_completion(const char* command) {
     return nullptr;
 }
 
+const char* skipws(const char* s) {
+    while (*s == ' ') {
+        ++s;
+    }
+    return s;
+}
+
+const char*
+find_current_word(const char* text) {
+    if (!rl_line_buffer) {
+        return nullptr;
+    }
+    size_t textlen = strlen(text);
+    char* p = rl_line_buffer;
+    p = skipws(p);
+    while (strncmp(p, text, textlen) != 0) {
+        while (*p && *p != ' ') {
+            ++p;
+        }
+        p = skipws(p);
+    }
+
+    return p;
+
+}
+
+
+const char* goto_next_word(const char* s) {
+    if (*s == '\0') {
+        return nullptr;
+    }
+    if (*s == ' ') {
+        s = skipws(s);
+    }
+    const char* end = s;
+    while (*end && *end != ' ') {
+        ++end;
+    }
+    if (end == s) {
+        return nullptr;
+    }
+    s = end;
+    if (*end && *end == ' ') {
+        end = skipws(end);
+    }
+    if (s == end) {
+        return nullptr;
+    }
+    return end;
+}
+
+const char*
+    get_previous_word(const char* current_word) {
+    if (!rl_line_buffer) {
+        return nullptr;
+    }
+    const char* p = rl_line_buffer;
+
+    p = skipws(p);
+
+    if (p == current_word) {
+        return nullptr;
+    }
+
+    int prev_start = 0;
+    int prev_end = 0;
+    while ((p - rl_line_buffer) != (current_word - rl_line_buffer)) {
+        prev_start = p - rl_line_buffer;
+        prev_end = prev_start;
+
+        const char* end = p;
+        while (*end && *end != ' ') {
+            ++end;
+        }
+        prev_end = end - rl_line_buffer;
+        p = skipws(end);
+    }
+    return strndup(rl_line_buffer + prev_start, prev_end - prev_start);
+
+
+}
 
 
 char*
@@ -73,6 +154,8 @@ get_command_word() {
 
     return strndup(p, end - p);
 }
+
+
 
 char *
 builtin_generator(const char *text, int state) {
@@ -206,6 +289,7 @@ shell_completion_function(const char *text, int start, int end) {
         }
     }
 
+
     rl_attempted_completion_over = 0;
     return nullptr;
 }
@@ -227,9 +311,24 @@ char*
     consumed = 1;
 
     if (!state) {
+        char prev_wordbuf[1024] = {0};
+        char cmd_wordbuf[1024] = {0};
         char* cmd = get_command_word();
         const char* script_path = cmd ? lookup_completion(cmd) : nullptr;
-        free(cmd);
+        if (cmd) {
+            memmove(cmd_wordbuf, cmd, strlen(cmd));
+            free(cmd);
+            cmd = cmd_wordbuf;
+        }
+        const char* current_word = find_current_word(text);
+        const char* prev_word = get_previous_word(current_word);
+        if (prev_word == nullptr) {
+            prev_word = "";
+        } else {
+            memmove(prev_wordbuf, prev_word, strlen(prev_word));
+            free(prev_word);
+            prev_word = prev_wordbuf;
+        }
         if (!script_path) {
             return nullptr;
         }
@@ -249,7 +348,7 @@ char*
             dup2(pipefd[1], STDOUT_FILENO);
             close(pipefd[0]);
             close(pipefd[1]);
-            execl(script_path, script_path, nullptr);
+            execl(script_path, script_path, cmd, current_word, prev_word, nullptr);
             _exit(127);
         }
 

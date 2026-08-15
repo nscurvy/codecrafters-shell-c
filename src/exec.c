@@ -134,11 +134,6 @@ int repl() {
 
 
       if (cmd) {
-        //WordNode* arg = tokens->head;
-        //for (int i = 0; i < tokens->size; ++i) {
-        //  args[i] = arg->value;
-        //  arg = arg->next;
-        //}
         int saved_fd = 0;
         int fd = 0;
         if (command->nredirs != 0) {

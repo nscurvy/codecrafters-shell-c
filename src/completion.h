@@ -25,6 +25,10 @@ register_completion(const char* command, const char* script_path);
 const char*
 lookup_completion(const char* command);
 
+const char* find_current_word(const char* text);
+
+const char*
+    get_previous_word(const char* current_word);
 
 char*
 get_command_word();

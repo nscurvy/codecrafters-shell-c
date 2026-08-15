@@ -30,7 +30,16 @@ const BuiltinCmd builtins[NUMBUILTINS] = {
 };
 
 int builtin_complete(const int argc, const char **argv) {
-  return 0;
+  const char* target_command = nullptr;
+  if (argc == 3) {
+    if (strcmp(argv[1], "-p") == 0) {
+      target_command = argv[2];
+    }
+  }
+
+  fprintf(stderr, "%s: %s: no completion specification\n", argv[0], target_command);
+
+  return -1;
 }
 
 int builtin_cd(const int argc, const char** argv) {

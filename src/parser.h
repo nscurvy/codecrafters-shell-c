@@ -35,8 +35,8 @@ typedef enum RedirMode {
 } RedirMode;
 
 #ifndef __clang__
-#define _Nullable ""
-#define _Nonnull ""
+#define _Nullable
+#define _Nonnull
 #endif
 #pragma clang assume_nonnull begin
 

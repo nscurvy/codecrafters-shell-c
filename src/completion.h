@@ -12,7 +12,7 @@ typedef struct CustomCompletion {
 
 };
 
-struct GHashTable* completion_table;
+extern GHashTable* completion_table;
 
 // TODO: DOCS
 char* builtin_generator(const char* text, int state);

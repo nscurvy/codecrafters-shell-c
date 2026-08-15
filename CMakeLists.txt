@@ -4,6 +4,10 @@ project(codecrafters-shell)
 
 file(GLOB_RECURSE SOURCE_FILES src/*.c src/*.h)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
+
+
 set(CMAKE_C_STANDARD 23) # Enable the C23 standard
 
 add_executable(shell ${SOURCE_FILES}
@@ -19,4 +23,4 @@ add_executable(shell ${SOURCE_FILES}
         src/completion.h
         src/nullability.h)
 
-target_link_libraries(shell PRIVATE readline)
+target_link_libraries(shell PRIVATE readline PkgConfig::GLIB)

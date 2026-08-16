@@ -330,9 +330,6 @@ char*
         }
         if (!script_path) {
             if (completions) {
-                for (int i = 0; i < cmp_len; ++ i) {
-                    free(completions[i]);
-                }
                 free(completions);
                 completions = nullptr;
                 cmp_len = 0;
@@ -345,9 +342,6 @@ char*
         if (pipe(pipefd) < 0) {
 
             if (completions) {
-                for (int i = 0; i < cmp_len; ++ i) {
-                    free(completions[i]);
-                }
                 free(completions);
                 completions = nullptr;
                 cmp_len = 0;
@@ -362,9 +356,6 @@ char*
             close(pipefd[1]);
 
             if (completions) {
-                for (int i = 0; i < cmp_len; ++ i) {
-                    free(completions[i]);
-                }
                 free(completions);
                 completions = nullptr;
                 cmp_len = 0;
@@ -409,9 +400,6 @@ char*
     }
     if (completions) {
         if (cmp_idx >= cmp_len) {
-            for (int i = 0; i < cmp_len; ++ i) {
-                free(completions[i]);
-            }
             free(completions);
             completions = nullptr;
             cmp_len = 0;

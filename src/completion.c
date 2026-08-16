@@ -16,6 +16,7 @@
 #include <sys/wait.h>
 
 #include "builtins.h"
+#include "parser.h"
 
 
 CompletionRegistration completion_registry[MAX_COMPLETIONS];
@@ -297,6 +298,9 @@ char*
     external_completer_generator(const char* text, int state) {
     static char* cached_result = nullptr;
     static int consumed = 0;
+    static int cmp_idx = 0;
+    static size_t cmp_len = 0;
+    static char** completions = nullptr;
 
     if (!state) {
         free(cached_result);
@@ -360,17 +364,39 @@ char*
         close(pipefd[1]);
         FILE* f = fdopen(pipefd[0], "r");
         char line[1024] = {0};
-        if (fgets(line, sizeof(line), f)) {
-            line[strcspn(line, "\n")] = '\0';
-            cached_result = strdup(line);
+        WordList* words = empty_wordlist();
+        while (fgets(line, sizeof(line), f) != nullptr) {
+            if (fgets(line, sizeof(line), f)) {
+                line[strcspn(line, "\n")] = '\0';
+                append_wordlist(words, line);
+                //cached_result = strdup(line);
+            }
         }
         fclose(f);
+
+        completions = malloc(sizeof(char*) * words->size);
+        WordNode* iter = words->head;
+        for (int i = 0; i < words->size; ++ i) {
+            completions[i] = strdup(iter->value);
+            iter = iter->next;
+        }
+        cmp_len = words->size;
+        cleanup_wordlist(words);
         int status;
         waitpid(pid, &status, 0);
     }
-    if (cached_result) {
-        char* ret = cached_result;
-        cached_result = nullptr;
+    if (completions) {
+        if (cmp_idx >= cmp_len) {
+            for (int i = 0; i < cmp_len; ++ i) {
+                free(completions[i]);
+            }
+            free(completions);
+            completions = nullptr;
+            cmp_len = 0;
+            cmp_idx = 0;
+            return nullptr;
+        }
+        char* ret = completions[cmp_idx++];
         return ret;
     }
     return nullptr;

@@ -297,7 +297,6 @@ shell_completion_function(const char *text, int start, int end) {
 char*
     external_completer_generator(const char* text, int state) {
     static char* cached_result = nullptr;
-    static int consumed = 0;
     static int cmp_idx = 0;
     static size_t cmp_len = 0;
     static char** completions = nullptr;
@@ -305,14 +304,9 @@ char*
     if (!state) {
         free(cached_result);
         cached_result = nullptr;
-        consumed = 0;
     }
 
-    if (consumed) {
-        return nullptr;
-    }
 
-    consumed = 1;
 
     if (!state) {
         char prev_wordbuf[1024] = {0};
@@ -366,11 +360,9 @@ char*
         char line[1024] = {0};
         WordList* words = empty_wordlist();
         while (fgets(line, sizeof(line), f) != nullptr) {
-            if (fgets(line, sizeof(line), f)) {
-                line[strcspn(line, "\n")] = '\0';
-                append_wordlist(words, line);
-                //cached_result = strdup(line);
-            }
+            line[strcspn(line, "\n")] = '\0';
+            append_wordlist(words, line);
+            //cached_result = strdup(line);
         }
         fclose(f);
 

@@ -348,7 +348,12 @@ char*
             dup2(pipefd[1], STDOUT_FILENO);
             close(pipefd[0]);
             close(pipefd[1]);
-            execl(script_path, script_path, cmd, current_word, prev_word, nullptr);
+            char comp_line[1024] = {0};
+            char comp_point[1024] = {0};
+            const char* envp[3] = { comp_line, comp_point, nullptr};
+            snprintf(comp_line, sizeof(comp_line), "COMP_LINE=%s", rl_line_buffer);
+            snprintf(comp_point, sizeof(comp_point), "COMP_LINE=%lu", strlen(rl_line_buffer));
+            execle(script_path, script_path, cmd, current_word, prev_word, nullptr, envp);
             _exit(127);
         }
 

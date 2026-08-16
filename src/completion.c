@@ -343,6 +343,16 @@ char*
 
         int pipefd[2];
         if (pipe(pipefd) < 0) {
+
+            if (completions) {
+                for (int i = 0; i < cmp_len; ++ i) {
+                    free(completions[i]);
+                }
+                free(completions);
+                completions = nullptr;
+                cmp_len = 0;
+                cmp_idx = 0;
+            }
             return nullptr;
         }
 
@@ -350,6 +360,16 @@ char*
         if (pid < 0) {
             close(pipefd[0]);
             close(pipefd[1]);
+
+            if (completions) {
+                for (int i = 0; i < cmp_len; ++ i) {
+                    free(completions[i]);
+                }
+                free(completions);
+                completions = nullptr;
+                cmp_len = 0;
+                cmp_idx = 0;
+            }
             return nullptr;
         }
         if (pid == 0) {

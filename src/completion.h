@@ -22,6 +22,8 @@ extern int                    registry_count;
 void
 register_completion(const char* command, const char* script_path);
 
+void unregister_completion(const char* command);
+
 const char*
 lookup_completion(const char* command);
 

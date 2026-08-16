@@ -56,6 +56,14 @@ int builtin_complete(const int argc, const char **argv) {
     return 0;
   }
 
+  if (argc >= 2 && strcmp(argv[1], "-r") == 0) {
+    if (argc < 3) {
+      fprintf(stderr, "complete: -r requires a command\n");
+      return 1;
+
+    }
+    unregister_completion(argv[2]);
+  }
 
   return 1;
 }

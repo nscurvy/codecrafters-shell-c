@@ -42,6 +42,23 @@ register_completion(const char* command, const char* script_path) {
     registry_count++;
 }
 
+void unregister_completion(const char* command) {
+    if (lookup_completion(command)) {
+        int i = 0;
+        while (strcmp(completion_registry[i].command, command ) != 0) {
+            ++i;
+        }
+        CompletionRegistration tmp = completion_registry[i];
+
+        for (int j = i; j < registry_count - 1; ++ j) {
+            completion_registry[j] = completion_registry[j + 1];
+        }
+        --registry_count;
+        free(tmp.command);
+        free(tmp.script_path);
+    }
+}
+
 
 
 const char*

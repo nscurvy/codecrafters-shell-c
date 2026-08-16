@@ -13,6 +13,7 @@
 
 #include "completion.h"
 
+#include <iso646.h>
 #include <sys/wait.h>
 
 #include "builtins.h"
@@ -328,6 +329,15 @@ char*
             prev_word = prev_wordbuf;
         }
         if (!script_path) {
+            if (completions) {
+                for (int i = 0; i < cmp_len; ++ i) {
+                    free(completions[i]);
+                }
+                free(completions);
+                completions = nullptr;
+                cmp_len = 0;
+                cmp_idx = 0;
+            }
             return nullptr;
         }
 
@@ -348,7 +358,7 @@ char*
             close(pipefd[1]);
             char comp_line[1024] = {0};
             char comp_point[1024] = {0};
-            const char* envp[3] = { comp_line, comp_point, nullptr};
+            char* const envp[3] = { comp_line, comp_point, nullptr};
             snprintf(comp_line, sizeof(comp_line), "COMP_LINE=%s", rl_line_buffer);
             snprintf(comp_point, sizeof(comp_point), "COMP_POINT=%lu", strlen(rl_line_buffer));
             execle(script_path, script_path, cmd, current_word, prev_word, nullptr, envp);

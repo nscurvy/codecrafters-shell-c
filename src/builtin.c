@@ -27,8 +27,8 @@ const BuiltinCmd builtins[NUMBUILTINS] = {
   {.name = "cd", .builtin = &builtin_cd },
   {.name = "complete", .builtin = &builtin_complete },
   {.name = "echo", .builtin = &builtin_echo},
-    {.name = "jobs", .builtin = &builtin_jobs},
   {.name = "exit", .builtin = &builtin_exit},
+    {.name = "jobs", .builtin = &builtin_jobs},
   {.name = "pwd", .builtin = &builtin_pwd},
   {.name = "type", .builtin = &builtin_type}
 };

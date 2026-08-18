@@ -13,7 +13,7 @@ volatile sig_atomic_t child_exited_flag = 0;
 
 void
 print_job(Job job) {
-    printf("[%d]    %d\n", job.job_number, job.pid);
+    printf("[%d] %d\n", job.job_number, job.pid);
     fflush(stdout);
 }
 

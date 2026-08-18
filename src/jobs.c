@@ -5,20 +5,84 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
 
 volatile sig_atomic_t child_exited_flag = 0;
 
+Job*
+init_job(pid_t pid, int job_number, const char** cmdline) {
+    Job* new_job = (Job*)malloc(sizeof(Job));
+    if (!new_job) {
+        return nullptr;
+    }
+    const char** iter = cmdline;
+    size_t required_length = 0;
+    while (*iter != nullptr) {
+        required_length += strlen(*iter);
+        required_length += 1;
+        ++iter;
+    }
+
+    char* cmd = (char*)calloc(required_length, sizeof(char));
+    if (!cmd) {
+        free(new_job);
+        return nullptr;
+    }
+    iter = cmdline;
+    char* pos = cmd;
+    while (*iter != nullptr) {
+        strcat(pos, *iter);
+        pos += strlen(*iter);
+        if (*(char**)(iter) == nullptr) {
+            *pos = '\0';
+        } else {
+            *pos = ' ';
+            ++pos;
+        }
+        ++iter;
+    }
+    new_job->pid = pid;
+    new_job->cmdline = cmd;
+    new_job->job_number = job_number;
+
+    return new_job;
+}
+
 void
-print_job(Job job) {
-    printf("[%d] %d\n", job.job_number, job.pid);
+cleanup_job(Job* job) {
+    free(job->cmdline);
+    free(job);
+
+}
+
+void
+print_job_imm(Job* job) {
+    printf("[%d] %d\n", job->job_number, job->pid);
     fflush(stdout);
 }
 
+void print_job(Job* job) {
+    const char* status_symbol = " ";
+    if (jobs[job_count - 1]->pid == job->pid) {
+        status_symbol = "+";
+    }
 
-Job jobs[MAX_JOBS] = {0};
+    printf("[%d]%s  Running%20s\n", job->job_number, status_symbol, job->cmdline);
+    fflush(stdout);
+}
+
+void
+print_jobs() {
+    for (int i = 0; i < job_count; ++i) {
+        print_job(jobs[i]);
+    }
+}
+
+
+Job* jobs[MAX_JOBS] = {0};
 int job_count = 0;
 
 bool job_numbers[MAX_JOBS] = {false};
@@ -44,21 +108,24 @@ int get_next_job_number() {
 
 
 
-int append_job(pid_t job) {
+int append_job(pid_t job, const char** cmdline) {
   if (job_count == MAX_JOBS) {
       return -1;
   }
     int ret = job_count;
-    jobs[job_count++] = (Job){job, get_next_job_number()} ;
+    int job_num = get_next_job_number();
+    Job* new_job = init_job(job, job_num, cmdline);
+    jobs[job_count++] = new_job;
 
-    print_job(jobs[ret]);
+    print_job_imm(jobs[ret]);
 
     return ret;
 }
+
 Job* get_job(pid_t pid) {
     for (int i = 0; i < job_count; ++i) {
-        if (jobs[i].pid == pid) {
-            return &jobs[i];
+        if (jobs[i]->pid == pid) {
+            return jobs[i];
         }
     }
     return nullptr;
@@ -94,7 +161,10 @@ int
 remove_job(pid_t pid) {
     int i = 0;
     for (i = 0; i < job_count; ++i) {
-        if (jobs[i].pid == pid) {
+        if (jobs[i]->pid == pid) {
+            Job* old_job = jobs[i];
+            cleanup_job(old_job);
+            jobs[i] = nullptr;
             break;
         }
     }

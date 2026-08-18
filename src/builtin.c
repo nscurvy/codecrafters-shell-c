@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include "completion.h"
+#include "jobs.h"
 
 int builtin_cd(const int argc, const char** argv);
 int builtin_exit(const int argc, const char **argv);
@@ -71,6 +72,9 @@ int builtin_complete(const int argc, const char **argv) {
 }
 
 int builtin_jobs(const int argc, const char **argv) {
+  if (argc == 1) {
+    print_jobs();
+  }
   return 0;
 }
 

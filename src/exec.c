@@ -89,7 +89,7 @@ int execc(const Command* command) {
     if (!command->bgjob) {
       waitpid(pid, &status, 0);
     } else {
-      append_job(pid);
+      append_job(pid, command->argv);
     }
   }
 

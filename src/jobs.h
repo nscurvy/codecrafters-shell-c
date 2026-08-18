@@ -20,7 +20,7 @@ extern int job_count;
 
 extern volatile sig_atomic_t child_exited_flag;
 
-Job* init_job(pid_t pid, int job_number, const char* cmdline[]);
+Job* init_job(pid_t pid, int job_number, const char** cmdline);
 
 void cleanup_job(Job* job);
 

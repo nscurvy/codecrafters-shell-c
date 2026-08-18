@@ -31,7 +31,7 @@ size_t argvlen(char** argv) {
   return ++len;
 }
 
-Command* init_command(char** argv, size_t nredirs, Redirect redirs[]) {
+Command* init_command(char** argv, bool bgjob, size_t nredirs, Redirect redirs[]) {
   size_t len = argvlen(argv);
   char** args = malloc(sizeof(char*) * len);
 
@@ -60,6 +60,7 @@ Command* init_command(char** argv, size_t nredirs, Redirect redirs[]) {
     free(args);
     return nullptr;
   }
+  command->bgjob = bgjob;
 
   command->argv = args;
   command->nredirs = nredirs;
@@ -148,6 +149,22 @@ WordList* copy_wordlist(WordList* original) {
   return newlist;
 }
 
+bool check_for_bg_token(WordList* words) {
+  WordNode* iter = words->head;
+  WordNode* prev = nullptr;
+  while (iter != nullptr) {
+    if (strcmp(iter->value, "&") == 0) {
+      prev->next = nullptr;
+      cleanup_wordnode(iter);
+      --words->size;
+      return true;
+    }
+    prev = iter;
+    iter = iter->next;
+  }
+  return false;
+}
+
 Command* build_command(WordList* words) {
   char argbuf[50][50];
   char* argdest[50];
@@ -159,6 +176,8 @@ Command* build_command(WordList* words) {
 
   size_t nredirs = 0;
 
+  bool isbg = check_for_bg_token(wordcopy);
+
   WordNode* iter = wordcopy->head;
   while (iter != nullptr) {
     if (is_redir(iter->value)) {
@@ -169,7 +188,7 @@ Command* build_command(WordList* words) {
     iter = iter->next;
   }
   prepare_args(argdest, wordcopy);
-  Command* result = init_command(argdest, nredirs, redirs);
+  Command* result = init_command(argdest, isbg, nredirs, redirs);
   if (!result) {
     for (int i = 0; i < nredirs; ++i) {
       free(redirs[i].target);

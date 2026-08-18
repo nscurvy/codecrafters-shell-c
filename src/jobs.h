@@ -1,0 +1,38 @@
+//
+// Created by nkinder on 8/16/26.
+//
+
+#pragma once
+#include <sys/types.h>
+#include <signal.h>
+
+
+#define MAX_JOBS 10
+
+typedef struct Job {
+    pid_t pid;
+    int job_number;
+} Job;
+
+extern Job jobs[MAX_JOBS];
+extern int job_count;
+
+extern volatile sig_atomic_t child_exited_flag;
+
+void print_job(Job job);
+
+void return_job_number(int job_number);
+
+Job* get_job(pid_t pid);
+
+int append_job(pid_t job);
+
+int get_next_job_number();
+
+void check_background_jobs();
+
+void sigchld_handler(int signum);
+
+int remove_job(pid_t pid);
+
+void print_job_exit(pid_t pid, int job_number);

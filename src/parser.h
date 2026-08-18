@@ -50,6 +50,7 @@ typedef struct Redirect {
  */
 typedef struct Command {
     char* NULLABLE * argv;     /**< Null-terminated, heap-allocated argument vector. */
+    bool bgjob;
     size_t           nredirs;  /**< Number of entries in #redirs. */
     Redirect         redirs[]; /**< Flexible array of redirections attached to this command. */
 } Command;
@@ -97,6 +98,7 @@ GCC_NONNULL(1);
  * @p redirs into the Command's trailing flexible array.
  *
  * @param argv    Null-terminated array of argument strings to copy.
+ * @param bgjob
  * @param nredirs Number of redirections in @p redirs.
  * @param redirs  Array of @p nredirs redirections to copy into the command.
  *
@@ -105,7 +107,7 @@ GCC_NONNULL(1);
  *         freed before returning).
  */
 Command* NULLABLE
-init_command(char* NULLABLE * argv, size_t nredirs, Redirect* redirs)
+init_command(char* NULLABLE * argv, bool bgjob, size_t nredirs, Redirect* redirs)
 GCC_NONNULL(1, 3);
 
 /**

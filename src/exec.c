@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+
+#include "jobs.h"
 #define TMPDISABLED
 
 // TODO: docs
@@ -84,7 +86,11 @@ int execc(const Command* command) {
     }
   } else {
     int status;
-    waitpid(pid, &status, 0);
+    if (!command->bgjob) {
+      waitpid(pid, &status, 0);
+    } else {
+      append_job(pid);
+    }
   }
 
   return 0;
@@ -112,9 +118,16 @@ size_t count_command_args(char** argv) {
 
 // TODO: DOdocs
 int repl() {
+  struct sigaction sa;
+  sa.sa_handler = sigchld_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = SA_RESTART;
+  sigaction(SIGCHLD, &sa, nullptr);
+
   int exit_status = 0;
 
   while (true) {
+    check_background_jobs();
     const char* input_line = readline("$ ");
     if (input_line && strlen(input_line) > 0) {
       add_history(input_line);

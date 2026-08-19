@@ -191,6 +191,7 @@ print_job_exit(pid_t pid, int job_number) {
     close(fd);
 
     if (bytes_read <= 0) {
+        printf("\n");
         return;
     }
 

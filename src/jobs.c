@@ -84,7 +84,7 @@ void print_job(Job* job) {
     const char* cmdline = job->cmdline;
     int job_num = job->job_number;
 
-    printf("[%d]%s  %19s %s\n", job_num,status_symbol, "Running", cmdline);
+    printf("[%d]%s  %-20s %s\n", job_num,status_symbol, "Running", cmdline);
     fflush(stdout);
 }
 

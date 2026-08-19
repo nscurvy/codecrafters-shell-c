@@ -7,6 +7,85 @@
 
 volatile sig_atomic_t child_exited_flag = 0;
 
+
+typedef struct JobNode {
+    Job* job;
+    struct JobNode* next;
+} JobNode;
+
+typedef struct JobList {
+    size_t size;
+    JobNode* head;
+} JobList;
+
+JobList* init_job_list() {
+    JobList* list = malloc(sizeof(JobList));
+    list->size = 0;
+    list->head = nullptr;
+    return list;
+}
+
+JobNode* init_job_node(Job* job) {
+    JobNode* node = malloc(sizeof(JobNode));
+    node->job = job;
+    node->next = nullptr;
+    return node;
+}
+
+JobList* job_list = nullptr;
+
+void append_job_list(JobList* list, Job* job) {
+    JobNode* node = init_job_node(job);
+    if (list->head == nullptr) {
+        list->head = node;
+        list->size = 1;
+        return;
+    }
+    JobNode* iter = list->head;
+    while (iter->next != nullptr) {
+        iter = iter->next;
+    }
+    iter->next = node;
+    list->size++;
+}
+
+void cleanup_job_node(JobNode* node) {
+    Job* job = node->job;
+
+    cleanup_job(job);
+    free(node);
+}
+
+void remove_job_node(JobList* list, pid_t pid) {
+    JobNode* iter = list->head;
+    JobNode* prev = nullptr;
+    while (iter != nullptr) {
+        if (iter->job->pid == pid) {
+            if (prev == nullptr) {
+                list->head = iter->next;
+            } else {
+                prev->next = iter->next;
+            }
+            return_job_number(iter->job->job_number);
+            cleanup_job_node(iter);
+            return;
+        }
+        prev = iter;
+        iter = iter->next;
+    }
+}
+
+Job* get_job_by_pid(JobList* list, pid_t pid) {
+    JobNode* iter = list->head;
+    while (iter != nullptr) {
+        if (iter->job->pid == pid) {
+            return iter->job;
+        }
+        iter = iter->next;
+    }
+    return nullptr;
+}
+
 Job*
 init_job(pid_t pid, int job_number, const char** cmdline) {
     Job* new_job = (Job*)malloc(sizeof(Job));
@@ -91,19 +170,34 @@ void print_job(Job* job) {
 int check_and_print_job(Job* job) {
     if ((waitpid(job->pid, nullptr, WNOHANG) == job->pid)) {
         print_job_with_status(job, "Done");
-        int job_num = job->job_number;
-        remove_job(job->pid);
-        return_job_number(job_num);
+        return 1;
     } else {
         print_job_with_status(job, "Running");
+        return 0;
     }
 }
 
 void
 print_jobs() {
-    for (int i = 0; i < job_count; ++i) {
-        check_and_print_job(jobs[i]);
+    JobNode* iter = job_list->head;
+    JobNode* prev = nullptr;
+    while (iter != nullptr) {
+        int res = check_and_print_job(iter->job);
+        if (res) {
+            remove_job_node(job_list, iter->job->pid);
+            iter = prev;
+            if (iter == nullptr && job_list->head == nullptr) {
+                return;
+            } else if (job_list->head) {
+                iter = job_list->head;
+            }
+        } else {
+            prev = iter;
+            iter = iter->next;
+        }
     }
+
+    check_background_jobs();
 }
 
 
@@ -118,7 +212,10 @@ return_job_number(int job_number) {
 }
 
 int get_next_job_number() {
-    if (job_count == MAX_JOBS) {
+    if (job_list == nullptr) {
+        return 1;
+    }
+    if (job_list->size == MAX_JOBS) {
         return -1;
     }
 
@@ -140,9 +237,13 @@ int append_job(pid_t job, const char** cmdline) {
     int ret = job_count;
     int job_num = get_next_job_number();
     Job* new_job = init_job(job, job_num, cmdline);
-    jobs[job_count++] = new_job;
+    if (job_list == nullptr) {
+        job_list = init_job_list();
+    }
+    append_job_list(job_list, new_job);
+    //jobs[job_count++] = new_job;
 
-    print_job_imm(jobs[ret]);
+    print_job_imm(new_job);
 
     return ret;
 }
@@ -166,12 +267,12 @@ check_background_jobs() {
     int status;
     pid_t pid;
     while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-        Job* job = get_job(pid);
+        Job* job = get_job_by_pid(job_list, pid);
         if (job) {
             int job_number = job->job_number;
 
-            print_job_with_status(job, "Done");
-            remove_job(pid);
+            //print_job_with_status(job, "Done");
+            remove_job_node(job_list, pid);
             return_job_number(job_number);
 
         }

@@ -213,7 +213,7 @@ return_job_number(int job_number) {
 
 int get_next_job_number() {
     if (job_list == nullptr) {
-        return 1;
+        job_list = init_job_list();
     }
     if (job_list->size == MAX_JOBS) {
         return -1;

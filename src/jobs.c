@@ -88,10 +88,21 @@ void print_job(Job* job) {
     fflush(stdout);
 }
 
+int check_job(Job* job) {
+    if ((waitpid(job->pid, nullptr, WNOHANG) == job->pid)) {
+        return 0;
+    }
+    else {
+        return 1;
+    }
+}
+
 void
 print_jobs() {
     for (int i = 0; i < job_count; ++i) {
-        print_job_with_status(jobs[i], "Running");
+        int status = check_job(jobs[i]);
+        const char* status_string = status ? "Running" : "Done";
+        print_job_with_status(jobs[i], status_string);
     }
 }
 

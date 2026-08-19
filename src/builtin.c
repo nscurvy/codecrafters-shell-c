@@ -66,10 +66,10 @@ int builtin_complete(const int argc, const char **argv) {
 }
 
 int builtin_jobs(const int argc, const char **argv) {
-  check_background_jobs();
   if (argc == 1) {
     print_jobs();
   }
+    check_background_jobs();
   return 0;
 }
 

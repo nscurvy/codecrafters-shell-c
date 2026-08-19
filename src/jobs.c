@@ -91,7 +91,7 @@ void print_job(Job* job) {
 void
 print_jobs() {
     for (int i = 0; i < job_count; ++i) {
-        print_job(jobs[i]);
+        print_job_with_status(jobs[i], "Running");
     }
 }
 

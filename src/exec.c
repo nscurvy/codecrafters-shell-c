@@ -119,7 +119,7 @@ int repl() {
   int exit_status = 0;
 
   while (true) {
-    check_background_jobs();
+    //check_background_jobs();
     const char* input_line = readline("$ ");
     if (input_line && strlen(input_line) > 0) {
       add_history(input_line);

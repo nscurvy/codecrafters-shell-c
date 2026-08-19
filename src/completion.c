@@ -2,16 +2,12 @@
 // Created by nkinder on 8/14/26.
 //
 
-#include <unistd.h>
-#include <stdio.h>
+#include "common.h"
+#include <dirent.h>
+#include "completion.h"
 #include <readline/readline.h>
 #include <readline/history.h>
-#include <string.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <sys/stat.h>
 
-#include "completion.h"
 
 #include <iso646.h>
 #include <sys/wait.h>

@@ -23,6 +23,7 @@ add_executable(shell ${SOURCE_FILES}
         src/completion.h
         src/nullability.h
         src/jobs.h
-        src/jobs.c)
+        src/jobs.c
+        src/common.h)
 
 target_link_libraries(shell PRIVATE readline PkgConfig::GLIB)

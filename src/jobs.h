@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include <sys/types.h>
+#include "nullability.h"
 #include <signal.h>
 
 
@@ -15,26 +15,32 @@ typedef struct Job {
     const char* cmdline;
 } Job;
 
+ASSUME_NONNULL_BEGIN
+
 extern Job* jobs[MAX_JOBS];
 extern int job_count;
 
 extern volatile sig_atomic_t child_exited_flag;
 
-Job* init_job(pid_t pid, int job_number, const char** cmdline);
+Job* init_job(pid_t pid, int job_number, const char** NONNULL cmdline)
+GCC_NONNULL(3);
 
-void cleanup_job(Job* job);
+void cleanup_job(Job* NONNULL job)
+GCC_NONNULL(1);
 
-void print_job_imm(Job* job);
+void print_job_imm(Job* NONNULL job)
+GCC_NONNULL(1);
 
-void print_job(Job* job);
+void print_job(Job* NONNULL job)
+GCC_NONNULL(1);
 
 void print_jobs();
 
 void return_job_number(int job_number);
 
-Job* get_job(pid_t pid);
+Job* NULLABLE get_job(pid_t pid);
 
-int append_job(pid_t job, const char* cmdline[]);
+int append_job(pid_t job, const char* NONNULL cmdline[]);
 
 int get_next_job_number();
 
@@ -45,3 +51,5 @@ void sigchld_handler(int signum);
 int remove_job(pid_t pid);
 
 void print_job_exit(pid_t pid, int job_number);
+
+ASSUME_NONNULL_END

@@ -2,17 +2,11 @@
 // Created by nkinder on 8/13/26.
 //
 #define __STDC_WANT_LIB_EXT1__ 1
+#include "common.h"
 #include "builtins.h"
 #include "exec.h"
 #include "expand.h"
 #include "parser.h"
-
-#include <errno.h>
-#include <linux/limits.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "completion.h"
 #include "jobs.h"

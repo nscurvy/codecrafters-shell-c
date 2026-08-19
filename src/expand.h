@@ -3,13 +3,20 @@
 //
 
 #pragma once
+#include "nullability.h"
+
+ASSUME_NONNULL_BEGIN
 /**
  * Perform expansion on a token word.
  * Allocates space for the expanded string.
  * @param word Null terminated string
  * @return a new heap allocated string with expansions performed.
  */
-char * exptok(const char* word);
+char * NULLABLE exptok(const char* NULLABLE word)
+GCC_NONNULL(1);
 
 // TODO: DOCS
-char* expand_home(char* buf, const char* path);
+char* NULLABLE expand_home(char* NONNULL buf, const char* NONNULL path)
+GCC_NONNULL(1, 2);
+
+ASSUME_NONNULL_END

@@ -3,12 +3,11 @@
 //
 #define REFACTORING_OUT
 
+#include "common.h"
 #include "expand.h"
 
 #include "parser.h"
 
-#include <stdlib.h>
-#include <string.h>
 
 size_t
 exptilde(char *dest, QuoteFlagE *flag) {

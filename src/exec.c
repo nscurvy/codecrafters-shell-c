@@ -2,21 +2,13 @@
 // Created by nkinder on 8/13/26.
 //
 
+#include "common.h"
 #include "exec.h"
 #include "parser.h"
-#include <linux/limits.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+#include "jobs.h"
 #include <readline/history.h>
 #include <readline/readline.h>
 
-#include "jobs.h"
 #define TMPDISABLED
 
 // TODO: docs

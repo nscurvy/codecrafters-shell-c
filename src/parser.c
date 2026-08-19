@@ -2,14 +2,14 @@
 // Created by nkinder on 8/13/26.
 //
 #include "parser.h"
+#include "common.h"
+
 
 #include <ctype.h>
+#include <stddef.h>
 
 #include "expand.h"
 
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
 
 
 void prepare_args(char** dest, WordList* words) {
@@ -196,6 +196,7 @@ Command* build_command(WordList* words) {
     cleanup_wordlist(wordcopy);
     return nullptr;
   }
+  cleanup_wordlist(wordcopy);
   return result;
 }
 
@@ -459,5 +460,6 @@ WordList* tokenize_path(const char* path) {
     iter = iter + strlen(tok) + 1;
   }
 
+  free(tok);
   return result;
 }

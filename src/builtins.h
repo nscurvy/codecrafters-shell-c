@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "nullability.h"
 
 enum BuiltinE {
   BUILTIN_CD,
@@ -15,6 +16,8 @@ enum BuiltinE {
   NUMBUILTINS
 };
 
+ASSUME_NONNULL_BEGIN
+
 typedef int (*cmd_func)(const int,const char**);
 
 typedef struct BuiltinCmd {
@@ -26,6 +29,7 @@ typedef struct BuiltinCmd {
 extern const BuiltinCmd builtins[NUMBUILTINS];
 
 // TODO: DOCS
-int pstrcmp(const void* a, const void* b);
+int pstrcmp(const void* a, const void* b)
+GCC_NONNULL(1,2);
 
-
+ASSUME_NONNULL_END

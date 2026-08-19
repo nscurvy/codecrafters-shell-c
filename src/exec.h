@@ -3,7 +3,9 @@
 //
 
 #pragma once
+#include "nullability.h"
 #include "builtins.h"
+ASSUME_NONNULL_BEGIN
 struct Command;
 
 /**
@@ -25,7 +27,8 @@ struct Command;
  *         unset).
  */
 
-char* find_command(char* dest, const char* command);
+char* NULLABLE find_command(char* NONNULL dest, const char* NONNULL command)
+GCC_NONNULL(1, 2);
 
 /**
  * @brief Execute an external (non-builtin) command in a child process.
@@ -57,7 +60,8 @@ int execc(const struct Command* command);
  * @return Pointer to the matching @c BuiltinCmd entry, or @c nullptr if no
  *         builtin with that name exists.
  */
-BuiltinCmd* find_builtin(const char* name);
+BuiltinCmd* NULLABLE find_builtin(const char* name)
+GCC_NONNULL(1);
 
 /**
  * @brief Run the shell's interactive read-eval-print loop.
@@ -79,7 +83,8 @@ struct WordList;
  * @param dest
  * @param words
  */
-void prepare_args(char** dest, struct WordList* words);
+void prepare_args(char** dest, struct WordList* words)
+GCC_NONNULL(1,2);
 
 /**
  * TODO: this
@@ -87,4 +92,7 @@ void prepare_args(char** dest, struct WordList* words);
  * @param command
  * @return
  */
-int execute_command(struct Command* command);
+int execute_command(struct Command* command)
+GCC_NONNULL(1);
+
+ASSUME_NONNULL_END

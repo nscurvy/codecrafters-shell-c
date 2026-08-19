@@ -2,11 +2,14 @@
 // Created by nkinder on 8/14/26.
 //
 //
-#include <readline/readline.h>
 
 
 #pragma once
+#include "nullability.h"
+#include <stdio.h>
+#include <readline/readline.h>
 
+ASSUME_NONNULL_BEGIN
 typedef rl_compentry_func_t CompletionGenerator;
 
 
@@ -20,36 +23,48 @@ extern CompletionRegistration completion_registry[MAX_COMPLETIONS];
 extern int                    registry_count;
 
 void
-register_completion(const char* command, const char* script_path);
+register_completion(const char* command, const char* script_path)
+GCC_NONNULL(1,2);
 
-void unregister_completion(const char* command);
+void unregister_completion(const char* command)
+GCC_NONNULL(1);
 
-const char*
-lookup_completion(const char* command);
+const char* NULLABLE
+lookup_completion(const char* command)
+GCC_NONNULL(1);
 
-const char* find_current_word(const char* text);
+const char* NULLABLE find_current_word(const char* text)
+GCC_NONNULL(1);
 
-const char*
-    get_previous_word(const char* current_word);
+const char* NULLABLE
+    get_previous_word(const char* current_word)
+GCC_NONNULL(1);
 
-char*
+char* NULLABLE
 get_command_word();
 
-char*
-external_completer_generator(const char* text, int state);
+char* NULLABLE
+external_completer_generator(const char* text, int state)
+GCC_NONNULL(1);
 
 // TODO: DOCS
-char*
-builtin_generator(const char* text, int state);
+char* NULLABLE
+builtin_generator(const char* text, int state)
+GCC_NONNULL(1);
 
 // TODO: DOCS
-char*
-path_generator(const char* text, int state);
+char* NULLABLE
+path_generator(const char* text, int state)
+GCC_NONNULL(1);
 
 // TODO: DOCS
-char*
-first_word_generator(const char* text, int state);
+char* NULLABLE
+first_word_generator(const char* text, int state)
+GCC_NONNULL(1);
 
 // TODO: DOCS
-char**
-shell_completion_function(const char* text, int start, int end);
+char** NULLABLE
+shell_completion_function(const char* text, int start, int end)
+GCC_NONNULL(1);
+
+ASSUME_NONNULL_END

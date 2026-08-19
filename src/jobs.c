@@ -3,12 +3,7 @@
 //
 #include "jobs.h"
 
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/wait.h>
+#include "common.h"
 
 volatile sig_atomic_t child_exited_flag = 0;
 
@@ -36,7 +31,7 @@ init_job(pid_t pid, int job_number, const char** cmdline) {
     while (*iter != nullptr) {
         strcat(pos, *iter);
         pos += strlen(*iter);
-        if (*(char**)(iter) == nullptr) {
+        if (*(iter + 1) == NULL) {
             *pos = '\0';
         } else {
             *pos = ' ';
@@ -68,9 +63,13 @@ void print_job(Job* job) {
     const char* status_symbol = " ";
     if (jobs[job_count - 1]->pid == job->pid) {
         status_symbol = "+";
+    } else if (job_count > 1 && jobs[job_count - 2]->pid == job->pid) {
+        status_symbol = "-";
     }
+    const char* cmdline = job->cmdline;
+    int job_num = job->job_number;
 
-    printf("[%d]%s  Running%20s\n", job->job_number, status_symbol, job->cmdline);
+    printf("[%d]%s  Running%20s\n", job_num, status_symbol, cmdline);
     fflush(stdout);
 }
 

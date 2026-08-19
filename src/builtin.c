@@ -70,7 +70,7 @@ int builtin_jobs(const int argc, const char **argv) {
 
     print_jobs();
   }
-    check_background_jobs();
+    //check_background_jobs();
   return 0;
 }
 

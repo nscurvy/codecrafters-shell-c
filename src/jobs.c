@@ -59,6 +59,21 @@ print_job_imm(Job* job) {
     fflush(stdout);
 }
 
+void print_job_with_status(Job* job, const char* status) {
+    const char* status_symbol = " ";
+    if (jobs[job_count - 1]->pid == job->pid) {
+        status_symbol = "+";
+    } else if (job_count > 1 && jobs[job_count - 2]->pid == job->pid) {
+        status_symbol = "-";
+    }
+    const char* cmdline = job->cmdline;
+    int job_num = job->job_number;
+
+    printf("[%d]%s  %19s %s\n", job_num,status_symbol, status, cmdline);
+    fflush(stdout);
+
+}
+
 void print_job(Job* job) {
     const char* status_symbol = " ";
     if (jobs[job_count - 1]->pid == job->pid) {
@@ -143,9 +158,10 @@ check_background_jobs() {
         Job* job = get_job(pid);
         if (job) {
             int job_number = job->job_number;
+
+            print_job_with_status(job, "Done");
             remove_job(pid);
             return_job_number(job_number);
-            print_job_exit(pid, job_number);
 
         }
     }

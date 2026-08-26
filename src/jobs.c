@@ -283,7 +283,7 @@ check_background_jobs() {
         if (job) {
             int job_number = job->job_number;
 
-            //print_job_with_status(job, "Done");
+            print_job_with_status(job, "Done");
             remove_job_node(job_list, pid);
             return_job_number(job_number);
 

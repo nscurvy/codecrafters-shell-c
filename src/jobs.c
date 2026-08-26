@@ -140,11 +140,22 @@ print_job_imm(Job* job) {
 
 void print_job_with_status(Job* job, const char* status) {
     const char* status_symbol = " ";
-    if (jobs[job_count - 1]->pid == job->pid) {
-        status_symbol = "+";
-    } else if (job_count > 1 && jobs[job_count - 2]->pid == job->pid) {
-        status_symbol = "-";
+    JobNode* iter = job_list->head;
+    JobNode* prev = nullptr;
+    while (iter != nullptr) {
+        if (iter->next == nullptr && job->pid == iter->job->pid) {
+            status_symbol = "+";
+        } else if (iter->next == nullptr && job->pid == prev->job->pid) {
+            status_symbol = "-";
+        }
+        prev = iter;
+        iter = iter->next;
     }
+    //if (jobs[job_count - 1]->pid == job->pid) {
+    //    status_symbol = "+";
+    //} else if (job_count > 1 && jobs[job_count - 2]->pid == job->pid) {
+    //    status_symbol = "-";
+    //}
     const char* cmdline = job->cmdline;
     int job_num = job->job_number;
 

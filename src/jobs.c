@@ -200,11 +200,6 @@ print_jobs() {
         if (res) {
             remove_job_node(job_list, iter->job->pid);
             iter = prev;
-            if (iter == nullptr && job_list->head == nullptr) {
-                return;
-            } else if (job_list->head) {
-                iter = job_list->head;
-            }
         } else {
             prev = iter;
             iter = iter->next;

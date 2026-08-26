@@ -199,7 +199,7 @@ print_jobs() {
         int res = check_and_print_job(iter->job);
         if (res) {
             remove_job_node(job_list, iter->job->pid);
-            iter = prev;
+            iter = (prev == nullptr) ? job_list->head : prev->next;
         } else {
             prev = iter;
             iter = iter->next;

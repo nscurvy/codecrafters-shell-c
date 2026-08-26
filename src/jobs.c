@@ -145,8 +145,11 @@ void print_job_with_status(Job* job, const char* status) {
     while (iter != nullptr) {
         if (iter->next == nullptr && job->pid == iter->job->pid) {
             status_symbol = "+";
-        } else if (iter->next == nullptr && job->pid == prev->job->pid) {
+            break;
+        }
+        if (iter->next == nullptr && job->pid == prev->job->pid) {
             status_symbol = "-";
+            break;
         }
         prev = iter;
         iter = iter->next;

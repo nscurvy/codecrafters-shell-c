@@ -193,6 +193,9 @@ int check_and_print_job(Job* job) {
 
 void
 print_jobs() {
+    if (job_list == nullptr) {
+        job_list = init_job_list();
+    }
     JobNode* iter = job_list->head;
     JobNode* prev = nullptr;
     while (iter != nullptr) {

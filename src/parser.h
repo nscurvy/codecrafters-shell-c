@@ -55,6 +55,15 @@ typedef struct Command {
 } Command;
 
 /**
+ *  TODO: Document
+ * @brief
+ */
+typedef struct Pipeline {
+    size_t ncmds;
+    Command* cmds[];
+} Pipeline;
+
+/**
  * @brief A single node in a singly linked list of tokenized words.
  */
 typedef struct WordNode {
@@ -69,6 +78,42 @@ typedef struct WordList {
     size_t             size; /**< Number of nodes reachable from #head. */
     WordNode* NULLABLE head; /**< First node in the list, or @c nullptr if empty. */
 } WordList;
+
+/**
+ *  @brief Destructively splits a list in two at a pipe.
+ *
+ *  @attention for a command @code
+ *  command args | command2 args | command3 args
+ *  @endcode
+ *  Calling this function will result in a dest which is @code
+ *  command2 args | command3 args
+ *  @endcode
+ *  and a src which is @code
+ *  command args
+ *  @endcode
+ *  That is, everything after the first pipe is moved to the new list.
+ *
+ * @param dest The destination for the new split.
+ * @param src The word list to split. This is a destructive operation
+ * @return true if any splitting happened.
+ */
+bool split_on_pipes(WordList* dest, WordList* src)
+GCC_NONNULL(1, 2);
+
+size_t count_words(WordList* tokens)
+GCC_NONNULL(1);
+
+size_t count_pipes(WordList* tokens)
+GCC_NONNULL(1);
+
+Pipeline* NULLABLE build_pipeline(WordList* tokens)
+GCC_NONNULL(1);
+
+Pipeline* NULLABLE init_pipeline(size_t ncmds, Command** cmds)
+GCC_NONNULL(2);
+
+void cleanup_pipeline(Pipeline* pipeline)
+GCC_NONNULL(1);
 
 /**
  * @brief Wrap an existing chain of word nodes in a new WordList.
@@ -204,6 +249,8 @@ empty_wordlist();
 WordList* NULLABLE
 init_wordlist(const char* initial_word)
 GCC_NONNULL(1);
+
+WordList* copy_wordlist(WordList* list);
 
 /**
  * @brief Free a WordList and every node it contains.

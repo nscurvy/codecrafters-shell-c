@@ -70,6 +70,99 @@ Command* init_command(char** argv, bool bgjob, size_t nredirs, Redirect redirs[]
   return command;
 }
 
+bool
+split_on_pipes(WordList* dest, WordList* src) {
+  WordNode* iter = src->head;
+  WordNode* prev = nullptr;
+  size_t new_size = 0;
+  while (iter != nullptr) {
+    if (strcmp(iter->value, "|") == 0) {
+      prev->next = nullptr;
+      WordNode* tmp = iter;
+      size_t old_size = src->size;
+      src->size = count_words(src);
+      dest->head = tmp->next;
+      dest->size = count_words(dest);
+      cleanup_wordnode(tmp);
+      return true;
+    }
+    ++new_size;
+    prev = iter;
+    iter = iter->next;
+  }
+  return false;
+}
+
+size_t
+count_words(WordList* tokens) {
+  WordNode* iter = tokens->head;
+  size_t result = 0;
+  while (iter != nullptr) {
+    ++result;
+    iter = iter->next;
+  }
+  return result;
+}
+
+size_t
+count_pipes(WordList* tokens) {
+  WordNode* iter = tokens->head;
+  size_t count = 0;
+  while (iter != nullptr) {
+    if (strcmp(iter->value, "|") == 0) {
+      ++count;
+    }
+    iter = iter->next;
+  }
+  return count;
+}
+
+Pipeline*
+build_pipeline(WordList* tokens) {
+  size_t ncmds = count_pipes(tokens) + 1;
+  Command** cmds = malloc(sizeof(Command*) * ncmds);
+  WordList* cpy = copy_wordlist(tokens);
+  Pipeline* result = nullptr;
+  if (ncmds > 1) {
+    WordList** lists = malloc(sizeof(WordList*) * ncmds);
+    lists[0] = cpy;
+      for (int i = 1; i < ncmds; ++i) {
+        lists[i] = empty_wordlist();
+        split_on_pipes(lists[i], lists[i - 1]);
+        cmds[i - 1] = build_command(lists[i - 1]);
+    }
+    cmds[ncmds - 1] = build_command(lists[ncmds - 1]);
+    result = init_pipeline(ncmds, cmds);
+    free(cmds);
+    cleanup_wordlist(cpy);
+  } else {
+      cmds[0] = build_command(cpy);
+    result = init_pipeline(1, cmds);
+    free(cmds);
+    cleanup_wordlist(cpy);
+  }
+  return result;
+}
+
+Pipeline*
+init_pipeline(size_t ncmds, Command** cmds) {
+  Pipeline* result = malloc(sizeof(Pipeline) + (sizeof(Command) * ncmds));
+
+  for (int i = 0; i < ncmds; ++i) {
+    result->cmds[i] = *(cmds + i);
+  }
+  result->ncmds = ncmds;
+  return result;
+}
+
+void
+cleanup_pipeline(Pipeline* pipeline) {
+  for (int i = 0; i < pipeline->ncmds; ++i) {
+    cleanup_command(pipeline->cmds[i]);
+  }
+  free(pipeline);
+}
+
 WordList* new_from_nodes(WordNode* head) {
   WordList* result = empty_wordlist();
   if (!result) {

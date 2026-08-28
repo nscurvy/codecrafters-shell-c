@@ -10,6 +10,7 @@
 
 #include "completion.h"
 #include "jobs.h"
+#include "limits.h"
 
 #include <readline/history.h>
 
@@ -108,13 +109,34 @@ int builtin_cd(const int argc, const char** argv) {
 }
 
 int builtin_history(const int argc, const char** argv) {
-  HISTORY_STATE* hist_state = history_get_history_state();
-  HIST_ENTRY** hist_list = history_list();
-  for (int i = 0; i < hist_state->length; ++i) {
-    printf("\t%-3d%s\n", i+1, hist_list[i]->line);
-    free_history_entry(hist_list[i]);
+  int max_display = -1;
+
+  /* Check our argument. */
+  if (argc > 1) {
+    errno = 0;
+    char* end;
+    long tmp = strtol(argv[1], &end, 0);
+    const bool range_error = errno == ERANGE;
+    if (range_error) {
+      fprintf(stderr, "Passed invalid arg %s to history builtin. Expecting a positive integer.\n", argv[1]);
+      return -1;
+    }
+    if (tmp < INT_MAX) {
+      max_display = (int)tmp;
+    } else {
+      fprintf(stderr, "Passed invalid integer %ld to history builtin, expecting a value lower than %d(INT_MAX)\n", tmp, INT_MAX);
+      return -1;
+    }
   }
-  free(hist_list);
+  if (max_display == -1) {
+    max_display = INT_MAX;
+  }
+
+  HISTORY_STATE* hist_state = history_get_history_state();
+  HIST_ENTRY** hist_list = hist_state->entries;
+  for (int i = 0; i < hist_state->length && i < max_display; ++i) {
+    printf("\t%-3d%s\n", i+1, hist_list[i]->line);
+  }
   free(hist_state);
   return 0;
 }

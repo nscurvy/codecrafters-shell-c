@@ -137,6 +137,12 @@ int builtin_history(const int argc, const char** argv) {
           fprintf(stderr, "Failed to read history from file %s\n", argv[2]);
           return -1;
         }
+      } else if (strncmp(argv[1], "-w", strlen(argv[1])) == 0) {
+        int status = write_history(argv[2]);
+        if (status == -1) {
+          fprintf(stderr, "Failed to write history to file %s\n", argv[2]);
+          return -1;
+        }
       }
     }
   }  else {

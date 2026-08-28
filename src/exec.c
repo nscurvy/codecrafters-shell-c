@@ -293,6 +293,14 @@ int repl() {
 
   using_history();
 
+  const char* histfile = getenv("HISTFILE");
+  if (histfile) {
+    int status = read_history(histfile);
+    if (status == -1) {
+      fprintf(stderr, "Failed to read history from file %s\n", histfile);
+    }
+  }
+
   int exit_status = 0;
 
   while (true) {

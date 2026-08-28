@@ -110,6 +110,7 @@ int builtin_cd(const int argc, const char** argv) {
 
 int builtin_history(const int argc, const char** argv) {
   int max_display = -1;
+  int offset = 0;
 
   /* Check our argument. */
   if (argc > 1) {
@@ -129,12 +130,13 @@ int builtin_history(const int argc, const char** argv) {
     }
   }
   if (max_display == -1) {
-    max_display = INT_MAX;
+    max_display = 0;
   }
 
   HISTORY_STATE* hist_state = history_get_history_state();
+  offset = hist_state->length - max_display;
   HIST_ENTRY** hist_list = hist_state->entries;
-  for (int i = 0; i < hist_state->length && i < max_display; ++i) {
+  for (int i = offset; i < hist_state->length; ++i) {
     printf("\t%-3d%s\n", i+1, hist_list[i]->line);
   }
   free(hist_state);

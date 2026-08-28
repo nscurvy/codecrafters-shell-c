@@ -293,6 +293,8 @@ int repl() {
   setbuf(stderr, nullptr);
   setbuf(stdin, nullptr);
 
+  using_history();
+
   int exit_status = 0;
 
   while (true) {

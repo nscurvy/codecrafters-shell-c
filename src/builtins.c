@@ -11,6 +11,9 @@
 #include "completion.h"
 #include "jobs.h"
 
+#include <readline/history.h>
+
+
 int builtin_cd(const int argc, const char** argv);
 int builtin_exit(const int argc, const char **argv);
 int builtin_echo(const int argc, const char **argv);
@@ -105,6 +108,14 @@ int builtin_cd(const int argc, const char** argv) {
 }
 
 int builtin_history(const int argc, const char** argv) {
+  HISTORY_STATE* hist_state = history_get_history_state();
+  HIST_ENTRY** hist_list = history_list();
+  for (int i = 0; i < hist_state->length; ++i) {
+    printf("\t%-3d%s\n", i+1, hist_list[i]->line);
+    free_history_entry(hist_list[i]);
+  }
+  free(hist_list);
+  free(hist_state);
   return 0;
 }
 

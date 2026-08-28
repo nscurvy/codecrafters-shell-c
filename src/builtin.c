@@ -113,7 +113,6 @@ int builtin_echo(const int argc, const char **argv) {
       fputs("\n", stdout);
     }
   }
-  setbuf(stdout, nullptr);
   return 0;
 }
 

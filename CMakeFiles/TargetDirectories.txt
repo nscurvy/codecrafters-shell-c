@@ -1,0 +1,6 @@
+/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/CMakeFiles/shell.dir
+/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/CMakeFiles/shell_lib.dir
+/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/CMakeFiles/shell_test.dir
+/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/CMakeFiles/test.dir
+/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/CMakeFiles/edit_cache.dir
+/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/CMakeFiles/rebuild_cache.dir

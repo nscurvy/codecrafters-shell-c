@@ -11,6 +11,8 @@
 
 #define TMPDISABLED
 
+size_t count_command_args(const char**);
+
 // TODO: docs
 char* find_command(char* dest, const char* command) {
   const char* name = "PATH";
@@ -46,6 +48,111 @@ char* find_command(char* dest, const char* command) {
       cleanup_wordlist(path);
   }
   return result;
+}
+
+int exec_builtin(Command* command, BuiltinCmd* cmd) {
+  int saved_fd = 0;
+  int fd = 0;
+  int exit_status = 0;
+  if (command->nredirs != 0) {
+    for (int i = 0; i < command->nredirs; ++i) {
+      Redirect redirect = command->redirs[i];
+      int redirected_fd = redirect.fd;
+      saved_fd = dup(redirected_fd);
+      unsigned truncflag = (unsigned)redirect.mode;
+      fd = open(redirect.target, O_WRONLY | O_CREAT | truncflag, 0644);
+      dup2(fd, redirected_fd);
+      close(fd);
+
+      exit_status |= cmd->builtin((const int)count_command_args((const char**)command->argv), (const char**)command->argv);
+
+      dup2(saved_fd, redirected_fd);
+      close(saved_fd);
+    }
+  } else {
+    cmd->builtin((const int)count_command_args((const char**)command->argv), (const char**)command->argv);
+  }
+  return exit_status;
+}
+
+
+int exec_pipe(Command* first, Command* second) {
+  int fds[2];
+  pid_t pid_first;
+  pid_t pid_second;
+  BuiltinCmd* cmd1 = find_builtin(first->argv[0]);
+  BuiltinCmd* cmd2 = find_builtin(second->argv[0]);
+
+  pipe(fds);
+
+  pid_first = fork();
+
+  if (pid_first < 0) {
+    perror("fork");
+    return -1;
+  } else if (pid_first == 0) {
+    dup2(fds[1], STDOUT_FILENO);
+    close(fds[0]);
+    close(fds[1]);
+    if (cmd1) {
+      _exit(exec_builtin(first, cmd1));
+    } else {
+      char cmd_path[PATH_MAX];
+      char* res = find_command(cmd_path, first->argv[0]);
+      if (res) {
+        execvp(first->argv[0], first->argv);
+      } else {
+        printf("%s: command not found\n", first->argv[0]);
+      }
+    }
+    _exit(127);
+  }
+  pid_second = fork();
+
+  if (pid_second < 0) {
+    perror("fork");
+    return -1;
+  } else if (pid_second == 0) {
+    dup2(fds[0], STDIN_FILENO);
+    close(fds[0]);
+    close(fds[1]);
+    if (cmd2) {
+      _exit(exec_builtin(second, cmd2));
+    } else {
+      char cmd_path[PATH_MAX];
+      char* res = find_command(cmd_path, second->argv[0]);
+      if (res) {
+        execvp(second->argv[0], second->argv);
+      } else {
+        printf("%s: command not found\n", second->argv[0]);
+      }
+    }
+    _exit(127);
+  }
+  close(fds[0]);
+  close(fds[1]);
+  waitpid(pid_first, nullptr, 0);
+  waitpid(pid_second, nullptr, 0);
+  return 0;
+}
+
+int exec_pipeline(Pipeline* pipeline) {
+  int exit_status = 0;
+  if (pipeline->ncmds != 0) {
+    if (pipeline->ncmds == 1) {
+      BuiltinCmd* builtin = find_builtin(pipeline->cmds[0]->argv[0]);
+      if (builtin) {
+        exit_status = exec_builtin(pipeline->cmds[0], builtin);
+      } else {
+        exit_status = execc(pipeline->cmds[0]);
+      }
+    } else {
+      if (pipeline->ncmds == 2) {
+        exec_pipe(pipeline->cmds[0], pipeline->cmds[1]);
+      }
+    }
+  }
+  return exit_status;
 }
 
 
@@ -97,9 +204,9 @@ BuiltinCmd* find_builtin(const char* name) {
 }
 
 // TODO: DOdocs
-size_t count_command_args(char** argv) {
+size_t count_command_args(const char** argv) {
   size_t len = 0;
-  char** iter = argv;
+  const char** iter = argv;
   while (*iter != nullptr) {
     ++iter;
     ++len;
@@ -115,6 +222,8 @@ int repl() {
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = SA_RESTART;
   sigaction(SIGCHLD, &sa, nullptr);
+  setbuf(stderr, nullptr);
+  setbuf(stdin, nullptr);
 
   int exit_status = 0;
 
@@ -126,7 +235,6 @@ int repl() {
       WordList* tokens = tokenize_input(input_line);
       if (!tokens) {
         exit_status = -1;
-        setbuf(stderr, nullptr);
         continue;
       }
 
@@ -134,44 +242,16 @@ int repl() {
       while (iter != nullptr) {
         iter = iter->next;
       }
-      Command* command = build_command(tokens);
-      BuiltinCmd* cmd = find_builtin(command->argv[0]);
-
-
-      if (cmd) {
-        int saved_fd = 0;
-        int fd = 0;
-        if (command->nredirs != 0) {
-          for (int i = 0; i < command->nredirs; ++i) {
-            Redirect redirect = command->redirs[i];
-            int redirected_fd = redirect.fd;
-            saved_fd = dup(redirected_fd);
-            unsigned truncflag = (unsigned)redirect.mode;
-            fd = open(redirect.target, O_WRONLY | O_CREAT | truncflag, 0644);
-            dup2(fd, redirected_fd);
-            close(fd);
-
-            exit_status |= cmd->builtin((const int)count_command_args(command->argv), (const char**)command->argv);
-
-            dup2(saved_fd, redirected_fd);
-            close(saved_fd);
-          }
-        } else {
-          exit_status = cmd->builtin((const int)count_command_args(command->argv), (const char**)command->argv);
-        }
-
-
-      } else {
-        char cmd_path[PATH_MAX];
-        char* res = find_command(cmd_path, command->argv[0]);
-        if (res) {
-          exit_status = execc(command);
-        } else {
-          printf("%s: command not found\n", tokens->head->value);
-        }
+      Pipeline* pipeline = build_pipeline(tokens);
+      if (pipeline->ncmds == 0) {
+        exit_status = -1;
+        continue;
       }
+
+      exec_pipeline(pipeline);
+
       cleanup_wordlist(tokens);
-      cleanup_command(command);
+      cleanup_pipeline(pipeline);
       free((void*)input_line);
     }
   }

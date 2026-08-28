@@ -1,4 +1,5 @@
 #define TMPDISABLED
+#undef TMPDISABLED
 #include "completion.h"
 #include <readline/readline.h>
 

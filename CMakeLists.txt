@@ -6,7 +6,7 @@ file(GLOB_RECURSE SOURCE_FILES src/*.c src/*.h)
 file(GLOB_RECURSE LIB_FILES src/*.c src/*.h)
 file(GLOB_RECURSE TEST_FILES tests/*.c)
 
-list(REMOVE_ITEM ${LIB_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
+list(REMOVE_ITEM LIB_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
 
 enable_testing()
 
@@ -41,3 +41,5 @@ target_include_directories(shell_test PRIVATE src
 target_link_libraries(shell_test PRIVATE shell_lib ${CHECK_LIBRARIES} readline)
 target_link_libraries(shell PRIVATE readline)
 target_link_libraries(shell_lib PRIVATE readline)
+
+add_test(NAME ShellUnitTests COMMAND shell_test)

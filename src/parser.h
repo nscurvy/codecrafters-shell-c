@@ -6,7 +6,7 @@
 #include "nullability.h"
 #include <stdlib.h>
 
-#define MAX_REDIRS 1;
+#define MAX_REDIRS 10
 
 /**
  * @brief Tracks the current quoting state while tokenizing input.
@@ -151,8 +151,7 @@ GCC_NONNULL(1);
  *         freed before returning).
  */
 Command* NULLABLE
-init_command(char* NULLABLE * argv, bool bgjob, size_t nredirs, Redirect* redirs)
-GCC_NONNULL(1, 3);
+init_command(char* NULLABLE * argv, bool bgjob, size_t nredirs, Redirect* redirs);
 
 /**
  * @brief Parse a tokenized word list into a Command.

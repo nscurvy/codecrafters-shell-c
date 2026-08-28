@@ -146,7 +146,10 @@ build_pipeline(WordList* tokens) {
 
 Pipeline*
 init_pipeline(size_t ncmds, Command** cmds) {
-  Pipeline* result = malloc(sizeof(Pipeline) + (sizeof(Command) * ncmds));
+  Pipeline* result = malloc(sizeof(Pipeline) + (sizeof(Command*) * ncmds));
+  if (!result) {
+    return nullptr;
+  }
 
   for (int i = 0; i < ncmds; ++i) {
     result->cmds[i] = *(cmds + i);

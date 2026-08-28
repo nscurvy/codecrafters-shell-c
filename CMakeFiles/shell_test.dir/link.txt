@@ -1,0 +1,1 @@
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/shell_test.dir/link.d CMakeFiles/shell_test.dir/tests/pipeline_tests.c.o -o shell_test  libshell.a -lcheck -lreadline

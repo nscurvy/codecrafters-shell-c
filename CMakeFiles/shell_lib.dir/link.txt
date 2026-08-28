@@ -1,0 +1,2 @@
+/usr/bin/ar qc libshell.a CMakeFiles/shell_lib.dir/src/builtin.c.o CMakeFiles/shell_lib.dir/src/completion.c.o CMakeFiles/shell_lib.dir/src/exec.c.o CMakeFiles/shell_lib.dir/src/expand.c.o CMakeFiles/shell_lib.dir/src/jobs.c.o CMakeFiles/shell_lib.dir/src/main.c.o CMakeFiles/shell_lib.dir/src/parser.c.o
+/usr/bin/ranlib libshell.a

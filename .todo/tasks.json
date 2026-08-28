@@ -1,0 +1,26 @@
+[
+  {
+    "id": "TASK_1",
+    "priority": "LOW",
+    "tags": [
+      "impl"
+    ],
+    "title": "Wire piping",
+    "description": "Parsing pipes seems to work. Now what\u0027s left is setting up command execution so that it forks the commands and wires their io correctly. ",
+    "status": "TODO",
+    "date": {
+      "date": {
+        "year": 2026,
+        "month": 8,
+        "day": 26
+      },
+      "time": {
+        "hour": 21,
+        "minute": 20,
+        "second": 49,
+        "nano": 536493731
+      }
+    },
+    "isImported": false
+  }
+]

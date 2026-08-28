@@ -109,6 +109,7 @@ int builtin_cd(const int argc, const char** argv) {
 }
 
 int builtin_history(const int argc, const char** argv) {
+  static int entries_appended = 0;
   HISTORY_STATE* hist_state = history_get_history_state();
   int max_display = -1;
   int offset = 0;
@@ -143,6 +144,14 @@ int builtin_history(const int argc, const char** argv) {
           fprintf(stderr, "Failed to write history to file %s\n", argv[2]);
           return -1;
         }
+      } else if (strncmp(argv[1], "-a", strlen(argv[1])) == 0) {
+        int entries = hist_state->length - entries_appended;
+        int status = append_history(entries, argv[2]);
+        if (status == -1) {
+          fprintf(stderr, "Failed to append history to file %s\n", argv[2]);
+          return -1;
+        }
+        entries_appended += entries;
       }
     }
   }  else {

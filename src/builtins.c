@@ -18,11 +18,13 @@ int builtin_type(const int argc, const char **argv);
 int builtin_pwd(const int argc, const char **argv);
 int builtin_complete(const int argc, const char **argv);
 int builtin_jobs(const int argc, const char **argv);
+int builtin_history(const int argc, const char **argv);
 const BuiltinCmd builtins[NUMBUILTINS] = {
   {.name = "cd", .builtin = &builtin_cd },
   {.name = "complete", .builtin = &builtin_complete },
   {.name = "echo", .builtin = &builtin_echo},
   {.name = "exit", .builtin = &builtin_exit},
+{.name = "history", .builtin = &builtin_history},
     {.name = "jobs", .builtin = &builtin_jobs},
   {.name = "pwd", .builtin = &builtin_pwd},
   {.name = "type", .builtin = &builtin_type}
@@ -100,6 +102,10 @@ int builtin_cd(const int argc, const char** argv) {
     printf("cd: %s: %s\n", target, errmsg);
   }
   return result;
+}
+
+int builtin_history(const int argc, const char** argv) {
+  return 0;
 }
 
 int builtin_exit(const int argc, const char **argv) { exit(EXIT_SUCCESS); }

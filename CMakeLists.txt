@@ -20,7 +20,7 @@ set(CMAKE_C_STANDARD 23) # Enable the C23 standard
 
 add_executable(shell ${SOURCE_FILES}
         src/builtins.h
-        src/builtin.c
+        src/builtins.c
         src/parser.h
         src/parser.c
         src/exec.c

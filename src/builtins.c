@@ -115,19 +115,29 @@ int builtin_history(const int argc, const char** argv) {
 
   /* Check our argument. */
   if (argc > 1) {
-    errno = 0;
-    char* end;
-    long tmp = strtol(argv[1], &end, 0);
-    const bool range_error = errno == ERANGE;
-    if (range_error) {
-      fprintf(stderr, "Passed invalid arg %s to history builtin. Expecting a positive integer.\n", argv[1]);
-      return -1;
-    }
-    if (tmp < INT_MAX) {
-      max_display = (int)tmp;
-    } else {
-      fprintf(stderr, "Passed invalid integer %ld to history builtin, expecting a value lower than %d(INT_MAX)\n", tmp, INT_MAX);
-      return -1;
+    if (argc == 2 && strlen(argv[1]) > 0 && isdigit(argv[1][0])) {
+      errno = 0;
+      char* end;
+      long tmp = strtol(argv[1], &end, 0);
+      const bool range_error = errno == ERANGE;
+      if (range_error) {
+        fprintf(stderr, "Passed invalid arg %s to history builtin. Expecting a positive integer.\n", argv[1]);
+        return -1;
+      }
+      if (tmp < INT_MAX) {
+        max_display = (int)tmp;
+      } else {
+        fprintf(stderr, "Passed invalid integer %ld to history builtin, expecting a value lower than %d(INT_MAX)\n", tmp, INT_MAX);
+        return -1;
+      }
+    } else if (argc == 3) {
+      if (strncmp(argv[1], "-r", strlen(argv[1])) == 0) {
+        int status = read_history(argv[2]);
+        if (status == -1) {
+          fprintf(stderr, "Failed to read history from file %s\n", argv[2]);
+          return -1;
+        }
+      }
     }
   }  else {
     max_display = hist_state->length;

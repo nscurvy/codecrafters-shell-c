@@ -76,6 +76,68 @@ int exec_builtin(Command* command, BuiltinCmd* cmd) {
 }
 
 
+int exec_pipes(Pipeline* pipeline) {
+  pid_t pids[pipeline->ncmds];
+  int pipes[pipeline->ncmds - 1][2];
+  int n = pipeline->ncmds;
+  int num_pipes = pipeline->ncmds - 1;
+  for (int i = 0; i < pipeline->ncmds; ++i) {
+    if (i < num_pipes) {
+      pipe(pipes[i]);
+    }
+    pid_t pid;
+
+    pid = fork();
+
+    if (pid == 0) {
+      if (i > 0) {
+        dup2(pipes[i - 1][0], STDIN_FILENO);
+      }
+      if (i < n - 1) {
+        dup2(pipes[i][1], STDOUT_FILENO);
+      }
+      for (int j = 0; j < num_pipes; ++j) {
+        close(pipes[j][0]);
+        close(pipes[j][1]);
+      }
+      Command* command = pipeline->cmds[i];
+      BuiltinCmd*  builtin = find_builtin(command->argv[0]);
+
+      if (builtin) {
+        _exit(exec_builtin(command, builtin));
+      }
+
+      char cmd_path[PATH_MAX];
+      char* res = find_command(cmd_path, command->argv[0]);
+      if (res) {
+        execvp(command->argv[0], command->argv);
+      } else {
+        printf("%s: command not found\n", command->argv[0]);
+        _exit(127);
+      }
+    } else if (pid < 0) {
+      perror("fork");
+      return -1;
+    } else {
+      pids[i] = pid;
+    }
+
+
+    }
+
+    for (int j = 0; j < num_pipes; ++j) {
+      close(pipes[j][0]);
+      close(pipes[j][1]);
+    }
+
+    for (int i = 0; i < n; ++i) {
+      waitpid(pids[i], nullptr, 0);
+    }
+    return 0;
+  }
+
+
+
 int exec_pipe(Command* first, Command* second) {
   int fds[2];
   pid_t pid_first;
@@ -147,8 +209,8 @@ int exec_pipeline(Pipeline* pipeline) {
         exit_status = execc(pipeline->cmds[0]);
       }
     } else {
-      if (pipeline->ncmds == 2) {
-        exec_pipe(pipeline->cmds[0], pipeline->cmds[1]);
+      if (pipeline->ncmds > 1) {
+        exit_status = exec_pipes(pipeline);
       }
     }
   }

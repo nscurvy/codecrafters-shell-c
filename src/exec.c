@@ -158,7 +158,13 @@ int exec_pipeline(Pipeline* pipeline) {
 
 // TODO: docs
 int execc(const Command* command) {
-  pid_t pid = fork();
+  char cmd_path[PATH_MAX];
+  char* res = find_command(cmd_path, command->argv[0]);
+  if (!res) {
+    printf("%s: command not found\n", command->argv[0]);
+    return -1;
+  }
+    pid_t pid = fork();
 
   if (pid < 0) {
     return 1;

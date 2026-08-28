@@ -1,0 +1,8 @@
+#!/bin/zsh
+
+cd $PROJECT_DIR
+
+cd cmake-build-debug-gnu
+
+cmake --build . $@
+

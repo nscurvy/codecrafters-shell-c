@@ -41,6 +41,8 @@ WordList* generate_two_pipe_wordlist() {
 int main(int argc, char *argv[]) {
 #ifndef TMPDISABLED
   // Flush after every printf
+  setvbuf(stdout, NULL, _IONBF, 0);
+  setvbuf(stderr, NULL, _IONBF, 0);
   rl_attempted_completion_function = shell_completion_function;
 
 

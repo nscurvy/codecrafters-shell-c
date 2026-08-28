@@ -163,7 +163,6 @@ void print_job_with_status(Job* job, const char* status) {
     int job_num = job->job_number;
 
     printf("[%d]%s  %-20s %s\n", job_num,status_symbol, status, cmdline);
-    fflush(stdout);
 
 }
 
@@ -178,7 +177,6 @@ void print_job(Job* job) {
     int job_num = job->job_number;
 
     printf("[%d]%s  %-20s %s\n", job_num,status_symbol, "Running", cmdline);
-    fflush(stdout);
 }
 
 int check_and_print_job(Job* job) {

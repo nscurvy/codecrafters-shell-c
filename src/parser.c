@@ -531,7 +531,6 @@ WordList *tokenize_input(const char *input) {
   if (flag == SINGLE_QUOTED) {
     cleanup_wordlist(result);
     fprintf(stderr, "syntax error: unterminated quote\n");
-    setbuf(stderr, nullptr);
     return nullptr;
   }
 

@@ -1,0 +1,6 @@
+#!/bin/zsh
+
+cd $PROJECT_DIR
+
+build
+./cmake-build-debug-gnu/shell

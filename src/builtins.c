@@ -109,6 +109,7 @@ int builtin_cd(const int argc, const char** argv) {
 }
 
 int builtin_history(const int argc, const char** argv) {
+  HISTORY_STATE* hist_state = history_get_history_state();
   int max_display = -1;
   int offset = 0;
 
@@ -128,12 +129,13 @@ int builtin_history(const int argc, const char** argv) {
       fprintf(stderr, "Passed invalid integer %ld to history builtin, expecting a value lower than %d(INT_MAX)\n", tmp, INT_MAX);
       return -1;
     }
+  }  else {
+    max_display = hist_state->length;
   }
   if (max_display == -1) {
     max_display = 0;
   }
 
-  HISTORY_STATE* hist_state = history_get_history_state();
   offset = hist_state->length - max_display;
   HIST_ENTRY** hist_list = hist_state->entries;
   for (int i = offset; i < hist_state->length; ++i) {

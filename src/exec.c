@@ -290,8 +290,6 @@ int repl() {
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = SA_RESTART;
   sigaction(SIGCHLD, &sa, nullptr);
-  setbuf(stderr, nullptr);
-  setbuf(stdin, nullptr);
 
   using_history();
 

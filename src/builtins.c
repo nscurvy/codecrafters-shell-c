@@ -37,6 +37,14 @@ const BuiltinCmd builtins[NUMBUILTINS] = {
 };
 
 int builtin_declare(const int argc, const char **argv) {
+  if (argc == 3) {
+    if (strncmp(argv[1], "-p", 2) == 0) {
+      const char* variable_name = argv[2];
+
+      fprintf(stderr, "declare: %s: not found\n", variable_name);
+      return -1;
+    }
+  }
   return 0;
 }
 

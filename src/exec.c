@@ -297,7 +297,7 @@ void exit_handler() {
         if (status == - 1) {
             fprintf(stderr, "Failed to write history to file %s\n", histfile);
         }
-    }    
+    }
 }
 
 // TODO: DOdocs

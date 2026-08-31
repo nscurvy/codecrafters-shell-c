@@ -311,7 +311,7 @@ repl() {
 
     using_history();
     atexit(exit_handler);
-
+    rl_event_hook = check_background_jobs;
     const char* histfile = getenv("HISTFILE");
     if (histfile) {
         int status = read_history(histfile);

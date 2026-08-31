@@ -4,6 +4,8 @@
 #include "jobs.h"
 
 #include "common.h"
+#include <readline/readline.h>
+
 
 volatile sig_atomic_t child_exited_flag = 0;
 
@@ -267,12 +269,14 @@ Job* get_job(pid_t pid) {
     return nullptr;
 }
 
-void
-check_background_jobs() {
-    if (!child_exited_flag) {
-        return;
-    }
-    child_exited_flag = 0;
+void report_and_reap_jobs() {
+    // Save the current spot in readline and then get ready to display job info
+    int saved_point = rl_point;
+    char* saved_line = rl_copy_text(0, rl_end);
+    rl_save_prompt();
+    rl_replace_line("", 0);
+    rl_redisplay();
+
 
     int status;
     pid_t pid;
@@ -284,9 +288,25 @@ check_background_jobs() {
             print_job_with_status(job, "Done");
             remove_job_node(job_list, pid);
             return_job_number(job_number);
-
         }
     }
+
+    // Now restore everything to how it was.
+    rl_restore_prompt();
+    rl_replace_line(saved_line, 0);
+    rl_point = saved_point;
+    rl_redisplay();
+    free(saved_line);
+
+}
+
+int
+check_background_jobs() {
+    if (child_exited_flag) {
+        child_exited_flag = 0;
+        report_and_reap_jobs();
+    }
+    return 0;
 }
 
 void

@@ -44,7 +44,7 @@ int append_job(pid_t job, const char* NONNULL cmdline[]);
 
 int get_next_job_number();
 
-void check_background_jobs();
+int check_background_jobs();
 
 void sigchld_handler(int signum);
 

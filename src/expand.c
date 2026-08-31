@@ -50,6 +50,7 @@ size_t expvar(char* dest, const char** word, QuoteFlagE* flag) {
     memcpy(dest, result, strlen(result));
     const char* i = dest + strlen(result);
     chars_wrote = i - dest;
+    *word += strlen(variable_name);
     free(variable_name);
     return chars_wrote;
 }

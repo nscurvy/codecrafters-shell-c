@@ -499,11 +499,20 @@ size_t next_token(char* dest, char *input, QuoteFlagE* flag) {
 int exppass(WordList* list) {
   WordNode* iter = list->head;
 
+  WordNode* prev = nullptr;
   for (int i = 0; i < list->size; ++i) {
     const char* s = iter->value;
     const char* expanded = exptok(s);
     iter->value = expanded;
+    if (strlen(expanded) == 0) {
+      prev->next = iter->next;
+      list->size--;
+      cleanup_wordnode(iter);
+      iter = prev;
+    }
+
     free((void*)s);
+    prev = iter;
     iter = iter->next;
   }
   return 0;

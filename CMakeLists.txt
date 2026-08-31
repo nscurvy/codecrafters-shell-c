@@ -13,10 +13,25 @@ list(REMOVE_ITEM LIB_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
 enable_testing()
 if ($ENV{HOME_MACHINE})
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(CHECK REQUIRED check)
+    pkg_check_modules(CHECK REQUIRED check)
 endif()
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
+
 
 set(CMAKE_C_STANDARD 23) # Enable the C23 standard
+
+if(ENABLE_ASAN)
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g -O1 -D_FORTIFY_SOURCE=3)
+    add_link_options(-fsanitize=address)
+endif()
+
+if(ENABLE_UBSAN)
+    add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer -g -O1 -D_FORTIFY_SOURCE=3)
+    add_link_options(-fsanitize=undefined)
+endif()
+
+add_compile_options(-Wall -Wextra -Wconversion -Wsign-conversion -Wcast-align -Wshadow -Wnull-dereference -Wdouble-promotion -Wformat=2 -Wformat-security -Wstrict-overflow=5 -Wundef -Wuninitialized -Wswitch-enum)
 
 add_executable(shell ${SOURCE_FILES}
         src/builtins.h

@@ -37,12 +37,14 @@ const BuiltinCmd builtins[NUMBUILTINS] = {
   {.name = "type", .builtin = &builtin_type}
 };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 bool valid_variable_start(const char* name) {
   return isalpha(name[0]) || name[0] == '_';
 }
 bool valid_variable_name(const char* name) {
   if (valid_variable_start(name)) {
-    char* i = &name[1];
+    const char* i = &name[1];
     while (*i != '\0') {
       if (!(isalnum(*i) || *i == '_')) {
         return false;
@@ -58,21 +60,22 @@ bool valid_variable_name(const char* name) {
 int builtin_declare(const int argc, const char **argv) {
   if (argc == 2) {
     char* declaration = strdup(argv[1]);
-    char* name = strsep(&declaration, "=");
+    const char* name = strsep(&declaration, "=");
     if (strcmp(name, argv[1]) == 0) {
-      free(name);
+      free((char*)name);
       fprintf(stderr, "declare: invalid declaration.\n");
     }
     if (!valid_variable_name(name)) {
       fprintf(stderr, "declare: `%s=%s': not a valid identifier\n", name, declaration);
       fflush(stderr);
-      free(name);
+      free((char*)name);
       return -1;
     }
     if (variable_table == nullptr) {
       variable_table = init_ht();
     }
     ht_put(variable_table, name, declaration);
+    free((char*)name);
   } else if (argc == 3) {
     if (strncmp(argv[1], "-p", 2) == 0) {
       const char* variable_name = argv[2];
@@ -138,7 +141,6 @@ int builtin_jobs(const int argc, const char **argv) {
 }
 
 int builtin_cd(const int argc, const char** argv) {
-  char buf[PATH_MAX] = {0};
   errno = 0;
   const char* target;
   int result = 0;
@@ -149,12 +151,6 @@ int builtin_cd(const int argc, const char** argv) {
     result = -1;
     return result;
   }
-  //if (target[0] == '~') {
-  //  char* expanded = expand_home(buf, target);
-  //  result = chdir(expanded);
-  //} else {
-  //  result = chdir(target);
-  //}
   result = chdir(target);
 
   if (result == -1) {
@@ -273,6 +269,8 @@ int builtin_pwd(const int argc, const char** argv) {
 
   return 0;
 }
+
+#pragma GCC diagnostic pop
 
 int pstrcmp(const void *a, const void *b) {
   return strcmp(*(const char *const *)a, *(const char *const *)b);

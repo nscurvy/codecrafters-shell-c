@@ -34,6 +34,7 @@ BucketNode* init_bucketnode(const char* name, const char* value) {
     node->key = strdup(name);
     node->value = strdup(value);
     node->next = nullptr;
+    return node;
 }
 
 void cleanup_bucketnode(BucketNode* node) {
@@ -138,20 +139,34 @@ typedef struct HashTable {
 
 struct HashTable*
 init_ht() {
+    errno = 0;
     struct HashTable* table = malloc(sizeof(HashTable));
     if (table == nullptr) {
-        return nullptr;
+        fprintf(stderr, "Couldn't allocate variable table: %s\n", strerror(errno));
+        exit(errno);
     }
     table->load_factor = DEFAULT_LOAD_FACTOR;
     table->capacity = DEFAULT_INITIAL_CAPACITY;
+    errno = 0;
     table->buckets = calloc(table->capacity, sizeof(BucketList*));
     if (table->buckets == nullptr) {
         free(table);
-        return nullptr;
+        fprintf(stderr, "Couldn't allocate variable table: %s\n", strerror(errno));
+        exit(errno);
     }
     table->size = 0;
     for (int i = 0; i < table->capacity; ++i) {
+        errno = 0;
         table->buckets[i] = init_bucketlist();
+        if (table->buckets[i] == nullptr) {
+            for (int j = 0; j < i; ++j) {
+                cleanup_bucketlist(table->buckets[j]);
+            }
+            free(table->buckets);
+            free(table);
+            fprintf(stderr, "Couldn't allocate variable table: %s\n", strerror(errno));
+            exit(errno);
+        }
     }
 
     return table;
@@ -162,6 +177,7 @@ cleanup_ht(HashTable* table) {
     for (int i = 0; i < table->capacity; ++i) {
         cleanup_bucketlist(table->buckets[i]);
     }
+    free(table->buckets);
     free(table);
 }
 

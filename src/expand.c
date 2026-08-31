@@ -38,7 +38,14 @@ size_t expvar(char* dest, const char** word, QuoteFlagE* flag) {
     char* variable_name = malloc(sizeof(char) * strlen(*word));
     memcpy(variable_name, &(*word)[1], strlen(*word));
     variable_name[strlen(*word)] = '\0';
+    if (variable_table == nullptr) {
+        variable_table = init_ht();
+    }
     const char* result = ht_get(variable_table, variable_name);
+    if (result == nullptr) {
+        free(variable_name);
+        return 0;
+    }
     memcpy(dest, result, strlen(result));
     const char* i = dest + strlen(result);
     *word += strlen(variable_name);
@@ -58,7 +65,14 @@ size_t expvar_braced(char* dest, const char** iter, QuoteFlagE* flag) {
     char* variable_name = malloc(sizeof(char) * count + 1);
     memcpy(variable_name, &beginning[2], count);
     variable_name[count] = '\0';
+    if (variable_table == nullptr) {
+        variable_table = init_ht();
+    }
     const char* result = ht_get(variable_table, variable_name);
+    if (result == nullptr) {
+        free(variable_name);
+        return 0;
+    }
     memcpy(dest, result, strlen(result));
     const char* i = dest + strlen(result);
     free(variable_name);

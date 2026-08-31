@@ -499,23 +499,38 @@ size_t next_token(char* dest, char *input, QuoteFlagE* flag) {
 int exppass(WordList* list) {
   WordNode* iter = list->head;
 
-  WordNode* prev = nullptr;
   for (int i = 0; i < list->size; ++i) {
     const char* s = iter->value;
     const char* expanded = exptok(s);
     iter->value = expanded;
-    if (strlen(expanded) == 0) {
-      prev->next = iter->next;
-      list->size--;
-      cleanup_wordnode(iter);
-      iter = prev;
-    }
 
     free((void*)s);
-    prev = iter;
     iter = iter->next;
   }
   return 0;
+}
+
+void remove_blanks(WordList* list) {
+  WordNode* iter = list->head;
+  WordNode* prev = nullptr;
+  while (iter != nullptr) {
+    if (strlen(iter->value) == 0) {
+      if (prev != nullptr) {
+        prev->next = iter->next;
+        list->size--;
+        cleanup_wordnode(iter);
+        iter = prev;
+      } else {
+        list->head = iter->next;
+        list->size--;
+        cleanup_wordnode(iter);
+        iter = list->head;
+        continue;
+      }
+    }
+    prev = iter;
+    iter = iter->next;
+  }
 }
 
 WordList *tokenize_input(const char *input) {
@@ -544,7 +559,7 @@ WordList *tokenize_input(const char *input) {
   }
 
   exppass(result);
-
+  remove_blanks(result);
   return result;
 }
 

@@ -2,5 +2,5 @@
 
 print "Received $# args"
 if [[ $# -gt 0 ]];then
-  print $1
+  print $@
 fi

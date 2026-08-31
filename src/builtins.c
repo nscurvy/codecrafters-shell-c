@@ -53,6 +53,9 @@ int builtin_declare(const int argc, const char **argv) {
   } else if (argc == 3) {
     if (strncmp(argv[1], "-p", 2) == 0) {
       const char* variable_name = argv[2];
+      if (variable_table == nullptr) {
+        variable_table = init_ht();
+      }
       if (!ht_contains(variable_table, argv[2])) {
         fprintf(stderr, "declare: %s: not found\n", variable_name);
         return -1;

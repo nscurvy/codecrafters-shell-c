@@ -7,7 +7,9 @@
 #include "expand.h"
 
 #include "parser.h"
+#include "declare.h"
 
+struct HashTable* variable_table = nullptr;
 
 size_t
 exptilde(char *dest, QuoteFlagE *flag) {
@@ -31,13 +33,25 @@ exptilde(char *dest, QuoteFlagE *flag) {
     return chars_wrote;
 }
 
+char* expvar(const char* word) {
+    const char* iter = word;
+    char* variable_name = malloc(sizeof(char) * strlen(word));
+    memcpy(variable_name, &word[1], strlen(word));
+    variable_name[strlen(word)] = '\0';
+    const char* result = ht_get(variable_table, variable_name);
+    free(variable_name);
+    return strdup(result);
+}
+
 char *
 exptok(const char *word) {
     char buf[1024] = {0};
     QuoteFlagE flag = UNQUOTED;
     const char *iter = word;
     size_t i = 0;
-
+    if (*iter == '$') {
+        return expvar(word);
+    }
     while (*iter != '\0') {
         char c = *iter;
 

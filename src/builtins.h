@@ -4,6 +4,7 @@
 
 #pragma once
 #include "nullability.h"
+extern struct HashTable* variable_table;
 
 enum BuiltinE {
   BUILTIN_CD,

@@ -5,6 +5,8 @@
 #pragma once
 #include "nullability.h"
 
+extern struct HashTable* variable_table;
+
 ASSUME_NONNULL_BEGIN
 /**
  * Perform expansion on a token word.

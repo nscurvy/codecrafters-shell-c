@@ -15,7 +15,6 @@
 
 #include <readline/history.h>
 
-static struct HashTable* variable_table = nullptr;
 
 int builtin_cd(const int argc, const char** argv);
 int builtin_exit(const int argc, const char **argv);

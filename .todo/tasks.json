@@ -7,7 +7,7 @@
     ],
     "title": "Wire piping",
     "description": "Parsing pipes seems to work. Now what\u0027s left is setting up command execution so that it forks the commands and wires their io correctly. ",
-    "status": "TODO",
+    "status": "DONE",
     "date": {
       "date": {
         "year": 2026,

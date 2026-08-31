@@ -206,7 +206,9 @@ int builtin_history(const int argc, const char** argv) {
 }
 
 int builtin_exit(const int argc, const char **argv) {
-  cleanup_ht(variable_table);
+  if (variable_table != nullptr) {
+    cleanup_ht(variable_table);
+  }
   exit(EXIT_SUCCESS);
 }
 

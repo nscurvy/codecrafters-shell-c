@@ -1,0 +1,10 @@
+#!/usr/bin/zsh
+
+# The purpose of this script was to interactively test and verify variable expansions.
+# I run this by prepending my PATH with the parent bin folder, and then executing the command from within the shell.
+# The script prints the number of arguments on the first line, and the arguments themselves on the second.
+
+print "Received $# args"
+if [[ $# -gt 0 ]];then
+  print $@
+fi

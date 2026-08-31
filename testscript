@@ -1,4 +1,0 @@
-#!/usr/bin/env zsh
-
-args = $@
-print "Received $# args"

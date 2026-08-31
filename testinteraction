@@ -1,6 +1,0 @@
-#!/usr/bin/expect
-#
-
-spawn ./cmake-build-debug-gnu/shell
-send "sleep 500 &"
-expect {"[1]"}

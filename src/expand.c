@@ -47,6 +47,24 @@ size_t expvar(char* dest, const char** word, QuoteFlagE* flag) {
     return chars_wrote;
 }
 
+size_t expvar_braced(char* dest, const char** iter, QuoteFlagE* flag) {
+    const char* beginning = *iter;
+    *iter += 2;
+    size_t count = 0;
+    while (**iter != '}') {
+        ++count;
+        ++*iter;
+    }
+    char* variable_name = malloc(sizeof(char) * count + 1);
+    memcpy(variable_name, &beginning[2], count);
+    variable_name[count] = '\0';
+    const char* result = ht_get(variable_table, variable_name);
+    memcpy(dest, result, strlen(result));
+    const char* i = dest + strlen(result);
+    free(variable_name);
+    return i - dest;
+}
+
 char *
 exptok(const char *word) {
     char buf[1024] = {0};
@@ -82,7 +100,11 @@ exptok(const char *word) {
                     i += exptilde(&buf[i], &flag);
                     break;
                 case '$':
-                    i += expvar(&buf[i], &iter, &flag);
+                    if (*(iter + 1) == '{') {
+                        i += expvar_braced(&buf[i], &iter, &flag);
+                    } else {
+                        i += expvar(&buf[i], &iter, &flag);
+                    }
                     break;
                 default:
                     buf[i++] = c;

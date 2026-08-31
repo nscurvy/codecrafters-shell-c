@@ -38,13 +38,37 @@ const BuiltinCmd builtins[NUMBUILTINS] = {
   {.name = "type", .builtin = &builtin_type}
 };
 
+bool valid_variable_start(const char* name) {
+  return isalpha(name[0]) || name[0] == '_';
+}
+bool valid_variable_name(const char* name) {
+  if (valid_variable_start(name)) {
+    char* i = &name[1];
+    while (*i != '\0') {
+      if (!(isalnum(*i) || *i == '_')) {
+        return false;
+      }
+      ++i;
+    }
+  } else {
+    return false;
+  }
+  return true;
+}
+
 int builtin_declare(const int argc, const char **argv) {
   if (argc == 2) {
     char* declaration = strdup(argv[1]);
     char* name = strsep(&declaration, "=");
     if (strcmp(name, argv[1]) == 0) {
-      free(declaration);
+      free(name);
       fprintf(stderr, "declare: invalid declaration.\n");
+    }
+    if (!valid_variable_name(name)) {
+      fprintf(stderr, "declare: `%s=%s': not a valid identifier\n", name, declaration);
+      fflush(stderr);
+      free(name);
+      return -1;
     }
     if (variable_table == nullptr) {
       variable_table = init_ht();
@@ -62,7 +86,6 @@ int builtin_declare(const int argc, const char **argv) {
       } else {
         const char* value = ht_get(variable_table, variable_name);
         fprintf(stdout, "declare -- %s=\"%s\"\n", variable_name, value);
-
       }
     }
   }

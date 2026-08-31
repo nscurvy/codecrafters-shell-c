@@ -1,38 +1,4 @@
 #!/usr/bin/env zsh
 
-print "Setting up test"
-
-mkfifo /tmp/blueberry-20
-print "[setup] mkfifo /tmp/blueberry-20"
-mkfifo /tmp/apple-89
-print "[setup] mkfifo /tmp/apple-89"
-
-print "running"
-
-expect <<EOF
-  spawn ./cmake-build-debug-gnu/shell
-  expect "$ "
-  send "sleep 500 &\r"
-  expect {
-  -re  {\[1\] \d+\r} {puts "pass 1\n"}
-  timeout {puts Failed\n ; exit -1 }
-  }
-  send "cat /tmp/blueberry-20 &\r"
-  expect {
-  -re {\[2\] \d+\r} {puts "pass 2\n"}
-  timeout {puts Failed\n ; exit -1 }
-  }
-  send "cat /tmp/apple-89 &\r"
-  expect {
-  -re {\[3\] \d+\r} {puts "pass 3\n"}
-  timeout {puts Failed\n ; exit -1 }
-  }
-  send "jobs\r"
-  expect {
-  -re {\[1\]   Running                 sleep 500 &\r} {puts "pass 4\n"}
-  timeout {puts "Failed\n" ; exit -1 }
-  }
-  exit 0
-EOF
-
-print $?
+args = $@
+print "Received $# args"

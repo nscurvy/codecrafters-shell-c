@@ -43,12 +43,12 @@ size_t expvar(char* dest, const char** word, QuoteFlagE* flag) {
     }
     const char* result = ht_get(variable_table, variable_name);
     if (result == nullptr) {
+        *word += strlen(variable_name);
         free(variable_name);
         return 0;
     }
     memcpy(dest, result, strlen(result));
     const char* i = dest + strlen(result);
-    *word += strlen(variable_name);
     chars_wrote = i - dest;
     free(variable_name);
     return chars_wrote;

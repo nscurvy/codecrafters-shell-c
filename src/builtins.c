@@ -3,6 +3,7 @@
 //
 #define __STDC_WANT_LIB_EXT1__ 1
 #include "common.h"
+#include "declare.h"
 #include "builtins.h"
 #include "exec.h"
 #include "expand.h"
@@ -14,6 +15,7 @@
 
 #include <readline/history.h>
 
+static struct HashTable* variable_table = nullptr;
 
 int builtin_cd(const int argc, const char** argv);
 int builtin_exit(const int argc, const char **argv);
@@ -37,12 +39,28 @@ const BuiltinCmd builtins[NUMBUILTINS] = {
 };
 
 int builtin_declare(const int argc, const char **argv) {
-  if (argc == 3) {
+  if (argc == 2) {
+    char* declaration = strdup(argv[1]);
+    char* name = strsep(&declaration, "=");
+    if (strcmp(name, argv[1]) == 0) {
+      free(declaration);
+      fprintf(stderr, "declare: invalid declaration.\n");
+    }
+    if (variable_table == nullptr) {
+      variable_table = init_ht();
+    }
+    ht_put(variable_table, name, declaration);
+  } else if (argc == 3) {
     if (strncmp(argv[1], "-p", 2) == 0) {
       const char* variable_name = argv[2];
+      if (!ht_contains(variable_table, argv[2])) {
+        fprintf(stderr, "declare: %s: not found\n", variable_name);
+        return -1;
+      } else {
+        const char* value = ht_get(variable_table, variable_name);
+        fprintf(stdout, "declare -- %s=\"%s\"\n", variable_name, value);
 
-      fprintf(stderr, "declare: %s: not found\n", variable_name);
-      return -1;
+      }
     }
   }
   return 0;
@@ -184,7 +202,10 @@ int builtin_history(const int argc, const char** argv) {
   return 0;
 }
 
-int builtin_exit(const int argc, const char **argv) { exit(EXIT_SUCCESS); }
+int builtin_exit(const int argc, const char **argv) {
+  cleanup_ht(variable_table);
+  exit(EXIT_SUCCESS);
+}
 
 int builtin_echo(const int argc, const char **argv) {
   for (int i = 1; i < argc; ++i) {

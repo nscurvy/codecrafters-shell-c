@@ -48,7 +48,6 @@ int main(int argc, char *argv[]) {
   setvbuf(stderr, NULL, _IONBF, 0);
   rl_attempted_completion_function = shell_completion_function;
 
-  fprintf(stderr, "%p\n", variable_table);
 
   return repl();
 #else

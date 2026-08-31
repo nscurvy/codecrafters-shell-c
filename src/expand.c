@@ -33,14 +33,15 @@ exptilde(char *dest, QuoteFlagE *flag) {
     return chars_wrote;
 }
 
-size_t expvar(char* dest, const char* word, QuoteFlagE* flag) {
+size_t expvar(char* dest, const char** word, QuoteFlagE* flag) {
     size_t chars_wrote = 0;
-    char* variable_name = malloc(sizeof(char) * strlen(word));
-    memcpy(variable_name, &word[1], strlen(word));
-    variable_name[strlen(word)] = '\0';
+    char* variable_name = malloc(sizeof(char) * strlen(*word));
+    memcpy(variable_name, &(*word)[1], strlen(*word));
+    variable_name[strlen(*word)] = '\0';
     const char* result = ht_get(variable_table, variable_name);
     memcpy(dest, result, strlen(result));
     const char* i = dest + strlen(result);
+    *word += strlen(variable_name);
     chars_wrote = i - dest;
     free(variable_name);
     return chars_wrote;
@@ -81,8 +82,7 @@ exptok(const char *word) {
                     i += exptilde(&buf[i], &flag);
                     break;
                 case '$':
-                    i += expvar(&buf[i], iter, &flag);
-                    iter += i;
+                    i += expvar(&buf[i], &iter, &flag);
                     break;
                 default:
                     buf[i++] = c;

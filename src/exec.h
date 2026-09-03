@@ -3,8 +3,8 @@
 //
 
 #pragma once
-#include "nullability.h"
 #include "builtins.h"
+#include "nullability.h"
 ASSUME_NONNULL_BEGIN
 struct Command;
 
@@ -27,8 +27,8 @@ struct Command;
  *         unset).
  */
 
-char* NULLABLE find_command(char* NONNULL dest, const char* NONNULL command)
-GCC_NONNULL(1, 2);
+char* NULLABLE
+find_command(char* NONNULL dest, const char* NONNULL command) GCC_NONNULL(1, 2);
 
 /**
  * @brief Execute an external (non-builtin) command in a child process.
@@ -46,7 +46,8 @@ GCC_NONNULL(1, 2);
  * @note If @c execvp fails in the child, the child process exits/returns
  *       with status 1 rather than returning control to the caller.
  */
-int execc(const struct Command* command);
+int
+execc(const struct Command* command);
 
 /**
  * @brief Look up a shell builtin by name.
@@ -60,8 +61,8 @@ int execc(const struct Command* command);
  * @return Pointer to the matching @c BuiltinCmd entry, or @c nullptr if no
  *         builtin with that name exists.
  */
-BuiltinCmd* NULLABLE find_builtin(const char* name)
-GCC_NONNULL(1);
+BuiltinCmd* NULLABLE
+find_builtin(const char* name) GCC_NONNULL(1);
 
 /**
  * @brief Run the shell's interactive read-eval-print loop.
@@ -74,7 +75,8 @@ GCC_NONNULL(1);
  * @return This function currently runs an infinite loop and does not
  *         return under normal operation.
  */
-int repl();
+int
+repl();
 struct WordList;
 
 /**
@@ -83,8 +85,8 @@ struct WordList;
  * @param dest
  * @param words
  */
-void prepare_args(char** dest, struct WordList* words)
-GCC_NONNULL(1,2);
+void
+prepare_args(char** dest, struct WordList* words) GCC_NONNULL(1, 2);
 
 /**
  * TODO: this
@@ -92,7 +94,7 @@ GCC_NONNULL(1,2);
  * @param command
  * @return
  */
-int execute_command(struct Command* command)
-GCC_NONNULL(1);
+int
+execute_command(struct Command* command) GCC_NONNULL(1);
 
 ASSUME_NONNULL_END

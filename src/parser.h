@@ -3,8 +3,8 @@
 //
 
 #pragma once
-#include "nullability.h"
 #include <stdlib.h>
+#include "nullability.h"
 
 #define MAX_REDIRS 10
 
@@ -48,10 +48,10 @@ typedef struct Redirect {
  * @brief A fully parsed shell command, ready for execution.
  */
 typedef struct Command {
-    char* NULLABLE * argv;     /**< Null-terminated, heap-allocated argument vector. */
-    bool bgjob;
-    size_t           nredirs;  /**< Number of entries in #redirs. */
-    Redirect         redirs[]; /**< Flexible array of redirections attached to this command. */
+    char* NULLABLE* argv; /**< Null-terminated, heap-allocated argument vector. */
+    bool            bgjob;
+    size_t          nredirs;  /**< Number of entries in #redirs. */
+    Redirect        redirs[]; /**< Flexible array of redirections attached to this command. */
 } Command;
 
 /**
@@ -59,7 +59,7 @@ typedef struct Command {
  * @brief
  */
 typedef struct Pipeline {
-    size_t ncmds;
+    size_t   ncmds;
     Command* cmds[];
 } Pipeline;
 
@@ -97,23 +97,23 @@ typedef struct WordList {
  * @param src The word list to split. This is a destructive operation
  * @return true if any splitting happened.
  */
-bool split_on_pipes(WordList* dest, WordList* src)
-GCC_NONNULL(1, 2);
+bool
+split_on_pipes(WordList* dest, WordList* src) GCC_NONNULL(1, 2);
 
-size_t count_words(WordList* tokens)
-GCC_NONNULL(1);
+size_t
+count_words(WordList* tokens) GCC_NONNULL(1);
 
-size_t count_pipes(WordList* tokens)
-GCC_NONNULL(1);
+size_t
+count_pipes(WordList* tokens) GCC_NONNULL(1);
 
-Pipeline* NULLABLE build_pipeline(WordList* tokens)
-GCC_NONNULL(1);
+Pipeline* NULLABLE
+build_pipeline(WordList* tokens) GCC_NONNULL(1);
 
-Pipeline* NULLABLE init_pipeline(size_t ncmds, Command** cmds)
-GCC_NONNULL(2);
+Pipeline* NULLABLE
+init_pipeline(size_t ncmds, Command** cmds) GCC_NONNULL(2);
 
-void cleanup_pipeline(Pipeline* pipeline)
-GCC_NONNULL(1);
+void
+cleanup_pipeline(Pipeline* pipeline) GCC_NONNULL(1);
 
 /**
  * @brief Wrap an existing chain of word nodes in a new WordList.
@@ -131,8 +131,7 @@ GCC_NONNULL(1);
  *         @c nullptr if allocation of the list itself fails.
  */
 WordList* NULLABLE
-new_from_nodes(WordNode* head)
-GCC_NONNULL(1);
+new_from_nodes(WordNode* head) GCC_NONNULL(1);
 
 /**
  * @brief Allocate a Command from a raw argv array and redirection list.
@@ -151,7 +150,7 @@ GCC_NONNULL(1);
  *         freed before returning).
  */
 Command* NULLABLE
-init_command(char* NULLABLE * argv, bool bgjob, size_t nredirs, Redirect* redirs);
+init_command(char* NULLABLE* argv, bool bgjob, size_t nredirs, Redirect* redirs);
 
 /**
  * @brief Parse a tokenized word list into a Command.
@@ -169,8 +168,7 @@ init_command(char* NULLABLE * argv, bool bgjob, size_t nredirs, Redirect* redirs
  *         allocation failure.
  */
 Command* NULLABLE
-build_command(WordList* words)
-GCC_NONNULL(1);
+build_command(WordList* words) GCC_NONNULL(1);
 
 /**
  * @brief Free a Command and its owned argv strings.
@@ -179,8 +177,7 @@ GCC_NONNULL(1);
  *                build_command().
  */
 void
-cleanup_command(Command* command)
-GCC_NONNULL(1);
+cleanup_command(Command* command) GCC_NONNULL(1);
 
 /**
  * @brief Allocate a standalone Redirect.
@@ -194,8 +191,7 @@ GCC_NONNULL(1);
  *         or string duplication failed.
  */
 Redirect* NULLABLE
-init_redirect(int fd, RedirMode mode, const char* target)
-GCC_NONNULL(3);
+init_redirect(int fd, RedirMode mode, const char* target) GCC_NONNULL(3);
 
 /**
  * @brief Free a Redirect previously returned by init_redirect().
@@ -203,8 +199,7 @@ GCC_NONNULL(3);
  * @param redir Redirect to free, including its owned @c target string.
  */
 void
-cleanup_redirect(Redirect* redir)
-GCC_NONNULL(1);
+cleanup_redirect(Redirect* redir) GCC_NONNULL(1);
 
 /**
  * @brief Allocate a WordNode owning a copy of the given string.
@@ -215,8 +210,7 @@ GCC_NONNULL(1);
  *         @c nullptr if allocation or duplication failed.
  */
 WordNode* NULLABLE
-init_wordnode(const char* initial_word)
-GCC_NONNULL(1);
+init_wordnode(const char* initial_word) GCC_NONNULL(1);
 
 /**
  * @brief Free a single WordNode and its owned value string.
@@ -225,8 +219,7 @@ GCC_NONNULL(1);
  *             cleanup_wordlist() to free an entire chain.
  */
 void
-cleanup_wordnode(WordNode* node)
-GCC_NONNULL(1);
+cleanup_wordnode(WordNode* node) GCC_NONNULL(1);
 
 /**
  * @brief Allocate an empty WordList.
@@ -246,10 +239,10 @@ empty_wordlist();
  *         allocation failed.
  */
 WordList* NULLABLE
-init_wordlist(const char* initial_word)
-GCC_NONNULL(1);
+init_wordlist(const char* initial_word) GCC_NONNULL(1);
 
-WordList* copy_wordlist(WordList* list);
+WordList*
+copy_wordlist(WordList* list);
 
 /**
  * @brief Free a WordList and every node it contains.
@@ -258,8 +251,7 @@ WordList* copy_wordlist(WordList* list);
  *             their owned value strings.
  */
 void
-cleanup_wordlist(WordList* list)
-GCC_NONNULL(1);
+cleanup_wordlist(WordList* list) GCC_NONNULL(1);
 
 /**
  * @brief Append a new word to the end of a WordList.
@@ -270,8 +262,7 @@ GCC_NONNULL(1);
  * @return The newly appended WordNode, or @c nullptr if allocation failed.
  */
 WordNode* NULLABLE
-append_wordlist(WordList* list, const char* word)
-GCC_NONNULL(1, 2);
+append_wordlist(WordList* list, const char* word) GCC_NONNULL(1, 2);
 
 /**
  * @brief Extract the next whitespace/quote-aware token from a buffer.
@@ -292,8 +283,7 @@ GCC_NONNULL(1, 2);
  *         produced (e.g. end of input).
  */
 size_t
-next_token(char* dest, char* buf, QuoteFlagE* flag)
-GCC_NONNULL(1, 2, 3);
+next_token(char* dest, char* buf, QuoteFlagE* flag) GCC_NONNULL(1, 2, 3);
 
 /**
  * @brief Tokenize a full line of input into a WordList.
@@ -309,8 +299,7 @@ GCC_NONNULL(1, 2, 3);
  *         (in which case an error is printed to stderr).
  */
 WordList* NULLABLE
-tokenize_input(const char* buf)
-GCC_NONNULL(1);
+tokenize_input(const char* buf) GCC_NONNULL(1);
 
 /**
  * @brief Split a colon-separated PATH-style string into a WordList.
@@ -322,8 +311,7 @@ GCC_NONNULL(1);
  *         segment of @p path as a separate word.
  */
 WordList* NULLABLE
-tokenize_path(const char* path)
-GCC_NONNULL(1);
+tokenize_path(const char* path) GCC_NONNULL(1);
 
 /**
  * @brief Copy word values from a WordList into a plain argv-style array.
@@ -335,8 +323,7 @@ GCC_NONNULL(1);
  * @param words List of words to copy, in list order.
  */
 void
-prepare_args(char** NULLABLE dest, WordList* words)
-GCC_NONNULL(1, 2);
+prepare_args(char** NULLABLE dest, WordList* words) GCC_NONNULL(1, 2);
 
 /**
  * @brief Parse a redirection operator and its target from tokenized words.
@@ -351,7 +338,6 @@ GCC_NONNULL(1, 2);
  *              whose second node is the target path.
  */
 void
-parse_redir(Redirect* dest, WordList* words)
-GCC_NONNULL(1, 2);
+parse_redir(Redirect* dest, WordList* words) GCC_NONNULL(1, 2);
 
 ASSUME_NONNULL_END

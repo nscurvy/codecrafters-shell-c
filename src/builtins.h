@@ -7,32 +7,32 @@
 extern struct HashTable* variable_table;
 
 enum BuiltinE {
-  BUILTIN_CD,
-  BUILTIN_COMPLETE,
-  BUILTIN_DECLARE,
-  BUILTIN_ECHO,
-  BUILTIN_EXIT,
-  BUILTIN_HISTORY,
-  BUILTIN_JOBS,
-  BUILTIN_PWD,
-  BUILTIN_TYPE,
-  NUMBUILTINS
+    BUILTIN_CD,
+    BUILTIN_COMPLETE,
+    BUILTIN_DECLARE,
+    BUILTIN_ECHO,
+    BUILTIN_EXIT,
+    BUILTIN_HISTORY,
+    BUILTIN_JOBS,
+    BUILTIN_PWD,
+    BUILTIN_TYPE,
+    NUMBUILTINS
 };
 
 ASSUME_NONNULL_BEGIN
 
-typedef int (*cmd_func)(const int,const char**);
+typedef int (*cmd_func)(const int, const char**);
 
 typedef struct BuiltinCmd {
-  const char* name;
-  cmd_func builtin;
+    const char* name;
+    cmd_func    builtin;
 } BuiltinCmd;
 
 // TODO: DOCS
 extern const BuiltinCmd builtins[NUMBUILTINS];
 
 // TODO: DOCS
-int pstrcmp(const void* a, const void* b)
-GCC_NONNULL(1,2);
+int
+pstrcmp(const void* a, const void* b) GCC_NONNULL(1, 2);
 
 ASSUME_NONNULL_END

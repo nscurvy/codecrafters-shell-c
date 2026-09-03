@@ -14,11 +14,11 @@ ASSUME_NONNULL_BEGIN
  * @param word Null terminated string
  * @return a new heap allocated string with expansions performed.
  */
-char * NULLABLE exptok(const char* NULLABLE word)
-GCC_NONNULL(1);
+char* NULLABLE
+exptok(const char* NULLABLE word) GCC_NONNULL(1);
 
 // TODO: DOCS
-char* NULLABLE expand_home(char* NONNULL buf, const char* NONNULL path)
-GCC_NONNULL(1, 2);
+char* NULLABLE
+expand_home(char* NONNULL buf, const char* NONNULL path) GCC_NONNULL(1, 2);
 
 ASSUME_NONNULL_END

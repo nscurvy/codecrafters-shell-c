@@ -3,40 +3,43 @@
 //
 #include "jobs.h"
 
-#include "common.h"
 #include <readline/readline.h>
+#include "common.h"
 
 
 volatile sig_atomic_t child_exited_flag = 0;
 
 
 typedef struct JobNode {
-    Job* job;
+    Job*            job;
     struct JobNode* next;
 } JobNode;
 
 typedef struct JobList {
-    size_t size;
+    size_t   size;
     JobNode* head;
 } JobList;
 
-JobList* init_job_list() {
+JobList*
+init_job_list() {
     JobList* list = malloc(sizeof(JobList));
-    list->size = 0;
-    list->head = nullptr;
+    list->size    = 0;
+    list->head    = nullptr;
     return list;
 }
 
-JobNode* init_job_node(Job* job) {
+JobNode*
+init_job_node(Job* job) {
     JobNode* node = malloc(sizeof(JobNode));
-    node->job = job;
-    node->next = nullptr;
+    node->job     = job;
+    node->next    = nullptr;
     return node;
 }
 
 JobList* job_list = nullptr;
 
-void append_job_list(JobList* list, Job* job) {
+void
+append_job_list(JobList* list, Job* job) {
     JobNode* node = init_job_node(job);
     if (list->head == nullptr) {
         list->head = node;
@@ -51,14 +54,16 @@ void append_job_list(JobList* list, Job* job) {
     list->size++;
 }
 
-void cleanup_job_node(JobNode* node) {
+void
+cleanup_job_node(JobNode* node) {
     Job* job = node->job;
 
     cleanup_job(job);
     free(node);
 }
 
-void remove_job_node(JobList* list, pid_t pid) {
+void
+remove_job_node(JobList* list, pid_t pid) {
     JobNode* iter = list->head;
     JobNode* prev = nullptr;
     while (iter != nullptr) {
@@ -77,7 +82,8 @@ void remove_job_node(JobList* list, pid_t pid) {
     }
 }
 
-Job* get_job_by_pid(JobList* list, pid_t pid) {
+Job*
+get_job_by_pid(JobList* list, pid_t pid) {
     JobNode* iter = list->head;
     while (iter != nullptr) {
         if (iter->job->pid == pid) {
@@ -90,24 +96,24 @@ Job* get_job_by_pid(JobList* list, pid_t pid) {
 
 Job*
 init_job(pid_t pid, int job_number, const char** cmdline) {
-    Job* new_job = (Job*)malloc(sizeof(Job));
+    Job* new_job = (Job*) malloc(sizeof(Job));
     if (!new_job) {
         return nullptr;
     }
-    const char** iter = cmdline;
-    size_t required_length = 0;
+    const char** iter            = cmdline;
+    size_t       required_length = 0;
     while (*iter != nullptr) {
         required_length += strlen(*iter);
         required_length += 1;
         ++iter;
     }
 
-    char* cmd = (char*)calloc(required_length, sizeof(char));
+    char* cmd = (char*) calloc(required_length, sizeof(char));
     if (!cmd) {
         free(new_job);
         return nullptr;
     }
-    iter = cmdline;
+    iter      = cmdline;
     char* pos = cmd;
     while (*iter != nullptr) {
         strcat(pos, *iter);
@@ -120,8 +126,8 @@ init_job(pid_t pid, int job_number, const char** cmdline) {
         }
         ++iter;
     }
-    new_job->pid = pid;
-    new_job->cmdline = cmd;
+    new_job->pid        = pid;
+    new_job->cmdline    = cmd;
     new_job->job_number = job_number;
 
     return new_job;
@@ -131,7 +137,6 @@ void
 cleanup_job(Job* job) {
     free(job->cmdline);
     free(job);
-
 }
 
 void
@@ -140,10 +145,11 @@ print_job_imm(Job* job) {
     fflush(stdout);
 }
 
-void print_job_with_status(Job* job, const char* status) {
+void
+print_job_with_status(Job* job, const char* status) {
     const char* status_symbol = " ";
-    JobNode* iter = job_list->head;
-    JobNode* prev = nullptr;
+    JobNode*    iter          = job_list->head;
+    JobNode*    prev          = nullptr;
     while (iter != nullptr) {
         if (iter->next == nullptr && job->pid == iter->job->pid) {
             status_symbol = "+";
@@ -156,19 +162,19 @@ void print_job_with_status(Job* job, const char* status) {
         prev = iter;
         iter = iter->next;
     }
-    //if (jobs[job_count - 1]->pid == job->pid) {
-    //    status_symbol = "+";
-    //} else if (job_count > 1 && jobs[job_count - 2]->pid == job->pid) {
-    //    status_symbol = "-";
-    //}
+    // if (jobs[job_count - 1]->pid == job->pid) {
+    //     status_symbol = "+";
+    // } else if (job_count > 1 && jobs[job_count - 2]->pid == job->pid) {
+    //     status_symbol = "-";
+    // }
     const char* cmdline = job->cmdline;
-    int job_num = job->job_number;
+    int         job_num = job->job_number;
 
-    printf("[%d]%s  %-20s %s\n", job_num,status_symbol, status, cmdline);
-
+    printf("[%d]%s  %-20s %s\n", job_num, status_symbol, status, cmdline);
 }
 
-void print_job(Job* job) {
+void
+print_job(Job* job) {
     const char* status_symbol = " ";
     if (jobs[job_count - 1]->pid == job->pid) {
         status_symbol = "+";
@@ -176,12 +182,13 @@ void print_job(Job* job) {
         status_symbol = "-";
     }
     const char* cmdline = job->cmdline;
-    int job_num = job->job_number;
+    int         job_num = job->job_number;
 
-    printf("[%d]%s  %-20s %s\n", job_num,status_symbol, "Running", cmdline);
+    printf("[%d]%s  %-20s %s\n", job_num, status_symbol, "Running", cmdline);
 }
 
-int check_and_print_job(Job* job) {
+int
+check_and_print_job(Job* job) {
     if ((waitpid(job->pid, nullptr, WNOHANG) == job->pid)) {
         print_job_with_status(job, "Done");
         return 1;
@@ -214,7 +221,7 @@ print_jobs() {
 
 
 Job* jobs[MAX_JOBS] = {0};
-int job_count = 0;
+int  job_count      = 0;
 
 bool job_numbers[MAX_JOBS] = {false};
 
@@ -223,7 +230,8 @@ return_job_number(int job_number) {
     job_numbers[job_number - 1] = false;
 }
 
-int get_next_job_number() {
+int
+get_next_job_number() {
     if (job_list == nullptr) {
         job_list = init_job_list();
     }
@@ -241,26 +249,27 @@ int get_next_job_number() {
 }
 
 
-
-int append_job(pid_t job, const char** cmdline) {
-  if (job_count == MAX_JOBS) {
-      return -1;
-  }
-    int ret = job_count;
-    int job_num = get_next_job_number();
+int
+append_job(pid_t job, const char** cmdline) {
+    if (job_count == MAX_JOBS) {
+        return -1;
+    }
+    int  ret     = job_count;
+    int  job_num = get_next_job_number();
     Job* new_job = init_job(job, job_num, cmdline);
     if (job_list == nullptr) {
         job_list = init_job_list();
     }
     append_job_list(job_list, new_job);
-    //jobs[job_count++] = new_job;
+    // jobs[job_count++] = new_job;
 
     print_job_imm(new_job);
 
     return ret;
 }
 
-Job* get_job(pid_t pid) {
+Job*
+get_job(pid_t pid) {
     for (int i = 0; i < job_count; ++i) {
         if (jobs[i]->pid == pid) {
             return jobs[i];
@@ -269,16 +278,17 @@ Job* get_job(pid_t pid) {
     return nullptr;
 }
 
-void report_and_reap_jobs() {
+void
+report_and_reap_jobs() {
     // Save the current spot in readline and then get ready to display job info
-    int saved_point = rl_point;
-    char* saved_line = rl_copy_text(0, rl_end);
+    int   saved_point = rl_point;
+    char* saved_line  = rl_copy_text(0, rl_end);
     rl_save_prompt();
     rl_replace_line("", 0);
     rl_redisplay();
 
 
-    int status;
+    int   status;
     pid_t pid;
     while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
         Job* job = get_job_by_pid(job_list, pid);
@@ -297,7 +307,6 @@ void report_and_reap_jobs() {
     rl_point = saved_point;
     rl_redisplay();
     free(saved_line);
-
 }
 
 int
@@ -355,8 +364,8 @@ print_job_exit(pid_t pid, int job_number) {
 
     buffer[bytes_read] = '\0';
 
-    char* arg = buffer;
-    int arg_count = 0;
+    char* arg       = buffer;
+    int   arg_count = 0;
     while (arg < buffer + bytes_read && *arg != '\0') {
         printf("%s ", arg);
         arg += strlen(arg) + 1;
@@ -364,4 +373,3 @@ print_job_exit(pid_t pid, int job_number) {
 
     printf("\n");
 }
-

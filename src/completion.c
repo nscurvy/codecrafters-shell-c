@@ -2,11 +2,11 @@
 // Created by nkinder on 8/14/26.
 //
 
-#include "common.h"
-#include <dirent.h>
 #include "completion.h"
-#include <readline/readline.h>
+#include <dirent.h>
 #include <readline/history.h>
+#include <readline/readline.h>
+#include "common.h"
 
 
 #include <iso646.h>
@@ -17,13 +17,12 @@
 
 
 CompletionRegistration completion_registry[MAX_COMPLETIONS];
-int registry_count = 0;
-
+int                    registry_count = 0;
 
 
 void
 register_completion(const char* command, const char* script_path) {
-    for (int i = 0; i < registry_count; ++ i) {
+    for (int i = 0; i < registry_count; ++i) {
         if (strcmp(completion_registry[i].command, command) == 0) {
             free(completion_registry[i].script_path);
             completion_registry[i].script_path = strdup(script_path);
@@ -33,20 +32,21 @@ register_completion(const char* command, const char* script_path) {
     if (registry_count >= MAX_COMPLETIONS) {
         return;
     }
-    completion_registry[registry_count].command = strdup(command);
+    completion_registry[registry_count].command     = strdup(command);
     completion_registry[registry_count].script_path = strdup(script_path);
     registry_count++;
 }
 
-void unregister_completion(const char* command) {
+void
+unregister_completion(const char* command) {
     if (lookup_completion(command)) {
         int i = 0;
-        while (strcmp(completion_registry[i].command, command ) != 0) {
+        while (strcmp(completion_registry[i].command, command) != 0) {
             ++i;
         }
         CompletionRegistration tmp = completion_registry[i];
 
-        for (int j = i; j < registry_count - 1; ++ j) {
+        for (int j = i; j < registry_count - 1; ++j) {
             completion_registry[j] = completion_registry[j + 1];
         }
         --registry_count;
@@ -56,10 +56,9 @@ void unregister_completion(const char* command) {
 }
 
 
-
 const char*
 lookup_completion(const char* command) {
-    for (int i = 0; i < registry_count; ++ i) {
+    for (int i = 0; i < registry_count; ++i) {
         if (strcmp(completion_registry[i].command, command) == 0) {
             return completion_registry[i].script_path;
         }
@@ -67,7 +66,8 @@ lookup_completion(const char* command) {
     return nullptr;
 }
 
-const char* skipws(const char* s) {
+const char*
+skipws(const char* s) {
     while (*s == ' ') {
         ++s;
     }
@@ -80,8 +80,8 @@ find_current_word(const char* text) {
         return nullptr;
     }
     size_t textlen = strlen(text);
-    char* p = rl_line_buffer;
-    p = skipws(p);
+    char*  p       = rl_line_buffer;
+    p              = skipws(p);
     while (strncmp(p, text, textlen) != 0) {
         while (*p && *p != ' ') {
             ++p;
@@ -90,11 +90,11 @@ find_current_word(const char* text) {
     }
 
     return p;
-
 }
 
 
-const char* goto_next_word(const char* s) {
+const char*
+goto_next_word(const char* s) {
     if (*s == '\0') {
         return nullptr;
     }
@@ -119,7 +119,7 @@ const char* goto_next_word(const char* s) {
 }
 
 const char*
-    get_previous_word(const char* current_word) {
+get_previous_word(const char* current_word) {
     if (!rl_line_buffer) {
         return nullptr;
     }
@@ -132,21 +132,19 @@ const char*
     }
 
     int prev_start = 0;
-    int prev_end = 0;
+    int prev_end   = 0;
     while ((p - rl_line_buffer) != (current_word - rl_line_buffer)) {
         prev_start = p - rl_line_buffer;
-        prev_end = prev_start;
+        prev_end   = prev_start;
 
         const char* end = p;
         while (*end && *end != ' ') {
             ++end;
         }
         prev_end = end - rl_line_buffer;
-        p = skipws(end);
+        p        = skipws(end);
     }
     return strndup(rl_line_buffer + prev_start, prev_end - prev_start);
-
-
 }
 
 
@@ -171,18 +169,17 @@ get_command_word() {
 }
 
 
-
-char *
-builtin_generator(const char *text, int state) {
+char*
+builtin_generator(const char* text, int state) {
     static int list_index, len;
-    char* name;
+    char*      name;
 
     if (!state) {
         list_index = 0;
-        len = strlen(text);
+        len        = strlen(text);
     }
 
-    while ((name = (char*)builtins[list_index].name)) {
+    while ((name = (char*) builtins[list_index].name)) {
         list_index++;
         if (list_index == NUMBUILTINS) {
             return nullptr;
@@ -196,13 +193,13 @@ builtin_generator(const char *text, int state) {
     return nullptr;
 }
 
-char *
-path_generator(const char *text, int state) {
-    static char *path_env = nullptr;
-    static char* path_copy = nullptr;
-    static char* dir_token = nullptr;
-    static DIR* current_dir = nullptr;
-    static int len = 0;
+char*
+path_generator(const char* text, int state) {
+    static char* path_env    = nullptr;
+    static char* path_copy   = nullptr;
+    static char* dir_token   = nullptr;
+    static DIR*  current_dir = nullptr;
+    static int   len         = 0;
 
     if (!state) {
         if (current_dir) {
@@ -251,7 +248,7 @@ path_generator(const char *text, int state) {
 
         closedir(current_dir);
         current_dir = nullptr;
-        dir_token = strtok(nullptr, ":");
+        dir_token   = strtok(nullptr, ":");
         if (dir_token) {
             current_dir = opendir(dir_token);
         }
@@ -260,11 +257,10 @@ path_generator(const char *text, int state) {
     free(path_copy);
     path_copy = nullptr;
     return nullptr;
-
 }
 
-char *
-first_word_generator(const char *text, int state) {
+char*
+first_word_generator(const char* text, int state) {
     static int phase = 0;
     if (!state) {
         phase = 0;
@@ -281,8 +277,8 @@ first_word_generator(const char *text, int state) {
     return path_generator(text, state);
 }
 
-char **
-shell_completion_function(const char *text, int start, int end) {
+char**
+shell_completion_function(const char* text, int start, int end) {
     if (rl_line_buffer != nullptr) {
         if (strncmp(rl_line_buffer, "./", 2) == 0 || strncmp(rl_line_buffer, "../", 3) == 0) {
             rl_attempted_completion_over = 0;
@@ -309,11 +305,11 @@ shell_completion_function(const char *text, int start, int end) {
     return nullptr;
 }
 char*
-    external_completer_generator(const char* text, int state) {
-    static char* cached_result = nullptr;
-    static int cmp_idx = 0;
-    static size_t cmp_len = 0;
-    static char** completions = nullptr;
+external_completer_generator(const char* text, int state) {
+    static char*  cached_result = nullptr;
+    static int    cmp_idx       = 0;
+    static size_t cmp_len       = 0;
+    static char** completions   = nullptr;
 
     if (!state) {
         free(cached_result);
@@ -321,19 +317,18 @@ char*
     }
 
 
-
     if (!state) {
-        char prev_wordbuf[1024] = {0};
-        char cmd_wordbuf[1024] = {0};
-        char* cmd = get_command_word();
-        const char* script_path = cmd ? lookup_completion(cmd) : nullptr;
+        char        prev_wordbuf[1024] = {0};
+        char        cmd_wordbuf[1024]  = {0};
+        char*       cmd                = get_command_word();
+        const char* script_path        = cmd ? lookup_completion(cmd) : nullptr;
         if (cmd) {
             memmove(cmd_wordbuf, cmd, strlen(cmd));
             free(cmd);
             cmd = cmd_wordbuf;
         }
         const char* current_word = find_current_word(text);
-        const char* prev_word = get_previous_word(current_word);
+        const char* prev_word    = get_previous_word(current_word);
         if (prev_word == nullptr) {
             prev_word = "";
         } else {
@@ -345,8 +340,8 @@ char*
             if (completions) {
                 free(completions);
                 completions = nullptr;
-                cmp_len = 0;
-                cmp_idx = 0;
+                cmp_len     = 0;
+                cmp_idx     = 0;
             }
             return nullptr;
         }
@@ -357,8 +352,8 @@ char*
             if (completions) {
                 free(completions);
                 completions = nullptr;
-                cmp_len = 0;
-                cmp_idx = 0;
+                cmp_len     = 0;
+                cmp_idx     = 0;
             }
             return nullptr;
         }
@@ -371,8 +366,8 @@ char*
             if (completions) {
                 free(completions);
                 completions = nullptr;
-                cmp_len = 0;
-                cmp_idx = 0;
+                cmp_len     = 0;
+                cmp_idx     = 0;
             }
             return nullptr;
         }
@@ -380,9 +375,9 @@ char*
             dup2(pipefd[1], STDOUT_FILENO);
             close(pipefd[0]);
             close(pipefd[1]);
-            char comp_line[1024] = {0};
-            char comp_point[1024] = {0};
-            char* const envp[3] = { comp_line, comp_point, nullptr};
+            char        comp_line[1024]  = {0};
+            char        comp_point[1024] = {0};
+            char* const envp[3]          = {comp_line, comp_point, nullptr};
             snprintf(comp_line, sizeof(comp_line), "COMP_LINE=%s", rl_line_buffer);
             snprintf(comp_point, sizeof(comp_point), "COMP_POINT=%lu", strlen(rl_line_buffer));
             execle(script_path, script_path, cmd, current_word, prev_word, nullptr, envp);
@@ -390,21 +385,21 @@ char*
         }
 
         close(pipefd[1]);
-        FILE* f = fdopen(pipefd[0], "r");
-        char line[1024] = {0};
-        WordList* words = empty_wordlist();
+        FILE*     f          = fdopen(pipefd[0], "r");
+        char      line[1024] = {0};
+        WordList* words      = empty_wordlist();
         while (fgets(line, sizeof(line), f) != nullptr) {
             line[strcspn(line, "\n")] = '\0';
             append_wordlist(words, line);
-            //cached_result = strdup(line);
+            // cached_result = strdup(line);
         }
         fclose(f);
 
-        completions = malloc(sizeof(char*) * words->size);
+        completions    = malloc(sizeof(char*) * words->size);
         WordNode* iter = words->head;
-        for (int i = 0; i < words->size; ++ i) {
+        for (int i = 0; i < words->size; ++i) {
             completions[i] = strdup(iter->value);
-            iter = iter->next;
+            iter           = iter->next;
         }
         cmp_len = words->size;
         cleanup_wordlist(words);
@@ -415,8 +410,8 @@ char*
         if (cmp_idx >= cmp_len) {
             free(completions);
             completions = nullptr;
-            cmp_len = 0;
-            cmp_idx = 0;
+            cmp_len     = 0;
+            cmp_idx     = 0;
             return nullptr;
         }
         char* ret = completions[cmp_idx++];

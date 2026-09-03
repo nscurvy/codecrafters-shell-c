@@ -2,12 +2,12 @@
 // Created by nkinder on 8/13/26.
 //
 
-#include "common.h"
 #include "exec.h"
-#include "parser.h"
-#include "jobs.h"
 #include <readline/history.h>
 #include <readline/readline.h>
+#include "common.h"
+#include "jobs.h"
+#include "parser.h"
 
 #define TMPDISABLED
 
@@ -25,18 +25,16 @@ find_command(char* dest, const char* command) {
         WordList* path = tokenize_path(env_p);
         WordNode* p    = path->head;
         if (p) {
-            for (int i = 0; i < path->size; ++ i) {
+            for (int i = 0; i < path->size; ++i) {
                 memset(path_buffer, 0, sizeof(path_buffer));
                 strcpy(path_buffer, p->value);
                 strcat(path_buffer, "/");
                 strcat(path_buffer, command);
                 struct stat buffer;
 
-                if (stat(path_buffer, & buffer) == 0) {
-                    //printf("%s is %s\n", command, path_buffer);
-                    if ((buffer.st_mode & S_IXUSR)
-                        || (buffer.st_mode & S_IXGRP)
-                        || (buffer.st_mode & S_IXOTH)) {
+                if (stat(path_buffer, &buffer) == 0) {
+                    // printf("%s is %s\n", command, path_buffer);
+                    if ((buffer.st_mode & S_IXUSR) || (buffer.st_mode & S_IXGRP) || (buffer.st_mode & S_IXOTH)) {
                         strcpy(dest, path_buffer);
                         result = dest;
                         goto CLEANUP_WORDS;
@@ -58,7 +56,7 @@ exec_builtin(Command* command, BuiltinCmd* cmd) {
     int fd          = 0;
     int exit_status = 0;
     if (command->nredirs != 0) {
-        for (int i = 0; i < command->nredirs; ++ i) {
+        for (int i = 0; i < command->nredirs; ++i) {
             Redirect redirect      = command->redirs[i];
             int      redirected_fd = redirect.fd;
             saved_fd               = dup(redirected_fd);
@@ -67,14 +65,14 @@ exec_builtin(Command* command, BuiltinCmd* cmd) {
             dup2(fd, redirected_fd);
             close(fd);
 
-            exit_status |= cmd->builtin((const int) count_command_args((const char **) command->argv),
-                                        (const char **) command->argv);
+            exit_status |= cmd->builtin((const int) count_command_args((const char**) command->argv),
+                                        (const char**) command->argv);
 
             dup2(saved_fd, redirected_fd);
             close(saved_fd);
         }
     } else {
-        cmd->builtin((const int) count_command_args((const char **) command->argv), (const char **) command->argv);
+        cmd->builtin((const int) count_command_args((const char**) command->argv), (const char**) command->argv);
     }
     return exit_status;
 }
@@ -86,7 +84,7 @@ exec_pipes(Pipeline* pipeline) {
     int   pipes[pipeline->ncmds - 1][2];
     int   n         = pipeline->ncmds;
     int   num_pipes = pipeline->ncmds - 1;
-    for (int i = 0; i < pipeline->ncmds; ++ i) {
+    for (int i = 0; i < pipeline->ncmds; ++i) {
         if (i < num_pipes) {
             pipe(pipes[i]);
         }
@@ -101,7 +99,7 @@ exec_pipes(Pipeline* pipeline) {
             if (i < n - 1) {
                 dup2(pipes[i][1], STDOUT_FILENO);
             }
-            for (int j = 0; j < num_pipes; ++ j) {
+            for (int j = 0; j < num_pipes; ++j) {
                 close(pipes[j][0]);
                 close(pipes[j][1]);
             }
@@ -122,18 +120,18 @@ exec_pipes(Pipeline* pipeline) {
             }
         } else if (pid < 0) {
             perror("fork");
-            return - 1;
+            return -1;
         } else {
             pids[i] = pid;
         }
     }
 
-    for (int j = 0; j < num_pipes; ++ j) {
+    for (int j = 0; j < num_pipes; ++j) {
         close(pipes[j][0]);
         close(pipes[j][1]);
     }
 
-    for (int i = 0; i < n; ++ i) {
+    for (int i = 0; i < n; ++i) {
         waitpid(pids[i], nullptr, 0);
     }
     return 0;
@@ -154,7 +152,7 @@ exec_pipe(Command* first, Command* second) {
 
     if (pid_first < 0) {
         perror("fork");
-        return - 1;
+        return -1;
     } else if (pid_first == 0) {
         dup2(fds[1], STDOUT_FILENO);
         close(fds[0]);
@@ -176,7 +174,7 @@ exec_pipe(Command* first, Command* second) {
 
     if (pid_second < 0) {
         perror("fork");
-        return - 1;
+        return -1;
     } else if (pid_second == 0) {
         dup2(fds[0], STDIN_FILENO);
         close(fds[0]);
@@ -229,7 +227,7 @@ execc(const Command* command) {
     char* res = find_command(cmd_path, command->argv[0]);
     if (!res) {
         printf("%s: command not found\n", command->argv[0]);
-        return - 1;
+        return -1;
     }
     pid_t pid = fork();
 
@@ -259,9 +257,9 @@ execc(const Command* command) {
     } else {
         int status;
         if (!command->bgjob) {
-            waitpid(pid, & status, 0);
+            waitpid(pid, &status, 0);
         } else {
-            append_job(pid, (const char **) command->argv);
+            append_job(pid, (const char**) command->argv);
         }
     }
 
@@ -282,19 +280,20 @@ size_t
 count_command_args(const char** argv) {
     size_t       len  = 0;
     const char** iter = argv;
-    while (* iter != nullptr) {
-        ++ iter;
-        ++ len;
+    while (*iter != nullptr) {
+        ++iter;
+        ++len;
     }
 
     return len;
 }
 
-void exit_handler() {
+void
+exit_handler() {
     const char* histfile = getenv("HISTFILE");
     if (histfile) {
         int status = write_history(histfile);
-        if (status == - 1) {
+        if (status == -1) {
             fprintf(stderr, "Failed to write history to file %s\n", histfile);
         }
     }
@@ -305,17 +304,17 @@ int
 repl() {
     struct sigaction sa;
     sa.sa_handler = sigchld_handler;
-    sigemptyset(& sa.sa_mask);
+    sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
-    sigaction(SIGCHLD, & sa, nullptr);
+    sigaction(SIGCHLD, &sa, nullptr);
 
     using_history();
     atexit(exit_handler);
-    rl_event_hook = check_background_jobs;
+    rl_event_hook        = check_background_jobs;
     const char* histfile = getenv("HISTFILE");
     if (histfile) {
         int status = read_history(histfile);
-        if (status == - 1) {
+        if (status == -1) {
             fprintf(stderr, "Failed to read history from file %s\n", histfile);
         }
     }
@@ -329,7 +328,7 @@ repl() {
             add_history(input_line);
             WordList* tokens = tokenize_input(input_line);
             if (!tokens) {
-                exit_status = - 1;
+                exit_status = -1;
                 continue;
             }
 
@@ -339,7 +338,7 @@ repl() {
             }
             Pipeline* pipeline = build_pipeline(tokens);
             if (pipeline->ncmds == 0) {
-                exit_status = - 1;
+                exit_status = -1;
                 continue;
             }
 
@@ -347,17 +346,17 @@ repl() {
 
             cleanup_wordlist(tokens);
             cleanup_pipeline(pipeline);
-            free((void *) input_line);
+            free((void*) input_line);
         }
     }
 }
 
 
-//void prepare_args(char** dest, WordList* words) {
-//  WordNode* iter = words->head;
-//  for (int i = 0; i < words->size; ++i) {
-//    memcpy(dest[i], iter->value, strlen(iter->value) + 1);
-//    iter = iter->next;
-//  }
-//  dest[words->size] = nullptr;
-//}
+// void prepare_args(char** dest, WordList* words) {
+//   WordNode* iter = words->head;
+//   for (int i = 0; i < words->size; ++i) {
+//     memcpy(dest[i], iter->value, strlen(iter->value) + 1);
+//     iter = iter->next;
+//   }
+//   dest[words->size] = nullptr;
+// }

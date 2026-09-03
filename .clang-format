@@ -8,7 +8,7 @@ AlignOperands: true
 AlignTrailingComments: true
 AlwaysBreakAfterReturnType: TopLevel
 AlwaysBreakTemplateDeclarations: Yes
-BraceWrapping: 
+BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
   AfterControlStatement: false
@@ -28,15 +28,18 @@ BraceWrapping:
 BreakBeforeBraces: Custom
 ColumnLimit: 120
 ContinuationIndentWidth: 8
-IncludeCategories: 
+IncludeBlocks: Preserve
+IncludeCategories:
   - Regex: '^".*'
     Priority: 2
   - Regex: '.*'
     Priority: 3
-  - Regex: '^<readline.*'
-    Priority: 4
-  - Regex: '^<.*'
+  - Regex: '<.*readline.*'
     Priority: 1
+    SortPriority: 1
+  - Regex: '^<.*'
+    Priority: 0
+    SortPriority: 0
 IncludeIsMainRegex: '([-_](test|unittest))?$'
 IndentGotoLabels: false
 IndentPPDirectives: AfterHash
@@ -56,10 +59,14 @@ SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
 SpaceBeforeRangeBasedForLoopColon: false
 SpaceInEmptyParentheses: false
-SpacesInAngles: false
+SpacesInAngles: Never
 SpacesInConditionalStatement: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
+SortIncludes:
+  Enabled: true
+  IgnoreCase: true
+
 TabWidth: 4
 UseTab: Never
 ...

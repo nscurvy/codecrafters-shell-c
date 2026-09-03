@@ -3,10 +3,10 @@
 //
 
 #include "completion.h"
+#include "common.h"
 #include <dirent.h>
 #include <readline/history.h>
 #include <readline/readline.h>
-#include "common.h"
 
 
 #include <iso646.h>

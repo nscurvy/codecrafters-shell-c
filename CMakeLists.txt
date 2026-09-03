@@ -49,13 +49,19 @@ add_executable(shell ${SOURCE_FILES}
         src/nullability.h
         src/jobs.h
         src/jobs.c
-        src/common.h)
+        src/common.h
+        src/wordlist.c
+        src/wordlist.h)
 
-add_library(shell_lib ${LIB_FILES})
+add_library(shell_lib ${LIB_FILES}
+        src/wordlist.c
+        src/wordlist.h)
 set_property(TARGET shell_lib PROPERTY OUTPUT_NAME shell)
 
 if($ENV{HOME_MACHINE})
-add_executable(shell_test ${TEST_FILES})
+add_executable(shell_test ${TEST_FILES}
+        src/wordlist.c
+        src/wordlist.h)
 target_include_directories(shell_test PRIVATE src
                                       PRIVATE ${CHECK_INCLUDE_DIRS})
 

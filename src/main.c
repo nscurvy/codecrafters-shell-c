@@ -1,7 +1,7 @@
 #define TMPDISABLED
 #undef TMPDISABLED
-#include <readline/readline.h>
 #include "completion.h"
+#include <readline/readline.h>
 
 struct HashTable;
 

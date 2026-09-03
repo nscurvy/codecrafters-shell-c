@@ -3,8 +3,8 @@
 //
 
 #pragma once
-#include <stddef.h>
 #include "nullability.h"
+#include <stddef.h>
 
 ASSUME_NONNULL_BEGIN
 

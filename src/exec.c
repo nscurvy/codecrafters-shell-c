@@ -3,11 +3,11 @@
 //
 
 #include "exec.h"
-#include <readline/history.h>
-#include <readline/readline.h>
 #include "common.h"
 #include "jobs.h"
 #include "parser.h"
+#include <readline/history.h>
+#include <readline/readline.h>
 
 #define TMPDISABLED
 

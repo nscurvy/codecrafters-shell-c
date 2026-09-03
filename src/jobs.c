@@ -3,8 +3,8 @@
 //
 #include "jobs.h"
 
-#include <readline/readline.h>
 #include "common.h"
+#include <readline/readline.h>
 
 
 volatile sig_atomic_t child_exited_flag = 0;

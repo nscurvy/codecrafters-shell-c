@@ -5,9 +5,9 @@
 
 
 #pragma once
+#include "nullability.h"
 #include <readline/readline.h>
 #include <stdio.h>
-#include "nullability.h"
 
 ASSUME_NONNULL_BEGIN
 typedef rl_compentry_func_t CompletionGenerator;

@@ -22,5 +22,101 @@
       }
     },
     "isImported": false
+  },
+  {
+    "id": "TASK_3",
+    "priority": "LOW",
+    "tags": [
+      "refactor"
+    ],
+    "title": "Split parser",
+    "description": "Split the parser module into lexer, ast, and parser",
+    "status": "TODO",
+    "date": {
+      "date": {
+        "year": 2026,
+        "month": 9,
+        "day": 3
+      },
+      "time": {
+        "hour": 11,
+        "minute": 25,
+        "second": 43,
+        "nano": 139280643
+      }
+    },
+    "isImported": false
+  },
+  {
+    "id": "TASK_6",
+    "priority": "LOW",
+    "tags": [
+      "refactor"
+    ],
+    "title": "refactor declare",
+    "description": "Refactor declare to split the hash table definition from the variables manager.",
+    "status": "TODO",
+    "date": {
+      "date": {
+        "year": 2026,
+        "month": 9,
+        "day": 3
+      },
+      "time": {
+        "hour": 11,
+        "minute": 26,
+        "second": 21,
+        "nano": 491000559
+      }
+    },
+    "isImported": false
+  },
+  {
+    "id": "TASK_10",
+    "priority": "LOW",
+    "tags": [
+      "refactor"
+    ],
+    "title": "Clean jobs",
+    "description": "Clean jobs.c by removing the static array and standardizing the list.",
+    "status": "TODO",
+    "date": {
+      "date": {
+        "year": 2026,
+        "month": 9,
+        "day": 3
+      },
+      "time": {
+        "hour": 11,
+        "minute": 27,
+        "second": 1,
+        "nano": 911003565
+      }
+    },
+    "isImported": false
+  },
+  {
+    "id": "TASK_15",
+    "priority": "LOW",
+    "tags": [
+      "refactor"
+    ],
+    "title": "Split up exec",
+    "description": "Split exec.c to separate process control from the main loop. ",
+    "status": "TODO",
+    "date": {
+      "date": {
+        "year": 2026,
+        "month": 9,
+        "day": 3
+      },
+      "time": {
+        "hour": 11,
+        "minute": 28,
+        "second": 11,
+        "nano": 14668197
+      }
+    },
+    "isImported": false
   }
 ]

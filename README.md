@@ -5,19 +5,37 @@ implement any more features. However, if I feel inspired, I might add on to it.
 
 #### TODO
 ##### Code Correctness:
-- Create more unit tests
-- Test with valgrind a few more times.
-- Lint and correct code to remove compiler/linter warnings.
-- Finish applying compiler Nonnull attributes to functions and arguments.
+- Create more unit tests <!-- TODO: Create more unit tests -->
+- Test with valgrind a few more times. 
+- Lint and correct code to remove compiler/linter warnings. <!-- TODO: Create more unit tests -->
+- Finish applying compiler Nonnull attributes to functions and arguments. <!-- TODO: Create more unit tests -->
 
 ##### Code aesthetics:
-- Consistent naming scheme.
+- Consistent naming scheme. 
 - Consistent function names
 - Rename some variables to be more descriptive.
 
 ##### Refactoring:
-- Reorganize parser.h and parser.c to have less responsibilities.
-- Some functions are could be merged so that they are more efficient. Some functions need splitting.
+- Reorganize modules to have less responsibilities:
+  - [ ] Split parser module:
+    - [ ] Move the String List to its own module
+    - [ ] Move tokenizing to its own module
+    - [ ] Define an AST and move it to its own module
+  - [ ] Refactor declare module: 
+    - [ ] Rename to hash_table
+    - [ ] Create variables module to handle shell variables
+  - [ ] Clean the jobs module: 
+    - [ ] Remove the static array and all functions that reference it.
+    - [ ] Create better separation between job state and output
+    - [ ] Create a more consistent way of reaping jobs
+  - [ ] Split up the exec module:
+    - [ ] Extract the repl function to its own module.
+    - [ ] Focus exec module on command execution.
+    - [ ] Remove unused redundant functions
+    - [ ] Move the facilities for finding jobs on the PATH to its own module.
+  - [ ] Reorganize expansions
+  - [ ] Create a string builder/buffer to eliminate reliance on static buffers with arbitrary limits.
+- Some functions could be merged so that they are more efficient. Some functions need splitting.
 - I need to make sure that I have established a convention re: struct pointer ownership and that everything follows it.
 - exec needs to be reorganized.
 

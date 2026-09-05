@@ -77,7 +77,7 @@ find_builtin(const char* name) GCC_NONNULL(1);
  */
 int
 repl();
-struct WordList;
+struct TokenList;
 
 /**
  * TODO: Documentation
@@ -86,7 +86,7 @@ struct WordList;
  * @param words
  */
 void
-prepare_args(char** dest, struct WordList* words) GCC_NONNULL(1, 2);
+prepare_args(char** dest, struct TokenList* words) GCC_NONNULL(1, 2);
 
 /**
  * TODO: this

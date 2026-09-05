@@ -2,12 +2,12 @@
 // Created by nkinder on 9/3/26.
 //
 
-#include "wordlist.h"
+#include "TokenList.h"
 
 
 size_t
-count_words(WordList* tokens) {
-    WordNode* iter   = tokens->head;
+tokenlist_count(TokenList* tokens) {
+    Token* iter   = tokens->head;
     size_t    result = 0;
     while (iter != nullptr) {
         ++result;
@@ -16,14 +16,14 @@ count_words(WordList* tokens) {
     return result;
 }
 
-WordList*
-new_from_nodes(WordNode* head) {
-    WordList* result = empty_wordlist();
+TokenList*
+tokenlist_from_tokens(Token* head) {
+    TokenList* result = tokenlist_new_empty();
     if (!result) {
         return nullptr;
     }
     size_t    size = 0;
-    WordNode* iter = head;
+    Token* iter = head;
     while (iter != nullptr) {
         ++size;
         iter = iter->next;
@@ -35,13 +35,13 @@ new_from_nodes(WordNode* head) {
     return result;
 }
 
-WordNode*
-init_wordnode(const char* initial_word) {
+Token*
+token_new(const char* initial_word) {
     char* word_copy = strdup(initial_word);
     if (word_copy == nullptr) {
         return nullptr;
     }
-    WordNode* result = malloc(sizeof(WordNode));
+    Token* result = malloc(sizeof(Token));
     if (result == nullptr) {
         free(word_copy);
         return nullptr;
@@ -54,14 +54,14 @@ init_wordnode(const char* initial_word) {
 }
 
 void
-cleanup_wordnode(WordNode* node) {
+token_delete(Token* node) {
     free((void*) node->value);
     free(node);
 }
 
-WordList*
-empty_wordlist() {
-    WordList* result = malloc(sizeof(WordList));
+TokenList*
+tokenlist_new_empty() {
+    TokenList* result = malloc(sizeof(TokenList));
     if (!result) {
         return nullptr;
     }
@@ -71,16 +71,16 @@ empty_wordlist() {
     return result;
 }
 
-WordList*
-init_wordlist(const char* initial_word) {
-    WordNode* head = init_wordnode(initial_word);
+TokenList*
+tokenlist_new(const char* initial_word) {
+    Token* head = token_new(initial_word);
     if (!head) {
         return nullptr;
     }
 
-    WordList* result = empty_wordlist();
+    TokenList* result = tokenlist_new_empty();
     if (!result) {
-        cleanup_wordnode(head);
+        token_delete(head);
         return nullptr;
     }
 
@@ -90,23 +90,23 @@ init_wordlist(const char* initial_word) {
 }
 
 void
-cleanup_wordlist(WordList* list) {
-    WordNode* iter = list->head;
-    WordNode* prev = nullptr;
+tokenlist_delete(TokenList* list) {
+    Token* iter = list->head;
+    Token* prev = nullptr;
 
     while (iter != nullptr) {
         prev = iter;
         iter = iter->next;
-        cleanup_wordnode(prev);
+        token_delete(prev);
     }
 
     free(list);
 }
 
-WordNode*
-append_wordlist(WordList* list, const char* word) {
-    WordNode* iter     = list->head;
-    WordNode* new_node = init_wordnode(word);
+Token*
+tokenlist_append(TokenList* list, const char* word) {
+    Token* iter     = list->head;
+    Token* new_node = token_new(word);
     if (list->head == nullptr) {
         list->head = new_node;
         list->size = 1;
@@ -122,18 +122,18 @@ append_wordlist(WordList* list, const char* word) {
     return new_node;
 }
 
-WordList*
-copy_wordlist(WordList* original) {
-    WordNode* iter     = original->head;
-    WordNode* new_head = init_wordnode(iter->value);
-    WordNode* new_iter = new_head;
+TokenList*
+tokenlist_copyof(TokenList* original) {
+    Token* iter     = original->head;
+    Token* new_head = token_new(iter->value);
+    Token* new_iter = new_head;
     iter               = iter->next;
     while (iter != nullptr) {
-        new_iter->next = init_wordnode(iter->value);
+        new_iter->next = token_new(iter->value);
         new_iter       = new_iter->next;
         iter           = iter->next;
     }
-    WordList* newlist = empty_wordlist();
+    TokenList* newlist = tokenlist_new_empty();
     newlist->size     = original->size;
     newlist->head     = new_head;
     return newlist;

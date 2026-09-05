@@ -4,7 +4,7 @@
 
 #pragma once
 #include "nullability.h"
-#include "wordlist.h"
+#include "TokenList.h"
 #include <stdlib.h>
 
 #define MAX_REDIRS 10
@@ -84,14 +84,14 @@ typedef struct Pipeline {
  * @return true if any splitting happened.
  */
 bool
-split_on_pipes(WordList* dest, WordList* src) GCC_NONNULL(1, 2);
+split_on_pipes(TokenList* dest, TokenList* src) GCC_NONNULL(1, 2);
 
 
 size_t
-count_pipes(WordList* tokens) GCC_NONNULL(1);
+count_pipes(TokenList* tokens) GCC_NONNULL(1);
 
 Pipeline* NULLABLE
-build_pipeline(WordList* tokens) GCC_NONNULL(1);
+build_pipeline(TokenList* tokens) GCC_NONNULL(1);
 
 Pipeline* NULLABLE
 init_pipeline(size_t ncmds, Command** cmds) GCC_NONNULL(2);
@@ -135,7 +135,7 @@ init_command(char* NULLABLE* argv, bool bgjob, size_t nredirs, Redirect* redirs)
  *         allocation failure.
  */
 Command* NULLABLE
-build_command(WordList* words) GCC_NONNULL(1);
+build_command(TokenList* words) GCC_NONNULL(1);
 
 /**
  * @brief Free a Command and its owned argv strings.
@@ -203,7 +203,7 @@ next_token(char* dest, char* buf, QuoteFlagE* flag) GCC_NONNULL(1, 2, 3);
  *         allocation failed or the input contained an unterminated quote
  *         (in which case an error is printed to stderr).
  */
-WordList* NULLABLE
+TokenList* NULLABLE
 tokenize_input(const char* buf) GCC_NONNULL(1);
 
 /**
@@ -215,7 +215,7 @@ tokenize_input(const char* buf) GCC_NONNULL(1);
  * @return A newly allocated WordList containing each ':'-delimited
  *         segment of @p path as a separate word.
  */
-WordList* NULLABLE
+TokenList* NULLABLE
 tokenize_path(const char* path) GCC_NONNULL(1);
 
 /**
@@ -228,7 +228,7 @@ tokenize_path(const char* path) GCC_NONNULL(1);
  * @param words List of words to copy, in list order.
  */
 void
-prepare_args(char** NULLABLE dest, WordList* words) GCC_NONNULL(1, 2);
+prepare_args(char** NULLABLE dest, TokenList* words) GCC_NONNULL(1, 2);
 
 /**
  * @brief Parse a redirection operator and its target from tokenized words.
@@ -243,6 +243,6 @@ prepare_args(char** NULLABLE dest, WordList* words) GCC_NONNULL(1, 2);
  *              whose second node is the target path.
  */
 void
-parse_redir(Redirect* dest, WordList* words) GCC_NONNULL(1, 2);
+parse_redir(Redirect* dest, TokenList* words) GCC_NONNULL(1, 2);
 
 ASSUME_NONNULL_END

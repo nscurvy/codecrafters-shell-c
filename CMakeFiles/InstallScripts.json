@@ -1,7 +1,7 @@
 {
 	"InstallScripts" : 
 	[
-		"/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/cmake_install.cmake"
+		"/home/nkinder/CLionProjects/codecrafters-shell-c/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

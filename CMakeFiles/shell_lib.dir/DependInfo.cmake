@@ -8,13 +8,15 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/src/builtin.c" "CMakeFiles/shell_lib.dir/src/builtin.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/builtin.c.o.d"
-  "/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/src/completion.c" "CMakeFiles/shell_lib.dir/src/completion.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/completion.c.o.d"
-  "/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/src/exec.c" "CMakeFiles/shell_lib.dir/src/exec.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/exec.c.o.d"
-  "/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/src/expand.c" "CMakeFiles/shell_lib.dir/src/expand.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/expand.c.o.d"
-  "/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/src/jobs.c" "CMakeFiles/shell_lib.dir/src/jobs.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/jobs.c.o.d"
-  "/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/src/main.c" "CMakeFiles/shell_lib.dir/src/main.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/main.c.o.d"
-  "/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/src/parser.c" "CMakeFiles/shell_lib.dir/src/parser.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/parser.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/builtins.c" "CMakeFiles/shell_lib.dir/src/builtins.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/builtins.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/completion.c" "CMakeFiles/shell_lib.dir/src/completion.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/completion.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/declare.c" "CMakeFiles/shell_lib.dir/src/declare.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/declare.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/exec.c" "CMakeFiles/shell_lib.dir/src/exec.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/exec.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/expand.c" "CMakeFiles/shell_lib.dir/src/expand.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/expand.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/jobs.c" "CMakeFiles/shell_lib.dir/src/jobs.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/jobs.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/parser.c" "CMakeFiles/shell_lib.dir/src/parser.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/parser.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/wordlist.c" "CMakeFiles/shell_lib.dir/src/wordlist.c.o" "gcc" "CMakeFiles/shell_lib.dir/src/wordlist.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/token.cpp" "CMakeFiles/shell_lib.dir/src/token.cpp.o" "gcc" "CMakeFiles/shell_lib.dir/src/token.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

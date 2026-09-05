@@ -1,0 +1,6 @@
+#!/usr/bin/zsh
+
+
+export PROJECT_DIR=$(realpath .)
+export PATH="$PROJECT_DIR/bin:$PATH"
+export DEBUG_MODE=1

@@ -6,26 +6,46 @@
 #include "common.h"
 #include "nullability.h"
 
+
+// NOTE: This is not comprehensive yet. A few token types are missing.
+typedef enum TokenType {
+  TOK_WORD, // Normal text
+  TOK_ASSIGNMENT_WORD, // NAME=value
+  TOK_PIPE, // |
+  TOK_SEMI, // ; TODO: Impl
+  TOK_AMP, // & TODO: Impl
+  TOK_LPAREN, // ( TODO: Impl
+  TOK_RPAREN, // ) TODO: Impl
+  TOK_LBRACE, // { TODO: Impl
+  TOK_RBRACE, // } TODO: Impl
+  TOK_REDIR_IN, // <
+  TOK_REDIR_OUT, // >
+  TOK_REDIR_APPEND, // >>
+  TOK_NEWLINE, // \n
+  TOK_EOF
+} TokenType;
+
+
 /**
  * @brief A single node in a singly linked list of tokenized words.
  */
-typedef struct WordNode {
+typedef struct Token {
     const char*               value; /**< Heap-allocated token text owned by this node. */
-    struct WordNode* NULLABLE next;  /**< Next node in the list, or @c nullptr if last. */
-} WordNode;
+    struct Token* NULLABLE next;  /**< Next node in the list, or @c nullptr if last. */
+} Token;
 
 /**
  * @brief A singly linked list of tokens, with an explicit element count.
  */
-typedef struct WordList {
+typedef struct TokenList {
     size_t             size; /**< Number of nodes reachable from #head. */
-    WordNode* NULLABLE head; /**< First node in the list, or @c nullptr if empty. */
-} WordList;
+    Token* NULLABLE head; /**< First node in the list, or @c nullptr if empty. */
+} TokenList;
 
 ASSUME_NONNULL_BEGIN
 
 size_t
-count_words(WordList* tokens) GCC_NONNULL(1);
+tokenlist_count(TokenList* tokens) GCC_NONNULL(1);
 
 /**
  * @brief Wrap an existing chain of word nodes in a new WordList.
@@ -42,8 +62,8 @@ count_words(WordList* tokens) GCC_NONNULL(1);
  * @return A newly allocated WordList taking ownership of @p head, or
  *         @c nullptr if allocation of the list itself fails.
  */
-WordList* NULLABLE
-new_from_nodes(WordNode* head) GCC_NONNULL(1);
+TokenList* NULLABLE
+tokenlist_from_tokens(Token* head) GCC_NONNULL(1);
 
 /**
  * @brief Allocate a WordNode owning a copy of the given string.
@@ -53,8 +73,8 @@ new_from_nodes(WordNode* head) GCC_NONNULL(1);
  * @return A newly allocated WordNode with @c next set to @c nullptr, or
  *         @c nullptr if allocation or duplication failed.
  */
-WordNode* NULLABLE
-init_wordnode(const char* initial_word) GCC_NONNULL(1);
+Token* NULLABLE
+token_new(const char* initial_word) GCC_NONNULL(1);
 
 /**
  * @brief Free a single WordNode and its owned value string.
@@ -63,7 +83,7 @@ init_wordnode(const char* initial_word) GCC_NONNULL(1);
  *             cleanup_wordlist() to free an entire chain.
  */
 void
-cleanup_wordnode(WordNode* node) GCC_NONNULL(1);
+token_delete(Token* node) GCC_NONNULL(1);
 
 /**
  * @brief Allocate an empty WordList.
@@ -71,8 +91,8 @@ cleanup_wordnode(WordNode* node) GCC_NONNULL(1);
  * @return A newly allocated WordList with @c size 0 and @c head
  *         @c nullptr, or @c nullptr on allocation failure.
  */
-WordList* NULLABLE
-empty_wordlist();
+TokenList* NULLABLE
+tokenlist_new_empty();
 
 /**
  * @brief Allocate a WordList containing a single word.
@@ -82,11 +102,11 @@ empty_wordlist();
  * @return A newly allocated WordList of size 1, or @c nullptr if any
  *         allocation failed.
  */
-WordList* NULLABLE
-init_wordlist(const char* initial_word) GCC_NONNULL(1);
+TokenList* NULLABLE
+tokenlist_new(const char* initial_word) GCC_NONNULL(1);
 
-WordList*
-copy_wordlist(WordList* list);
+TokenList*
+tokenlist_copyof(TokenList* list);
 
 /**
  * @brief Free a WordList and every node it contains.
@@ -95,7 +115,7 @@ copy_wordlist(WordList* list);
  *             their owned value strings.
  */
 void
-cleanup_wordlist(WordList* list) GCC_NONNULL(1);
+tokenlist_delete(TokenList* list) GCC_NONNULL(1);
 
 /**
  * @brief Append a new word to the end of a WordList.
@@ -105,8 +125,8 @@ cleanup_wordlist(WordList* list) GCC_NONNULL(1);
  *
  * @return The newly appended WordNode, or @c nullptr if allocation failed.
  */
-WordNode* NULLABLE
-append_wordlist(WordList* list, const char* word) GCC_NONNULL(1, 2);
+Token* NULLABLE
+tokenlist_append(TokenList* list, const char* word) GCC_NONNULL(1, 2);
 
 
 ASSUME_NONNULL_END

@@ -22,8 +22,8 @@ find_command(char* dest, const char* command) {
     char*       result = nullptr;
     if (env_p) {
         char      path_buffer[PATH_MAX + 1];
-        WordList* path = tokenize_path(env_p);
-        WordNode* p    = path->head;
+        TokenList* path = tokenize_path(env_p);
+        Token* p    = path->head;
         if (p) {
             for (int i = 0; i < path->size; ++i) {
                 memset(path_buffer, 0, sizeof(path_buffer));
@@ -45,7 +45,7 @@ find_command(char* dest, const char* command) {
             memset(dest, 0, 1);
         }
 CLEANUP_WORDS:
-        cleanup_wordlist(path);
+        tokenlist_delete(path);
     }
     return result;
 }
@@ -326,13 +326,13 @@ repl() {
         const char* input_line = readline("$ ");
         if (input_line && strlen(input_line) > 0) {
             add_history(input_line);
-            WordList* tokens = tokenize_input(input_line);
+            TokenList* tokens = tokenize_input(input_line);
             if (!tokens) {
                 exit_status = -1;
                 continue;
             }
 
-            WordNode* iter = tokens->head;
+            Token* iter = tokens->head;
             while (iter != nullptr) {
                 iter = iter->next;
             }
@@ -344,7 +344,7 @@ repl() {
 
             exec_pipeline(pipeline);
 
-            cleanup_wordlist(tokens);
+            tokenlist_delete(tokens);
             cleanup_pipeline(pipeline);
             free((void*) input_line);
         }

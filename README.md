@@ -18,7 +18,7 @@ implement any more features. However, if I feel inspired, I might add on to it.
 ##### Refactoring:
 - Reorganize modules to have less responsibilities:
   - [ ] Split parser module:
-    - [ ] Move the String List to its own module
+    - [x] Move the String List to its own module
     - [ ] Move tokenizing to its own module
     - [ ] Define an AST and move it to its own module
   - [ ] Refactor declare module: 

@@ -387,22 +387,22 @@ external_completer_generator(const char* text, int state) {
         close(pipefd[1]);
         FILE*     f          = fdopen(pipefd[0], "r");
         char      line[1024] = {0};
-        WordList* words      = empty_wordlist();
+        TokenList* words      = tokenlist_new_empty();
         while (fgets(line, sizeof(line), f) != nullptr) {
             line[strcspn(line, "\n")] = '\0';
-            append_wordlist(words, line);
+            tokenlist_append(words, line);
             // cached_result = strdup(line);
         }
         fclose(f);
 
         completions    = malloc(sizeof(char*) * words->size);
-        WordNode* iter = words->head;
+        Token* iter = words->head;
         for (int i = 0; i < words->size; ++i) {
             completions[i] = strdup(iter->value);
             iter           = iter->next;
         }
         cmp_len = words->size;
-        cleanup_wordlist(words);
+        tokenlist_delete(words);
         int status;
         waitpid(pid, &status, 0);
     }

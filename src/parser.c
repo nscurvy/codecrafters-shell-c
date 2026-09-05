@@ -12,8 +12,8 @@
 
 
 void
-prepare_args(char** dest, WordList* words) {
-    WordNode* iter = words->head;
+prepare_args(char** dest, TokenList* words) {
+    Token* iter = words->head;
     for (int i = 0; i < words->size; ++i) {
         memcpy(dest[i], iter->value, strlen(iter->value) + 1);
         iter = iter->next;
@@ -73,19 +73,19 @@ init_command(char** argv, bool bgjob, size_t nredirs, Redirect redirs[]) {
 }
 
 bool
-split_on_pipes(WordList* dest, WordList* src) {
-    WordNode* iter     = src->head;
-    WordNode* prev     = nullptr;
+split_on_pipes(TokenList* dest, TokenList* src) {
+    Token* iter     = src->head;
+    Token* prev     = nullptr;
     size_t    new_size = 0;
     while (iter != nullptr) {
         if (strcmp(iter->value, "|") == 0) {
             prev->next         = nullptr;
-            WordNode* tmp      = iter;
+            Token* tmp      = iter;
             size_t    old_size = src->size;
-            src->size          = count_words(src);
+            src->size          = tokenlist_count(src);
             dest->head         = tmp->next;
-            dest->size         = count_words(dest);
-            cleanup_wordnode(tmp);
+            dest->size         = tokenlist_count(dest);
+            token_delete(tmp);
             return true;
         }
         ++new_size;
@@ -96,8 +96,8 @@ split_on_pipes(WordList* dest, WordList* src) {
 }
 
 size_t
-count_pipes(WordList* tokens) {
-    WordNode* iter  = tokens->head;
+count_pipes(TokenList* tokens) {
+    Token* iter  = tokens->head;
     size_t    count = 0;
     while (iter != nullptr) {
         if (strcmp(iter->value, "|") == 0) {
@@ -109,28 +109,28 @@ count_pipes(WordList* tokens) {
 }
 
 Pipeline*
-build_pipeline(WordList* tokens) {
+build_pipeline(TokenList* tokens) {
     size_t    ncmds  = count_pipes(tokens) + 1;
     Command** cmds   = malloc(sizeof(Command*) * ncmds);
-    WordList* cpy    = copy_wordlist(tokens);
+    TokenList* cpy    = tokenlist_copyof(tokens);
     Pipeline* result = nullptr;
     if (ncmds > 1) {
-        WordList** lists = malloc(sizeof(WordList*) * ncmds);
+        TokenList** lists = malloc(sizeof(TokenList*) * ncmds);
         lists[0]         = cpy;
         for (int i = 1; i < ncmds; ++i) {
-            lists[i] = empty_wordlist();
+            lists[i] = tokenlist_new_empty();
             split_on_pipes(lists[i], lists[i - 1]);
             cmds[i - 1] = build_command(lists[i - 1]);
         }
         cmds[ncmds - 1] = build_command(lists[ncmds - 1]);
         result          = init_pipeline(ncmds, cmds);
         free(cmds);
-        cleanup_wordlist(cpy);
+        tokenlist_delete(cpy);
     } else {
         cmds[0] = build_command(cpy);
         result  = init_pipeline(1, cmds);
         free(cmds);
-        cleanup_wordlist(cpy);
+        tokenlist_delete(cpy);
     }
     return result;
 }
@@ -180,7 +180,7 @@ is_redir(const char* str) {
 }
 
 void
-parse_redir(Redirect* dest, WordList* words) {
+parse_redir(Redirect* dest, TokenList* words) {
     int         fd   = 1;
     RedirMode   mode = REDIR_OUT;
     const char* iter = words->head->value;
@@ -204,13 +204,13 @@ parse_redir(Redirect* dest, WordList* words) {
 }
 
 bool
-check_for_bg_token(WordList* words) {
-    WordNode* iter = words->head;
-    WordNode* prev = nullptr;
+check_for_bg_token(TokenList* words) {
+    Token* iter = words->head;
+    Token* prev = nullptr;
     while (iter != nullptr) {
         if (strcmp(iter->value, "&") == 0) {
             prev->next = nullptr;
-            cleanup_wordnode(iter);
+            token_delete(iter);
             --words->size;
             return true;
         }
@@ -221,23 +221,23 @@ check_for_bg_token(WordList* words) {
 }
 
 Command*
-build_command(WordList* words) {
+build_command(TokenList* words) {
     char  argbuf[50][50];
     char* argdest[50];
     for (int i = 0; i < 50; ++i) {
         argdest[i] = argbuf[i];
     }
     Redirect  redirs[5];
-    WordList* wordcopy = copy_wordlist(words);
+    TokenList* wordcopy = tokenlist_copyof(words);
 
     size_t nredirs = 0;
 
     bool isbg = check_for_bg_token(wordcopy);
 
-    WordNode* iter = wordcopy->head;
+    Token* iter = wordcopy->head;
     while (iter != nullptr) {
         if (is_redir(iter->value)) {
-            WordList* redirected = new_from_nodes(iter);
+            TokenList* redirected = tokenlist_from_tokens(iter);
             wordcopy->size       = wordcopy->size - redirected->size;
             parse_redir(&redirs[nredirs++], redirected);
         }
@@ -249,10 +249,10 @@ build_command(WordList* words) {
         for (int i = 0; i < nredirs; ++i) {
             free(redirs[i].target);
         }
-        cleanup_wordlist(wordcopy);
+        tokenlist_delete(wordcopy);
         return nullptr;
     }
-    cleanup_wordlist(wordcopy);
+    tokenlist_delete(wordcopy);
     return result;
 }
 
@@ -377,8 +377,8 @@ next_token(char* dest, char* input, QuoteFlagE* flag) {
 }
 
 int
-exppass(WordList* list) {
-    WordNode* iter = list->head;
+exppass(TokenList* list) {
+    Token* iter = list->head;
 
     for (int i = 0; i < list->size; ++i) {
         const char* s        = iter->value;
@@ -392,20 +392,20 @@ exppass(WordList* list) {
 }
 
 void
-remove_blanks(WordList* list) {
-    WordNode* iter = list->head;
-    WordNode* prev = nullptr;
+remove_blanks(TokenList* list) {
+    Token* iter = list->head;
+    Token* prev = nullptr;
     while (iter != nullptr) {
         if (strlen(iter->value) == 0) {
             if (prev != nullptr) {
                 prev->next = iter->next;
                 list->size--;
-                cleanup_wordnode(iter);
+                token_delete(iter);
                 iter = prev;
             } else {
                 list->head = iter->next;
                 list->size--;
-                cleanup_wordnode(iter);
+                token_delete(iter);
                 iter = list->head;
                 continue;
             }
@@ -415,12 +415,12 @@ remove_blanks(WordList* list) {
     }
 }
 
-WordList*
+TokenList*
 tokenize_input(const char* input) {
     QuoteFlagE  flag      = UNQUOTED;
     char        buf[1024] = {};
     const char* iter      = input;
-    WordList*   result    = empty_wordlist();
+    TokenList*   result    = tokenlist_new_empty();
 
     size_t readchars;
 
@@ -430,13 +430,13 @@ tokenize_input(const char* input) {
         if (readchars > 0) {
             size_t jumpsize = readchars;
             iter += jumpsize;
-            append_wordlist(result, buf);
+            tokenlist_append(result, buf);
             memset(buf, 0, readchars);
         }
 
     } while (readchars != 0);
     if (flag == SINGLE_QUOTED) {
-        cleanup_wordlist(result);
+        tokenlist_delete(result);
         fprintf(stderr, "syntax error: unterminated quote\n");
         return nullptr;
     }
@@ -446,9 +446,9 @@ tokenize_input(const char* input) {
     return result;
 }
 
-WordList*
+TokenList*
 tokenize_path(const char* path) {
-    WordList* result = empty_wordlist();
+    TokenList* result = tokenlist_new_empty();
     char*     tok    = calloc((strlen(path) + 1), sizeof(char));
 
     const char* end            = path + strlen(path);
@@ -458,7 +458,7 @@ tokenize_path(const char* path) {
         memset(tok, '\0', strlen(tok));
         memccpy(tok, iter, ':', bytesremaining);
         tok[strcspn(tok, ":")] = '\0';
-        append_wordlist(result, tok);
+        tokenlist_append(result, tok);
         bytesremaining = end - iter;
         iter           = iter + strlen(tok) + 1;
     }

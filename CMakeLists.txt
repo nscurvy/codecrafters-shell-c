@@ -21,6 +21,8 @@ option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
 
 set(CMAKE_C_STANDARD 23) # Enable the C23 standard
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
 if(ENABLE_ASAN)
     add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g -O1 -D_FORTIFY_SOURCE=3)
     add_link_options(-fsanitize=address)
@@ -50,18 +52,18 @@ add_executable(shell ${SOURCE_FILES}
         src/jobs.h
         src/jobs.c
         src/common.h
-        src/wordlist.c
-        src/wordlist.h)
+        src/TokenList.c
+        src/TokenList.h)
 
 add_library(shell_lib ${LIB_FILES}
-        src/wordlist.c
-        src/wordlist.h)
+        src/TokenList.c
+        src/TokenList.h)
 set_property(TARGET shell_lib PROPERTY OUTPUT_NAME shell)
 
 if($ENV{HOME_MACHINE})
 add_executable(shell_test ${TEST_FILES}
-        src/wordlist.c
-        src/wordlist.h)
+        src/TokenList.c
+        src/TokenList.h)
 target_include_directories(shell_test PRIVATE src
                                       PRIVATE ${CHECK_INCLUDE_DIRS})
 

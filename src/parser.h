@@ -190,6 +190,7 @@ cleanup_redirect(Redirect* redir) GCC_NONNULL(1);
 size_t
 next_token(char* dest, char* buf, QuoteFlagE* flag) GCC_NONNULL(1, 2, 3);
 
+TokenType token(char* buf, const char* input, QuoteFlagE* flag);
 /**
  * @brief Tokenize a full line of input into a WordList.
  *

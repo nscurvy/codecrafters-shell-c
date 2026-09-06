@@ -9,20 +9,26 @@
 
 // NOTE: This is not comprehensive yet. A few token types are missing.
 typedef enum TokenType {
-  TOK_WORD, // Normal text
-  TOK_ASSIGNMENT_WORD, // NAME=value
-  TOK_PIPE, // |
-  TOK_SEMI, // ; TODO: Impl
-  TOK_AMP, // & TODO: Impl
-  TOK_LPAREN, // ( TODO: Impl
-  TOK_RPAREN, // ) TODO: Impl
-  TOK_LBRACE, // { TODO: Impl
-  TOK_RBRACE, // } TODO: Impl
-  TOK_REDIR_IN, // <
-  TOK_REDIR_OUT, // >
-  TOK_REDIR_APPEND, // >>
-  TOK_NEWLINE, // \n
-  TOK_EOF
+    TOK_WORD,            // Normal text
+    TOK_ASSIGNMENT_WORD, // NAME=value
+    TOK_PIPE,            // |
+    TOK_AND,             // &&
+    TOK_OR,              // ||
+    TOK_SEMI,            // ; TODO: Impl
+    TOK_AMP,             // & TODO: Impl
+    TOK_LPAREN,          // ( TODO: Impl
+    TOK_RPAREN,          // ) TODO: Impl
+    TOK_LBRACE,          // { TODO: Impl
+    TOK_RBRACE,          // } TODO: Impl
+    TOK_REDIR_IN,        // <
+    TOK_REDIR_OUT,       // >
+    TOK_REDIR_APPEND,    // >>
+    TOK_REDIR_HEREDOC,   //
+    TOK_NEWLINE,         // \n
+    TOK_RESERVED_WORD,   // if/then/else/fi/while/do/done/for/case/esac
+    TOK_CMDSUB_START,    // $( or `
+    TOK_CMDSUB_END,      // ) or `
+    TOK_EOF
 } TokenType;
 
 
@@ -30,7 +36,9 @@ typedef enum TokenType {
  * @brief A single node in a singly linked list of tokenized words.
  */
 typedef struct Token {
-    const char*               value; /**< Heap-allocated token text owned by this node. */
+    TokenType              type;  /**< The type of token this is. */
+    const char*            value; /**< Heap-allocated token text owned by this node. */
+    int                    fd;    /**< Which file descriptor the token refers to. Only meaningful for redirects.*/
     struct Token* NULLABLE next;  /**< Next node in the list, or @c nullptr if last. */
 } Token;
 
@@ -38,7 +46,7 @@ typedef struct Token {
  * @brief A singly linked list of tokens, with an explicit element count.
  */
 typedef struct TokenList {
-    size_t             size; /**< Number of nodes reachable from #head. */
+    size_t          size; /**< Number of nodes reachable from #head. */
     Token* NULLABLE head; /**< First node in the list, or @c nullptr if empty. */
 } TokenList;
 
@@ -68,13 +76,23 @@ tokenlist_from_tokens(Token* head) GCC_NONNULL(1);
 /**
  * @brief Allocate a WordNode owning a copy of the given string.
  *
- * @param initial_word String to duplicate into the new node.
+ * @param text String to duplicate into the new node.
  *
  * @return A newly allocated WordNode with @c next set to @c nullptr, or
  *         @c nullptr if allocation or duplication failed.
  */
 Token* NULLABLE
-token_new(const char* initial_word) GCC_NONNULL(1);
+token_new(TokenType type, const char* text, int fd) GCC_NONNULL(1);
+
+/**
+ * @brief Convenience macro/overload to create new tokens in the vast majority of cases where an fd argument is
+ * meaningless.
+ * \see \link token_new \endlink
+ *
+ * @param type The type of new token. \link(Token#type)
+ * @param text The text of the token. \link(Token#text)
+ */
+#define newtok(type, text) token_new((type), (text), 0)
 
 /**
  * @brief Free a single WordNode and its owned value string.
@@ -103,7 +121,7 @@ tokenlist_new_empty();
  *         allocation failed.
  */
 TokenList* NULLABLE
-tokenlist_new(const char* initial_word) GCC_NONNULL(1);
+tokenlist_new(TokenType type, const char* initial_word) GCC_NONNULL(1);
 
 TokenList*
 tokenlist_copyof(TokenList* list);
@@ -126,7 +144,9 @@ tokenlist_delete(TokenList* list) GCC_NONNULL(1);
  * @return The newly appended WordNode, or @c nullptr if allocation failed.
  */
 Token* NULLABLE
-tokenlist_append(TokenList* list, const char* word) GCC_NONNULL(1, 2);
+tokenlist_append(TokenList* list, TokenType type, const char* word) GCC_NONNULL(1, 2);
 
+Token* NULLABLE
+tokenlist_append_tok(TokenList* list, Token* token);
 
 ASSUME_NONNULL_END

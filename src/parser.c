@@ -415,54 +415,69 @@ remove_blanks(TokenList* list) {
     }
 }
 
-TokenList*
-tokenize_input(const char* input) {
-    QuoteFlagE  flag      = UNQUOTED;
-    char        buf[1024] = {};
-    const char* iter      = input;
-    TokenList*   result    = tokenlist_new_empty();
-
-    size_t readchars;
-
-    do {
-
-        readchars = next_token(buf, iter, &flag);
-        if (readchars > 0) {
-            size_t jumpsize = readchars;
-            iter += jumpsize;
-            tokenlist_append(result, buf);
-            memset(buf, 0, readchars);
-        }
-
-    } while (readchars != 0);
-    if (flag == SINGLE_QUOTED) {
-        tokenlist_delete(result);
-        fprintf(stderr, "syntax error: unterminated quote\n");
-        return nullptr;
-    }
-
-    exppass(result);
-    remove_blanks(result);
-    return result;
+TokenList* tokenize_path(const char* path) {
+  return nullptr;
+}
+TokenList* tokenize_input(const char* input) {
+  return nullptr;
 }
 
-TokenList*
-tokenize_path(const char* path) {
-    TokenList* result = tokenlist_new_empty();
-    char*     tok    = calloc((strlen(path) + 1), sizeof(char));
-
-    const char* end            = path + strlen(path);
-    const char* iter           = path;
-    ptrdiff_t   bytesremaining = end - path;
-    while (!(iter >= end)) {
-        memset(tok, '\0', strlen(tok));
-        memccpy(tok, iter, ':', bytesremaining);
-        tok[strcspn(tok, ":")] = '\0';
-        tokenlist_append(result, tok);
-        bytesremaining = end - iter;
-        iter           = iter + strlen(tok) + 1;
-    }
-
-    free(tok);
-    return result;
-}
+//Token* token(char** out, char** in, QuoteFlagE* flag) {
+//  return nullptr;
+//}
+//TokenList*
+//tokenize_input(const char* input) {
+//    QuoteFlagE  flag      = UNQUOTED;
+//    char        buf[1024] = {};
+//    const char* iter      = input;
+//    TokenList*   result    = tokenlist_new_empty();
+//
+//    size_t readchars;
+//
+//    do {
+//
+//        readchars = next_token(buf, iter, &flag);
+//        if (readchars > 0) {
+//            size_t jumpsize = readchars;
+//            iter += jumpsize;
+//            tokenlist_append(result, buf);
+//            memset(buf, 0, readchars);
+//        }
+//
+//    } while (readchars != 0);
+//    if (flag == SINGLE_QUOTED) {
+//        tokenlist_delete(result);
+//        fprintf(stderr, "syntax error: unterminated quote\n");
+//        return nullptr;
+//    }
+//
+//    exppass(result);
+//    remove_blanks(result);
+//    return result;
+//}
+//
+//TokenList*
+//tokenize_path(const char* path) {
+//    TokenList* result = tokenlist_new_empty();
+//    char*     tok    = calloc((strlen(path) + 1), sizeof(char));
+//
+//    const char* end            = path + strlen(path);
+//    const char* iter           = path;
+//    ptrdiff_t   bytesremaining = end - path;
+//    while (!(iter >= end)) {
+//        memset(tok, '\0', strlen(tok));
+//        memccpy(tok, iter, ':', bytesremaining);
+//        tok[strcspn(tok, ":")] = '\0';
+//        tokenlist_append(result, tok);
+//        bytesremaining = end - iter;
+//        iter           = iter + strlen(tok) + 1;
+//    }
+//
+//    free(tok);
+//    return result;
+//}
+//
+//TokenType token(char** buf, char** iter_in, QuoteFlagE* flag) {
+//  char* begin = *iter_in;
+//
+//}

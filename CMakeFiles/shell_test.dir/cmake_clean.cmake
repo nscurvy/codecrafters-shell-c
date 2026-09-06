@@ -1,7 +1,11 @@
 file(REMOVE_RECURSE
   "CMakeFiles/shell_test.dir/link.d"
-  "CMakeFiles/shell_test.dir/tests/pipeline_tests.c.o"
-  "CMakeFiles/shell_test.dir/tests/pipeline_tests.c.o.d"
+  "CMakeFiles/shell_test.dir/src/TokenList.c.o"
+  "CMakeFiles/shell_test.dir/src/TokenList.c.o.d"
+  "CMakeFiles/shell_test.dir/src/lexer.c.o"
+  "CMakeFiles/shell_test.dir/src/lexer.c.o.d"
+  "CMakeFiles/shell_test.dir/src/wordlist.c.o"
+  "CMakeFiles/shell_test.dir/src/wordlist.c.o.d"
   "shell_test"
   "shell_test.pdb"
 )

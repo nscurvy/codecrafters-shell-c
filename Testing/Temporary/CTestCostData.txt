@@ -1,1 +1,3 @@
+ShellUnitTests 0 0
 ---
+ShellUnitTests

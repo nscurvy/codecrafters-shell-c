@@ -1,3 +1,19 @@
-Start testing: Aug 26 21:48 PDT
+Start testing: Sep 05 15:52 PDT
 ----------------------------------------------------------
-End testing: Aug 26 21:48 PDT
+Unable to find executable: /home/nkinder/CLionProjects/codecrafters-shell-c/shell_test
+1/1 Testing: ShellUnitTests
+1/1 Test: ShellUnitTests
+Command: ""
+Directory: /home/nkinder/CLionProjects/codecrafters-shell-c
+"ShellUnitTests" start time: 
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"ShellUnitTests" end time: Sep 05 15:52 PDT
+"ShellUnitTests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Sep 05 15:52 PDT

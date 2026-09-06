@@ -3,6 +3,7 @@
 //
 
 #include "completion.h"
+#include "wordlist.h"
 #include "common.h"
 #include <dirent.h>
 #include <readline/history.h>
@@ -387,22 +388,22 @@ external_completer_generator(const char* text, int state) {
         close(pipefd[1]);
         FILE*     f          = fdopen(pipefd[0], "r");
         char      line[1024] = {0};
-        TokenList* words      = tokenlist_new_empty();
+        WordList* words      = wordlist_new_empty();
         while (fgets(line, sizeof(line), f) != nullptr) {
             line[strcspn(line, "\n")] = '\0';
-            tokenlist_append(words, line);
+            wordlist_append(words, line);
             // cached_result = strdup(line);
         }
         fclose(f);
 
         completions    = malloc(sizeof(char*) * words->size);
-        Token* iter = words->head;
+        Word* iter = words->head;
         for (int i = 0; i < words->size; ++i) {
-            completions[i] = strdup(iter->value);
+            completions[i] = strdup(iter->text);
             iter           = iter->next;
         }
         cmp_len = words->size;
-        tokenlist_delete(words);
+        wordlist_delete(words);
         int status;
         waitpid(pid, &status, 0);
     }

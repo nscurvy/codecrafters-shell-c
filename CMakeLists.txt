@@ -53,23 +53,34 @@ add_executable(shell ${SOURCE_FILES}
         src/jobs.c
         src/common.h
         src/TokenList.c
-        src/TokenList.h)
+        src/TokenList.h
+        src/lexer.c
+        src/lexer.h
+        src/wordlist.c
+        src/wordlist.h)
 
 add_library(shell_lib ${LIB_FILES}
         src/TokenList.c
-        src/TokenList.h)
+        src/TokenList.h
+        src/lexer.c
+        src/lexer.h
+        src/wordlist.c)
 set_property(TARGET shell_lib PROPERTY OUTPUT_NAME shell)
 
-if($ENV{HOME_MACHINE})
 add_executable(shell_test ${TEST_FILES}
         src/TokenList.c
-        src/TokenList.h)
+        src/TokenList.h
+        src/lexer.c
+        src/lexer.h
+        src/wordlist.c
+        tests/tests.h
+)
 target_include_directories(shell_test PRIVATE src
                                       PRIVATE ${CHECK_INCLUDE_DIRS})
 
 target_link_libraries(shell_test PRIVATE shell_lib ${CHECK_LIBRARIES} readline)
 add_test(NAME ShellUnitTests COMMAND shell_test)
-endif()
+
 target_link_libraries(shell PRIVATE readline)
 target_link_libraries(shell_lib PRIVATE readline)
 

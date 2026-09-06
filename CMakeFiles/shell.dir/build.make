@@ -72,10 +72,24 @@ include CMakeFiles/shell.dir/flags.make
 CMakeFiles/shell.dir/codegen:
 .PHONY : CMakeFiles/shell.dir/codegen
 
+CMakeFiles/shell.dir/src/TokenList.c.o: CMakeFiles/shell.dir/flags.make
+CMakeFiles/shell.dir/src/TokenList.c.o: src/TokenList.c
+CMakeFiles/shell.dir/src/TokenList.c.o: CMakeFiles/shell.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/shell.dir/src/TokenList.c.o"
+	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/TokenList.c.o -MF CMakeFiles/shell.dir/src/TokenList.c.o.d -o CMakeFiles/shell.dir/src/TokenList.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/TokenList.c
+
+CMakeFiles/shell.dir/src/TokenList.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/shell.dir/src/TokenList.c.i"
+	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/nkinder/CLionProjects/codecrafters-shell-c/src/TokenList.c > CMakeFiles/shell.dir/src/TokenList.c.i
+
+CMakeFiles/shell.dir/src/TokenList.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/shell.dir/src/TokenList.c.s"
+	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/nkinder/CLionProjects/codecrafters-shell-c/src/TokenList.c -o CMakeFiles/shell.dir/src/TokenList.c.s
+
 CMakeFiles/shell.dir/src/builtins.c.o: CMakeFiles/shell.dir/flags.make
 CMakeFiles/shell.dir/src/builtins.c.o: src/builtins.c
 CMakeFiles/shell.dir/src/builtins.c.o: CMakeFiles/shell.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/shell.dir/src/builtins.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/shell.dir/src/builtins.c.o"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/builtins.c.o -MF CMakeFiles/shell.dir/src/builtins.c.o.d -o CMakeFiles/shell.dir/src/builtins.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/builtins.c
 
 CMakeFiles/shell.dir/src/builtins.c.i: cmake_force
@@ -89,7 +103,7 @@ CMakeFiles/shell.dir/src/builtins.c.s: cmake_force
 CMakeFiles/shell.dir/src/completion.c.o: CMakeFiles/shell.dir/flags.make
 CMakeFiles/shell.dir/src/completion.c.o: src/completion.c
 CMakeFiles/shell.dir/src/completion.c.o: CMakeFiles/shell.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/shell.dir/src/completion.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/shell.dir/src/completion.c.o"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/completion.c.o -MF CMakeFiles/shell.dir/src/completion.c.o.d -o CMakeFiles/shell.dir/src/completion.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/completion.c
 
 CMakeFiles/shell.dir/src/completion.c.i: cmake_force
@@ -103,7 +117,7 @@ CMakeFiles/shell.dir/src/completion.c.s: cmake_force
 CMakeFiles/shell.dir/src/declare.c.o: CMakeFiles/shell.dir/flags.make
 CMakeFiles/shell.dir/src/declare.c.o: src/declare.c
 CMakeFiles/shell.dir/src/declare.c.o: CMakeFiles/shell.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/shell.dir/src/declare.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/shell.dir/src/declare.c.o"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/declare.c.o -MF CMakeFiles/shell.dir/src/declare.c.o.d -o CMakeFiles/shell.dir/src/declare.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/declare.c
 
 CMakeFiles/shell.dir/src/declare.c.i: cmake_force
@@ -117,7 +131,7 @@ CMakeFiles/shell.dir/src/declare.c.s: cmake_force
 CMakeFiles/shell.dir/src/exec.c.o: CMakeFiles/shell.dir/flags.make
 CMakeFiles/shell.dir/src/exec.c.o: src/exec.c
 CMakeFiles/shell.dir/src/exec.c.o: CMakeFiles/shell.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/shell.dir/src/exec.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/shell.dir/src/exec.c.o"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/exec.c.o -MF CMakeFiles/shell.dir/src/exec.c.o.d -o CMakeFiles/shell.dir/src/exec.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/exec.c
 
 CMakeFiles/shell.dir/src/exec.c.i: cmake_force
@@ -131,7 +145,7 @@ CMakeFiles/shell.dir/src/exec.c.s: cmake_force
 CMakeFiles/shell.dir/src/expand.c.o: CMakeFiles/shell.dir/flags.make
 CMakeFiles/shell.dir/src/expand.c.o: src/expand.c
 CMakeFiles/shell.dir/src/expand.c.o: CMakeFiles/shell.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/shell.dir/src/expand.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/shell.dir/src/expand.c.o"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/expand.c.o -MF CMakeFiles/shell.dir/src/expand.c.o.d -o CMakeFiles/shell.dir/src/expand.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/expand.c
 
 CMakeFiles/shell.dir/src/expand.c.i: cmake_force
@@ -145,7 +159,7 @@ CMakeFiles/shell.dir/src/expand.c.s: cmake_force
 CMakeFiles/shell.dir/src/jobs.c.o: CMakeFiles/shell.dir/flags.make
 CMakeFiles/shell.dir/src/jobs.c.o: src/jobs.c
 CMakeFiles/shell.dir/src/jobs.c.o: CMakeFiles/shell.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/shell.dir/src/jobs.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/shell.dir/src/jobs.c.o"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/jobs.c.o -MF CMakeFiles/shell.dir/src/jobs.c.o.d -o CMakeFiles/shell.dir/src/jobs.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/jobs.c
 
 CMakeFiles/shell.dir/src/jobs.c.i: cmake_force
@@ -156,10 +170,24 @@ CMakeFiles/shell.dir/src/jobs.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/shell.dir/src/jobs.c.s"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/nkinder/CLionProjects/codecrafters-shell-c/src/jobs.c -o CMakeFiles/shell.dir/src/jobs.c.s
 
+CMakeFiles/shell.dir/src/lexer.c.o: CMakeFiles/shell.dir/flags.make
+CMakeFiles/shell.dir/src/lexer.c.o: src/lexer.c
+CMakeFiles/shell.dir/src/lexer.c.o: CMakeFiles/shell.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/shell.dir/src/lexer.c.o"
+	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/lexer.c.o -MF CMakeFiles/shell.dir/src/lexer.c.o.d -o CMakeFiles/shell.dir/src/lexer.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/lexer.c
+
+CMakeFiles/shell.dir/src/lexer.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/shell.dir/src/lexer.c.i"
+	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/nkinder/CLionProjects/codecrafters-shell-c/src/lexer.c > CMakeFiles/shell.dir/src/lexer.c.i
+
+CMakeFiles/shell.dir/src/lexer.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/shell.dir/src/lexer.c.s"
+	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/nkinder/CLionProjects/codecrafters-shell-c/src/lexer.c -o CMakeFiles/shell.dir/src/lexer.c.s
+
 CMakeFiles/shell.dir/src/main.c.o: CMakeFiles/shell.dir/flags.make
 CMakeFiles/shell.dir/src/main.c.o: src/main.c
 CMakeFiles/shell.dir/src/main.c.o: CMakeFiles/shell.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/shell.dir/src/main.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/shell.dir/src/main.c.o"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/main.c.o -MF CMakeFiles/shell.dir/src/main.c.o.d -o CMakeFiles/shell.dir/src/main.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/main.c
 
 CMakeFiles/shell.dir/src/main.c.i: cmake_force
@@ -173,7 +201,7 @@ CMakeFiles/shell.dir/src/main.c.s: cmake_force
 CMakeFiles/shell.dir/src/parser.c.o: CMakeFiles/shell.dir/flags.make
 CMakeFiles/shell.dir/src/parser.c.o: src/parser.c
 CMakeFiles/shell.dir/src/parser.c.o: CMakeFiles/shell.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/shell.dir/src/parser.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/shell.dir/src/parser.c.o"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/parser.c.o -MF CMakeFiles/shell.dir/src/parser.c.o.d -o CMakeFiles/shell.dir/src/parser.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/parser.c
 
 CMakeFiles/shell.dir/src/parser.c.i: cmake_force
@@ -187,7 +215,7 @@ CMakeFiles/shell.dir/src/parser.c.s: cmake_force
 CMakeFiles/shell.dir/src/wordlist.c.o: CMakeFiles/shell.dir/flags.make
 CMakeFiles/shell.dir/src/wordlist.c.o: src/wordlist.c
 CMakeFiles/shell.dir/src/wordlist.c.o: CMakeFiles/shell.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/shell.dir/src/wordlist.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building C object CMakeFiles/shell.dir/src/wordlist.c.o"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/shell.dir/src/wordlist.c.o -MF CMakeFiles/shell.dir/src/wordlist.c.o.d -o CMakeFiles/shell.dir/src/wordlist.c.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/wordlist.c
 
 CMakeFiles/shell.dir/src/wordlist.c.i: cmake_force
@@ -198,50 +226,38 @@ CMakeFiles/shell.dir/src/wordlist.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/shell.dir/src/wordlist.c.s"
 	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/nkinder/CLionProjects/codecrafters-shell-c/src/wordlist.c -o CMakeFiles/shell.dir/src/wordlist.c.s
 
-CMakeFiles/shell.dir/src/token.cpp.o: CMakeFiles/shell.dir/flags.make
-CMakeFiles/shell.dir/src/token.cpp.o: src/token.cpp
-CMakeFiles/shell.dir/src/token.cpp.o: CMakeFiles/shell.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/shell.dir/src/token.cpp.o"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/shell.dir/src/token.cpp.o -MF CMakeFiles/shell.dir/src/token.cpp.o.d -o CMakeFiles/shell.dir/src/token.cpp.o -c /home/nkinder/CLionProjects/codecrafters-shell-c/src/token.cpp
-
-CMakeFiles/shell.dir/src/token.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/shell.dir/src/token.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nkinder/CLionProjects/codecrafters-shell-c/src/token.cpp > CMakeFiles/shell.dir/src/token.cpp.i
-
-CMakeFiles/shell.dir/src/token.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/shell.dir/src/token.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nkinder/CLionProjects/codecrafters-shell-c/src/token.cpp -o CMakeFiles/shell.dir/src/token.cpp.s
-
 # Object files for target shell
 shell_OBJECTS = \
+"CMakeFiles/shell.dir/src/TokenList.c.o" \
 "CMakeFiles/shell.dir/src/builtins.c.o" \
 "CMakeFiles/shell.dir/src/completion.c.o" \
 "CMakeFiles/shell.dir/src/declare.c.o" \
 "CMakeFiles/shell.dir/src/exec.c.o" \
 "CMakeFiles/shell.dir/src/expand.c.o" \
 "CMakeFiles/shell.dir/src/jobs.c.o" \
+"CMakeFiles/shell.dir/src/lexer.c.o" \
 "CMakeFiles/shell.dir/src/main.c.o" \
 "CMakeFiles/shell.dir/src/parser.c.o" \
-"CMakeFiles/shell.dir/src/wordlist.c.o" \
-"CMakeFiles/shell.dir/src/token.cpp.o"
+"CMakeFiles/shell.dir/src/wordlist.c.o"
 
 # External object files for target shell
 shell_EXTERNAL_OBJECTS =
 
+shell: CMakeFiles/shell.dir/src/TokenList.c.o
 shell: CMakeFiles/shell.dir/src/builtins.c.o
 shell: CMakeFiles/shell.dir/src/completion.c.o
 shell: CMakeFiles/shell.dir/src/declare.c.o
 shell: CMakeFiles/shell.dir/src/exec.c.o
 shell: CMakeFiles/shell.dir/src/expand.c.o
 shell: CMakeFiles/shell.dir/src/jobs.c.o
+shell: CMakeFiles/shell.dir/src/lexer.c.o
 shell: CMakeFiles/shell.dir/src/main.c.o
 shell: CMakeFiles/shell.dir/src/parser.c.o
 shell: CMakeFiles/shell.dir/src/wordlist.c.o
-shell: CMakeFiles/shell.dir/src/token.cpp.o
 shell: CMakeFiles/shell.dir/build.make
 shell: CMakeFiles/shell.dir/compiler_depend.ts
 shell: CMakeFiles/shell.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX executable shell"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/nkinder/CLionProjects/codecrafters-shell-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking C executable shell"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/shell.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

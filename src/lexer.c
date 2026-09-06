@@ -271,7 +271,7 @@ int lx_tokenize(TokenList* dst, CharStream* in) {
 bool lx_end_of_token(int c, QuoteFlagE flag) {
   if (flag == UNQUOTED) {
     return isspace(c) || c == -1;
-  } else {
+  } else{
     return c == -1;
   }
 }

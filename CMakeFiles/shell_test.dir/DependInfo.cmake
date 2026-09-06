@@ -8,7 +8,9 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/nkinder/CLionProjects/codecrafters/codecrafters-shell-c/tests/pipeline_tests.c" "CMakeFiles/shell_test.dir/tests/pipeline_tests.c.o" "gcc" "CMakeFiles/shell_test.dir/tests/pipeline_tests.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/TokenList.c" "CMakeFiles/shell_test.dir/src/TokenList.c.o" "gcc" "CMakeFiles/shell_test.dir/src/TokenList.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/lexer.c" "CMakeFiles/shell_test.dir/src/lexer.c.o" "gcc" "CMakeFiles/shell_test.dir/src/lexer.c.o.d"
+  "/home/nkinder/CLionProjects/codecrafters-shell-c/src/wordlist.c" "CMakeFiles/shell_test.dir/src/wordlist.c.o" "gcc" "CMakeFiles/shell_test.dir/src/wordlist.c.o.d"
   "" "shell_test" "gcc" "CMakeFiles/shell_test.dir/link.d"
   )
 

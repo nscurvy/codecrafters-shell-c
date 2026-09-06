@@ -68,3 +68,18 @@ vcpkg_installed
 /compile_commands.json
 
 /shell
+/cmake-build-debug-gnu/cmake_install.cmake
+/cmake-build-debug-gnu/CMakeCache.txt
+/cmake-build-debug-gnu/compile_commands.json
+/cmake-build-debug-gnu/CTestTestfile.cmake
+/cmake-build-debug-gnu/libshell.a
+/cmake-build-debug-gnu/Makefile
+/cmake-build-debug-gnu/shell
+/cmake-build-debug-gnu/shell_test
+/build-sanitized/cmake_install.cmake
+/build-sanitized/CMakeCache.txt
+/build-sanitized/compile_commands.json
+/build-sanitized/CTestTestfile.cmake
+/build-sanitized/libshell.a
+/build-sanitized/Makefile
+/build-sanitized/shell

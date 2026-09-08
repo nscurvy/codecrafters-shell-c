@@ -1,6 +1,9 @@
 //
 // Created by nkinder on 8/11/26.
 //
+/**
+ * Declarations related to builtin logic.
+ */
 
 #pragma once
 #include "nullability.h"

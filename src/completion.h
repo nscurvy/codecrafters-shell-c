@@ -2,6 +2,9 @@
 // Created by nkinder on 8/14/26.
 //
 //
+/**
+ * Declarations related to shell completion.
+ */
 
 
 #pragma once

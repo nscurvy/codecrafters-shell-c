@@ -1,22 +1,27 @@
 //
 // Created by nkinder on 9/5/26.
 //
-// Description: This is basically a copy of the TokenList that I refactored out.
-//              I forgot that some other parts of the codebase utilized it and
-//              the "TokenType" field is not applicable.
+
+/**
+ * @brief A linked list of "Words"
+ *
+ * This is basically a copy of the TokenList that I refactored out.
+ * I forgot that some other parts of the codebase utilized it and
+ * the "TokenType" field is not applicable.
+ */
 
 #pragma once
-#include <stddef.h>
 #include "nullability.h"
+#include <stddef.h>
 
 typedef struct Word {
-  const char* text;
-  struct Word* next;
+    const char*  text;
+    struct Word* next;
 } Word;
 
 typedef struct WordList {
-  size_t size;
-  Word* head;
+    size_t size;
+    Word*  head;
 
 } WordList;
 ASSUME_NONNULL_BEGIN

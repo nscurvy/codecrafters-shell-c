@@ -92,3 +92,4 @@ vcpkg_installed
 /.idea
 /build-sanitized
 /shell_test
+/.junie/

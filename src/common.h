@@ -1,6 +1,9 @@
 //
 // Created by nkinder on 8/18/26.
 //
+/**
+ * Common stdlib and unix/linux/posix headers. For convenience.
+ */
 
 #pragma once
 

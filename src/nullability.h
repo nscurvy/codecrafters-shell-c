@@ -1,6 +1,10 @@
 //
 // Created by nkinder on 8/15/26.
 //
+/**
+ * Nullability compiler constructs, also switching between them based on which toolchain
+ * I am compiling with.
+ */
 #pragma once
 
 #if defined(__clang__) && __has_feature(nullability)

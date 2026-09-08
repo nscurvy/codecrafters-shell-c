@@ -1,5 +1,0 @@
-#!/usr/bin/zsh
-
-
-build
-ctest --test-dir cmake-build-debug-gnu

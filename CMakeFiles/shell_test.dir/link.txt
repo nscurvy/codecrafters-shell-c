@@ -1,1 +1,0 @@
-/usr/bin/gcc -g -Wl,--dependency-file=CMakeFiles/shell_test.dir/link.d CMakeFiles/shell_test.dir/src/TokenList.c.o CMakeFiles/shell_test.dir/src/lexer.c.o CMakeFiles/shell_test.dir/src/wordlist.c.o -o shell_test  libshell.a -lreadline

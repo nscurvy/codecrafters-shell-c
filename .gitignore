@@ -51,23 +51,20 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Local lint
 build
 vcpkg_installed
 /bin/build
 /Testing/
 /Makefile
-
-/CTestTestfile.cmake
-
-/cmake_install.cmake
-
-/CMakeLists.txt
-
-/CMakeCache.txt
-
-/compile_commands.json
-
 /shell
+
+# Compiler lint
+/CTestTestfile.cmake
+/cmake_install.cmake
+/CMakeLists.txt
+/CMakeCache.txt
+/compile_commands.json
 /cmake-build-debug-gnu/cmake_install.cmake
 /cmake-build-debug-gnu/CMakeCache.txt
 /cmake-build-debug-gnu/compile_commands.json
@@ -83,3 +80,11 @@ vcpkg_installed
 /build-sanitized/libshell.a
 /build-sanitized/Makefile
 /build-sanitized/shell
+/cmake-build-debug/
+/cmake-build-debug-gnu/
+/bin/
+/.todo/
+/.codecrafters/
+/.cmake/
+/.ccls-cache/
+/.cache/

@@ -7,7 +7,6 @@
 #include "nullability.h"
 
 
-// NOTE: This is not comprehensive yet. A few token types are missing.
 typedef enum TokenType {
     TOK_WORD,            // Normal text
     TOK_ASSIGNMENT_WORD, // NAME=value
@@ -28,7 +27,8 @@ typedef enum TokenType {
     TOK_RESERVED_WORD,   // if/then/else/fi/while/do/done/for/case/esac
     TOK_CMDSUB_START,    // $( or `
     TOK_CMDSUB_END,      // ) or `
-    TOK_EOF
+    TOK_EOF = -1,
+    TOK_ERR = -2
 } TokenType;
 
 

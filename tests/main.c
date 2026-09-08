@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include "../tests/tests.h"
 
+#define DEBUGGER_MODE
+//#UNDEF DEBUGGER_MODE
+
 int main() {
   int number_failed;
   Suite* s;
@@ -13,6 +16,10 @@ int main() {
 
   s = lexer_suite();
   sr = srunner_create(s);
+
+#ifdef DEBUGGER_MODE
+  srunner_set_fork_status(sr, CK_NOFORK);
+#endif
 
   srunner_run_all(sr, CK_NORMAL);
   number_failed = srunner_ntests_failed(sr);

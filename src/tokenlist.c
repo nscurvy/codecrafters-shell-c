@@ -106,9 +106,6 @@ tokenlist_delete(TokenList* list) {
 size_t
 token_count(Token* tok) {
   size_t chain = 0;
-  if (tok) {
-    chain++;
-  }
   while (tok != nullptr) {
     tok = tok->next;
     ++chain;
@@ -142,6 +139,7 @@ tokenlist_append_tok(TokenList* list, Token* token) {
   if (iter == nullptr) {
     list->head = token;
     list->size += sizeof_chain;
+    return token;
   }
 
   while (iter->next != nullptr) {
@@ -150,7 +148,7 @@ tokenlist_append_tok(TokenList* list, Token* token) {
 
   iter->next = token;
   list->size += sizeof_chain;
-
+  return token;
 }
 
 TokenList*

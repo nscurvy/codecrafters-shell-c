@@ -62,7 +62,6 @@ vcpkg_installed
 # Compiler lint
 /CTestTestfile.cmake
 /cmake_install.cmake
-/CMakeLists.txt
 /CMakeCache.txt
 /compile_commands.json
 /cmake-build-debug-gnu/cmake_install.cmake

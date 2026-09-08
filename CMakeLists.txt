@@ -52,24 +52,18 @@ add_executable(shell ${SOURCE_FILES}
         src/jobs.h
         src/jobs.c
         src/common.h
-        src/TokenList.c
-        src/TokenList.h
         src/lexer.c
         src/lexer.h
         src/wordlist.c
         src/wordlist.h)
 
 add_library(shell_lib ${LIB_FILES}
-        src/TokenList.c
-        src/TokenList.h
         src/lexer.c
         src/lexer.h
         src/wordlist.c)
 set_property(TARGET shell_lib PROPERTY OUTPUT_NAME shell)
 
 add_executable(shell_test ${TEST_FILES}
-        src/TokenList.c
-        src/TokenList.h
         src/lexer.c
         src/lexer.h
         src/wordlist.c

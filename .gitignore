@@ -82,8 +82,13 @@ vcpkg_installed
 /cmake-build-debug/
 /cmake-build-debug-gnu/
 /bin/
+
+# Other lint
 /.todo/
 /.codecrafters/
 /.cmake/
 /.ccls-cache/
 /.cache/
+/.idea
+/build-sanitized
+/shell_test

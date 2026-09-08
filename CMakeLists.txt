@@ -4,17 +4,13 @@ project(codecrafters-shell)
 
 file(GLOB_RECURSE SOURCE_FILES src/*.c src/*.h)
 file(GLOB_RECURSE LIB_FILES src/*.c src/*.h)
-if ($ENV{HOME_MACHINE})
 file(GLOB_RECURSE TEST_FILES tests/*.c)
-endif()
 
 list(REMOVE_ITEM LIB_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
 
 enable_testing()
-if ($ENV{HOME_MACHINE})
 find_package(PkgConfig REQUIRED)
     pkg_check_modules(CHECK REQUIRED check)
-endif()
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
 
@@ -36,38 +32,14 @@ endif()
 add_compile_options(-Wall -Wextra -Wconversion -Wsign-conversion -Wcast-align -Wshadow -Wnull-dereference -Wdouble-promotion -Wformat=2 -Wformat-security -Wstrict-overflow=5 -Wundef -Wuninitialized -Wswitch-enum)
 
 add_executable(shell ${SOURCE_FILES}
-        src/builtins.h
-        src/builtins.c
-        src/declare.c
-        src/declare.h
-        src/parser.h
-        src/parser.c
-        src/exec.c
-        src/exec.h
-        src/expand.c
-        src/expand.h
-        src/completion.c
-        src/completion.h
-        src/nullability.h
-        src/jobs.h
-        src/jobs.c
-        src/common.h
-        src/lexer.c
-        src/lexer.h
-        src/wordlist.c
-        src/wordlist.h)
+     )
 
-add_library(shell_lib ${LIB_FILES}
-        src/lexer.c
-        src/lexer.h
-        src/wordlist.c)
+add_library(shell_lib ${LIB_FILES})
 set_property(TARGET shell_lib PROPERTY OUTPUT_NAME shell)
 
-add_executable(shell_test ${TEST_FILES}
-        src/lexer.c
-        src/lexer.h
-        src/wordlist.c
-        tests/tests.h
+add_executable(shell_test
+        ${TEST_FILES}
+
 )
 target_include_directories(shell_test PRIVATE src
                                       PRIVATE ${CHECK_INCLUDE_DIRS})

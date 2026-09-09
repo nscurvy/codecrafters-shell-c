@@ -19,7 +19,8 @@ implement any more features. However, if I feel inspired, I might add on to it.
 - Reorganize modules to have less responsibilities:
   - [ ] Split parser module:
     - [x] Move the String List to its own module
-    - [ ] Move tokenizing to its own module
+      - [x] Separate Word List from Token List
+    - [x] Move tokenizing to its own module
     - [ ] Define an AST and move it to its own module
   - [ ] Refactor declare module: 
     - [ ] Rename to hash_table
@@ -39,13 +40,22 @@ implement any more features. However, if I feel inspired, I might add on to it.
 - I need to make sure that I have established a convention re: struct pointer ownership and that everything follows it.
 - exec needs to be reorganized.
 
+##### Other TODO
+  - [x] Implement basic lexer.
+  - [ ] Implement other command datatypes:
+    - [ ] Implement AndOr type
+    - [ ] Implement top level list.
+  - [ ] Implement ';' and connect with '&'.
+  - [ ] Implement '||' and '&&' with short-circuit behavior
+
 ##### Security:
 - There are sections where it is assumed that the user will input data which falls within certain bounds. I need to enforce and check those bounds.
   - Default argument length and default line length need to both be reasonable and enforced. 
 - I need to audit the code for use after frees and off by ones. They don't happen within the parameters of codecrafters or my testing, but I need to test it more.
 
-##### ***<u>Documentation for functions</p>***
+##### ***<u>Documentation for functions</u>***
 
 ### Note about AI: 
 I used Claude to ask design/architecture questions, generate working examples of readline code, and
 general help with bugfixes, such as figuring out where a bug might be coming from. This is my *preferred* use of AI.
+I have also used Claude to generate some unit tests.

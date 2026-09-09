@@ -336,7 +336,7 @@ repl() {
             while (iter != nullptr) {
                 iter = iter->next;
             }
-            Pipeline* pipeline = build_pipeline(tokens);
+            Pipeline* pipeline = parse_pipeline(tokens);
             if (pipeline->ncmds == 0) {
                 exit_status = -1;
                 continue;
@@ -345,7 +345,7 @@ repl() {
             exec_pipeline(pipeline);
 
             tokenlist_delete(tokens);
-            cleanup_pipeline(pipeline);
+            pipeline_delete(pipeline);
             free((void*) input_line);
         }
     }

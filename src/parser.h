@@ -66,16 +66,178 @@ typedef struct Pipeline {
 
 
 /**
+ * Enumeration describing delimitations of Command Pipelines.
+ */
+typedef enum AndOrOpE {
+  AND_NONE, /**< This is always the first operation in a chain. "No operator has preceded this command" */
+  AND_AND, /**< Represents an && operator*/
+  AND_OR /**< Represents an || operator */
+} AndOrOp;
+
+/**
+ * Representation of an element in an AndOr chain.
+ *
+ */
+typedef struct AndOrElement {
+  Pipeline* pipeline; /**< The pipeline which comes after this operator. */
+  AndOrOp op; /**< The operator which preceded this pipeline. */
+} AndOrElement;
+
+/**
+ * @brief Model of a series of Command Pipelines separated by the control operators '||', '&&', and ';'
+ *
+ */
+typedef struct AndOr {
+  size_t count; /**< The number of pipeline operations. */
+  AndOrElement elements[];
+} AndOr;
+
+typedef enum ListSepE {
+  SEP_SEMI,
+  SEP_AMP,
+  SEP_NONE
+} ListSep;
+typedef struct ListElement {
+  AndOr* and_or;
+  ListSep sep;
+} ListElement;
+
+typedef struct List {
+  size_t count;
+  ListElement elements[];
+} List;
+
+typedef struct TokenStream {
+  size_t len;
+  size_t pos;
+  Token* tokens[];
+} TokenStream;
+
+/**
+ * @brief Construct a new TokenStream object. This does not consider itself an owner of
+ * the underlying tokens and it does not copy any.
+ *
+ * @param tokens The TokenList to adapt into a stream
+ * @return A new TokenStream, or nullptr in the event of allocation error.
+ */
+TokenStream* NULLABLE
+ts_new(TokenList* tokens) GCC_NONNULL(1);
+
+/**
+ * @brief Delete the TokenStream. This function does not delete the underlying Token objects,
+ * which are the responsibility of the TokenList which constructed the stream.
+ * @param tokens The stream being deleted
+ */
+void
+ts_delete(TokenStream* tokens) GCC_NONNULL(1);
+
+/**
+ * @brief Return the next token without consuming the stream.
+ *
+ * @param stream Stream
+ * @return The next token in the stream.
+ */
+Token* ts_peek(TokenStream* stream) GCC_NONNULL(1);
+
+/**
+ * @brief Peek n positions ahead in the stream.
+ *
+ * @param stream Stream
+ * @param n The number of positions to peek ahead by
+ * @return The token n positions away from the current position, or the final token if that jump exceeds the stream size.
+ */
+Token* ts_peek_ahead(TokenStream* stream, size_t n) GCC_NONNULL(1);
+
+/**
+ * @brief Consumes a token from the stream. If the stream is exhausted, this returns
+ * the final token of the stream. This should always return a valid token so long as the
+ * list that constructed it is valid.
+ *
+ * @param stream Stream
+ * @return The next token, or the final token
+ */
+Token* ts_read(TokenStream* stream) GCC_NONNULL(1);
+
+/**
+ * @brief Check if the next token matches the given type, do <i>consume</i> the stream.
+ *
+ * @param stream Stream
+ * @param type Desired type
+ * @return True if the type matches, false otherwise
+ */
+bool ts_check(TokenStream* stream, TokenType type) GCC_NONNULL(1);
+
+/**
+ * @brief Check if the next token matches the given type and consumes it if so.
+ *
+ * If not, this function returns false.
+ *
+ * @param stream Stream
+ * @param type The desired type
+ * @return True if a match, false otherwise
+ */
+bool ts_match(TokenStream* stream, TokenType type) GCC_NONNULL(1);
+
+/**
+ * @brief Check if the next token matches the given type and consumes it if so.
+ *
+ * If not, this function sets errno and returns nullptr so that a parse error can be reported.
+ *
+ * @param stream TokenStream
+ * @param type The expected type
+ * @return The next token, or nullptr if there was an error.
+ */
+Token* NULLABLE ts_expect(TokenStream* stream, TokenType type) GCC_NONNULL(1);
+
+/**
+ * @brief Check if the stream has been exhausted.
+ *
+ * @param stream TokenStream
+ * @return True if at the end.
+ */
+bool ts_at_end(TokenStream* stream) GCC_NONNULL(1);
+
+List* NULLABLE
+list_new(size_t count, ListElement elements[]);
+
+void
+list_delete(List* list) GCC_NONNULL(1);
+
+List* NULLABLE
+parse_list(TokenList* tokens) GCC_NONNULL(1);
+
+
+AndOrElement* NULLABLE
+aoe_new(Pipeline* pipeline, AndOrOp op)
+GCC_NONNULL(1);
+
+void
+aoe_delete(AndOrElement* aoe)
+GCC_NONNULL(1);
+
+AndOr* NULLABLE
+ao_new(size_t count, AndOrElement elements[])
+GCC_NONNULL(2);
+
+void
+ao_delete(AndOr* ao)
+GCC_NONNULL(1);
+
+AndOr* NULLABLE
+  parse_and_or(TokenList* tokens)
+GCC_NONNULL(1);
+
+/**
  *  @brief Destructively splits a list in two at a pipe.
  *
  *  @attention for a command @code
- *  command args | command2 args | command3 args
+ *  Command args | Command2 args | Command3 args
  *  @endcode
  *  Calling this function will result in a dest which is @code
- *  command2 args | command3 args
+ *  Command2 args | Command3 args
  *  @endcode
  *  and a src which is @code
- *  command args
+ *  Command args
  *  @endcode
  *  That is, everything after the first pipe is moved to the new list.
  *
@@ -91,13 +253,13 @@ size_t
 count_pipes(TokenList* tokens) GCC_NONNULL(1);
 
 Pipeline* NULLABLE
-build_pipeline(TokenList* tokens) GCC_NONNULL(1);
+parse_pipeline(TokenList* tokens) GCC_NONNULL(1);
 
 Pipeline* NULLABLE
-init_pipeline(size_t ncmds, Command** cmds) GCC_NONNULL(2);
+pipeline_new(size_t ncmds, Command** cmds) GCC_NONNULL(2);
 
 void
-cleanup_pipeline(Pipeline* pipeline) GCC_NONNULL(1);
+pipeline_delete(Pipeline* pipeline) GCC_NONNULL(1);
 
 
 /**
@@ -117,7 +279,7 @@ cleanup_pipeline(Pipeline* pipeline) GCC_NONNULL(1);
  *         freed before returning).
  */
 Command* NULLABLE
-init_command(char* NULLABLE* argv, bool bgjob, size_t nredirs, Redirect* redirs);
+command_new(char* NULLABLE* argv, bool bgjob, size_t nredirs, Redirect* redirs);
 
 /**
  * @brief Parse a tokenized word list into a Command.
@@ -135,7 +297,7 @@ init_command(char* NULLABLE* argv, bool bgjob, size_t nredirs, Redirect* redirs)
  *         allocation failure.
  */
 Command* NULLABLE
-build_command(TokenList* words) GCC_NONNULL(1);
+parse_command(TokenList* words) GCC_NONNULL(1);
 
 /**
  * @brief Free a Command and its owned argv strings.
@@ -144,7 +306,7 @@ build_command(TokenList* words) GCC_NONNULL(1);
  *                build_command().
  */
 void
-cleanup_command(Command* command) GCC_NONNULL(1);
+command_delete(Command* command) GCC_NONNULL(1);
 
 /**
  * @brief Allocate a standalone Redirect.
@@ -158,7 +320,7 @@ cleanup_command(Command* command) GCC_NONNULL(1);
  *         or string duplication failed.
  */
 Redirect* NULLABLE
-init_redirect(int fd, RedirMode mode, const char* target) GCC_NONNULL(3);
+redir_new(int fd, RedirMode mode, const char* target) GCC_NONNULL(3);
 
 /**
  * @brief Free a Redirect previously returned by init_redirect().
@@ -166,7 +328,7 @@ init_redirect(int fd, RedirMode mode, const char* target) GCC_NONNULL(3);
  * @param redir Redirect to free, including its owned @c target string.
  */
 void
-cleanup_redirect(Redirect* redir) GCC_NONNULL(1);
+redir_delete(Redirect* redir) GCC_NONNULL(1);
 
 
 /**

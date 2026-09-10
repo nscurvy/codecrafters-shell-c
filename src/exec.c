@@ -52,6 +52,8 @@ CLEANUP_WORDS:
 
 int
 exec_builtin(Command* command, BuiltinCmd* cmd) {
+    return 0;
+  /*
     int saved_fd    = 0;
     int fd          = 0;
     int exit_status = 0;
@@ -135,6 +137,7 @@ exec_pipes(Pipeline* pipeline) {
         waitpid(pids[i], nullptr, 0);
     }
     return 0;
+    */
 }
 
 
@@ -201,6 +204,8 @@ exec_pipe(Command* first, Command* second) {
 
 int
 exec_pipeline(Pipeline* pipeline) {
+  return 0;
+  /*
     int exit_status = 0;
     if (pipeline->ncmds != 0) {
         if (pipeline->ncmds == 1) {
@@ -217,12 +222,15 @@ exec_pipeline(Pipeline* pipeline) {
         }
     }
     return exit_status;
+    */
 }
 
 
 // TODO: docs
 int
 execc(const Command* command) {
+  return 0;
+  /*
     char  cmd_path[PATH_MAX];
     char* res = find_command(cmd_path, command->argv[0]);
     if (!res) {
@@ -264,6 +272,7 @@ execc(const Command* command) {
     }
 
     return 0;
+    */
 }
 
 // TODO: DOdocs
@@ -302,6 +311,8 @@ exit_handler() {
 // TODO: DOdocs
 int
 repl() {
+  return 0;
+  /*
     struct sigaction sa;
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
@@ -349,6 +360,7 @@ repl() {
             free((void*) input_line);
         }
     }
+    */
 }
 
 

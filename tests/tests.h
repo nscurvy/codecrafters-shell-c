@@ -6,3 +6,4 @@
 #include "check.h"
 
 Suite* lexer_suite();
+Suite* parser_suite();

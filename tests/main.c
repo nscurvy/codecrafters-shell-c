@@ -11,18 +11,21 @@
 
 int main() {
   int number_failed;
-  Suite* s;
-  SRunner* sr;
+  Suite* lexer_s = lexer_suite();
+  SRunner* suite_runner = srunner_create(lexer_s);
+  Suite* parser_s = parser_suite();
 
-  s = lexer_suite();
-  sr = srunner_create(s);
+  srunner_add_suite(suite_runner, parser_s);
+
+
 
 #ifdef DEBUGGER_MODE
-  srunner_set_fork_status(sr, CK_NOFORK);
+  srunner_set_fork_status(suite_runner, CK_NOFORK);
 #endif
 
-  srunner_run_all(sr, CK_NORMAL);
-  number_failed = srunner_ntests_failed(sr);
-  srunner_free(sr);
+
+  srunner_run_all(suite_runner, CK_NORMAL);
+  number_failed = srunner_ntests_failed(suite_runner);
+  srunner_free(suite_runner);
   return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

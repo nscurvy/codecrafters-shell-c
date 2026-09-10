@@ -6,7 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+/* *****************************************************************************
+ * Pipeline
+ * ****************************************************************************/
 Pipeline*
 pipeline_new_empty() {
   Pipeline* pipeline = malloc(sizeof(Pipeline));
@@ -45,42 +47,10 @@ void ple_delete(PipelineElement* element) {
   command_delete(element->command);
   free(element);
 }
-void
-command_delete(Command* command) {
-  char** iter = command->argv;
-  while (*iter != nullptr) {
-    free(*iter++);
-  }
-  ass_delete_all(command->assignment_list);
-  free(command->argv);
-  free(command);
-}
 
-Redirect*
-redir_new(int fd, RedirMode mode, const char* target) {
-  Redirect* result = malloc(sizeof(Redirect));
-  if (!result) {
-    return nullptr;
-  }
-
-  char* redirect_target = strdup(target);
-  if (!redirect_target) {
-    free(result);
-    return nullptr;
-  }
-
-  result->fd     = fd;
-  result->mode   = mode;
-  result->target = redirect_target;
-
-  return result;
-}
-
-void
-redir_delete(Redirect* redir) {
-  free(redir->target);
-  free(redir);
-}
+/* *****************************************************************************
+ * Command
+ * ****************************************************************************/
 
 size_t
 argvlen(const char** argv) {
@@ -132,6 +102,52 @@ command_new(const char** argv, Assignment* assignments, size_t nredirs, Redirect
 
   return command;
 }
+
+void
+command_delete(Command* command) {
+  char** iter = command->argv;
+  while (*iter != nullptr) {
+    free(*iter++);
+  }
+  ass_delete_all(command->assignment_list);
+  free(command->argv);
+  free(command);
+}
+
+/* *****************************************************************************
+ * Redirect
+ * ****************************************************************************/
+
+Redirect*
+redir_new(int fd, RedirMode mode, const char* target) {
+  Redirect* result = malloc(sizeof(Redirect));
+  if (!result) {
+    return nullptr;
+  }
+
+  char* redirect_target = strdup(target);
+  if (!redirect_target) {
+    free(result);
+    return nullptr;
+  }
+
+  result->fd     = fd;
+  result->mode   = mode;
+  result->target = redirect_target;
+
+  return result;
+}
+
+void
+redir_delete(Redirect* redir) {
+  free(redir->target);
+  free(redir);
+}
+
+/* *****************************************************************************
+ * Assignment
+ * ****************************************************************************/
+
 Assignment*
 ass_new(const char* value) {
   const char* cpy = strdup(value);
@@ -147,12 +163,6 @@ ass_new(const char* value) {
   ass->value = cpy;
   ass->next = nullptr;
   return ass;
-}
-
-void
-ass_delete(Assignment* assignment) {
-  free(assignment->value);
-  free(assignment);
 }
 
 void
@@ -176,6 +186,13 @@ ass_append_str(Assignment* head, const char* value) {
   return newnode;
 }
 
+
+void
+ass_delete(Assignment* assignment) {
+  free(assignment->value);
+  free(assignment);
+}
+
 void
 ass_delete_all(Assignment* head) {
   Assignment* iter = head;
@@ -188,6 +205,9 @@ ass_delete_all(Assignment* head) {
   }
 }
 
+/* *****************************************************************************
+ * TokenStream
+ * ****************************************************************************/
 TokenStream*
 ts_new(TokenList* tokens) {
   TokenStream* result = malloc(sizeof(TokenStream) + tokens->size * sizeof(Token*));
@@ -258,6 +278,10 @@ size_t
 ts_remaining(TokenStream* stream) {
   return stream->len - stream->pos;
 }
+
+/* *****************************************************************************
+ * List
+ * ****************************************************************************/
 
 List*
 list_new_empty() {

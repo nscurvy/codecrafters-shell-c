@@ -1,9 +1,6 @@
 //
 // Created by nkinder on 9/3/26.
 //
-/**
- * @brief A @link TokenList linked list @endlink of Tokens
- */
 
 #pragma once
 #include "common.h"
@@ -172,7 +169,7 @@ tokenlist_append(TokenList* list, TokenType type, const char* word) GCC_NONNULL(
  * @return The token which was inserted.
  */
 Token* NULLABLE
-tokenlist_append_tok(TokenList* list, Token* NULLABLE token)
-GCC_NONNULL(1);
+tokenlist_append_tok(TokenList* list, Token* NULLABLE token) GCC_NONNULL(1);
 
 ASSUME_NONNULL_END
+

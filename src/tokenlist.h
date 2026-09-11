@@ -172,4 +172,3 @@ Token* NULLABLE
 tokenlist_append_tok(TokenList* list, Token* NULLABLE token) GCC_NONNULL(1);
 
 ASSUME_NONNULL_END
-

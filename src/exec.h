@@ -6,7 +6,10 @@
 #include "builtins.h"
 #include "nullability.h"
 ASSUME_NONNULL_BEGIN
+struct List;
+struct AndOr;
 struct Command;
+struct Pipeline;
 
 /**
  * @brief Locate an executable on the system PATH.
@@ -26,7 +29,6 @@ struct Command;
  *         if the command could not be located on @c PATH (or @c PATH is
  *         unset).
  */
-
 char* NULLABLE
 find_command(char* NONNULL dest, const char* NONNULL command) GCC_NONNULL(1, 2);
 
@@ -96,5 +98,15 @@ prepare_args(char** dest, struct TokenList* words) GCC_NONNULL(1, 2);
  */
 int
 execute_command(struct Command* command) GCC_NONNULL(1);
+
+int
+execute_list(struct List* list);
+
+int
+execute_andor(struct AndOr* andor);
+
+int execute_andor_bg(struct AndOr* andor);
+
+int execute_pipeline(struct Pipeline* pipeline);
 
 ASSUME_NONNULL_END

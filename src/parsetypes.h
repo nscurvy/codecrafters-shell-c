@@ -13,8 +13,8 @@
  * A non-owning stream adapter for tokens.
  */
 typedef struct TokenStream {
-    size_t len; /**< The length of the stream. */
-    size_t pos; /**< The current position within the stream. */
+    size_t len;      /**< The length of the stream. */
+    size_t pos;      /**< The current position within the stream. */
     Token* tokens[]; /**< The underlying array of tokens. */
 } TokenStream;
 
@@ -181,7 +181,7 @@ redir_delete(Redirect* redir) GCC_NONNULL(1);
  */
 typedef struct Assignment {
     const char*        value; /**< The literal value of the Token */
-    struct Assignment* next; /**< The next Assignment in the list. */
+    struct Assignment* next;  /**< The next Assignment in the list. */
 } Assignment;
 
 /**
@@ -283,7 +283,7 @@ command_delete(Command* command) GCC_NONNULL(1);
  */
 typedef struct PipelineElement {
     Command*                command; /**< The Command being represented. */
-    struct PipelineElement* next; /**< The next in the list. */
+    struct PipelineElement* next;    /**< The next in the list. */
 } PipelineElement;
 
 /**
@@ -385,14 +385,14 @@ aoe_delete(AndOrElement* aoe) GCC_NONNULL(1);
 typedef enum ListSepE { SEP_SEMI, SEP_AMP, SEP_NONE } ListSep;
 
 typedef struct ListElement {
-  AndOr*              and_or;
-  ListSep             sep;
-  struct ListElement* next;
+    AndOr*              and_or;
+    ListSep             sep;
+    struct ListElement* next;
 } ListElement;
 
 typedef struct List {
-  size_t       count;
-  ListElement* head;
+    size_t       count;
+    ListElement* head;
 } List;
 
 ListElement*
@@ -406,4 +406,3 @@ list_new_empty();
 
 void
 list_delete(List* list) GCC_NONNULL(1);
-

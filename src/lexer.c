@@ -13,7 +13,8 @@ CharStream*
 cs_new(const char* data) {
     const char* copy = strdup(data);
     if (!copy) {
-        return nullptr; }
+        return nullptr;
+    }
 
     CharStream* stream = (CharStream*) malloc(sizeof(CharStream));
     if (!stream) {
@@ -214,11 +215,11 @@ lx_scan(CharStream* stream, char** begin, char** end) {
     *begin = &(stream->data[stream->pos]);
     *end   = *begin;
     if (isspace(nextc)) {
-      if (nextc == '\n') {
-        (*end)++;
-        cs_read(stream);
-        return TOK_NEWLINE;
-      }
+        if (nextc == '\n') {
+            (*end)++;
+            cs_read(stream);
+            return TOK_NEWLINE;
+        }
         consume_ws(stream, begin, end);
     }
     if (cs_peek(stream) == EOI) {
@@ -249,30 +250,30 @@ lx_scan(CharStream* stream, char** begin, char** end) {
                 }
             } else if (c == '$' || c == '`') {
                 if (c == '$' && nextc == '(') {
-                  c = cs_read(stream);
-                  (*end)++;
+                    c = cs_read(stream);
+                    (*end)++;
                 } else if (c == '$' && nextc != '(') {
-                  goto SKIP_CMDSUB_LOOP;
+                    goto SKIP_CMDSUB_LOOP;
                 }
                 int depth = 1;
-                c = cs_read(stream);
+                c         = cs_read(stream);
                 (*end)++;
                 while (depth != 0) {
-                  c = cs_peek(stream);
-                  if (c == ')' || c == '`') {
-                    --depth;
-                  } else if (c == '(') {
-                    ++depth;
-                  } else if (c == EOI) {
-                    errno = EINVAL;
-                    return TOK_ERR;
-                  }
-                  (*end)++;
-                  cs_read(stream);
+                    c = cs_peek(stream);
+                    if (c == ')' || c == '`') {
+                        --depth;
+                    } else if (c == '(') {
+                        ++depth;
+                    } else if (c == EOI) {
+                        errno = EINVAL;
+                        return TOK_ERR;
+                    }
+                    (*end)++;
+                    cs_read(stream);
                 }
                 nextc = cs_peek(stream);
                 continue;
-              SKIP_CMDSUB_LOOP:
+SKIP_CMDSUB_LOOP:
 
             } else if (c == '\'' || c == '"') {
                 toggle_flag(c, &flag);
@@ -284,7 +285,7 @@ lx_scan(CharStream* stream, char** begin, char** end) {
                     break;
                 } else if (nextc == '\'' || nextc == '"') {
                     cs_read(stream);
-                  (*end)++;
+                    (*end)++;
                     continue;
                 } else if (nextc == ' ') {
                     c     = cs_read(stream);
@@ -294,18 +295,18 @@ lx_scan(CharStream* stream, char** begin, char** end) {
                     continue;
                 }
             } else if (isdigit(c) && *end == *begin) {
-              if (nextc == '<' || nextc == '>') {
-                cs_read(stream);
-                c = cs_peek(stream);
-                (*end)++;
-                return lx_scan_operator(stream, c, end);
-              }
+                if (nextc == '<' || nextc == '>') {
+                    cs_read(stream);
+                    c = cs_peek(stream);
+                    (*end)++;
+                    return lx_scan_operator(stream, c, end);
+                }
             }
         }
-      if (c == '=') {
-        predicted_type = TOK_ASSIGNMENT_WORD;
-      }
-      cs_read(stream);
+        if (c == '=') {
+            predicted_type = TOK_ASSIGNMENT_WORD;
+        }
+        cs_read(stream);
         (*end)++;
     } while (!lx_end_of_token(nextc, flag));
     if (flag == DOUBLE_QUOTED || flag == SINGLE_QUOTED) {
@@ -314,17 +315,18 @@ lx_scan(CharStream* stream, char** begin, char** end) {
     return predicted_type;
 }
 
-bool is_redir(TokenType type) {
-  bool result = false;
-  switch (type) {
-  case TOK_REDIR_APPEND:
-  case TOK_REDIR_HEREDOC:
-  case TOK_REDIR_IN:
-  case TOK_REDIR_OUT:
-      result = true;
-      break;
-  }
-  return result;
+bool
+is_redir(TokenType type) {
+    bool result = false;
+    switch (type) {
+    case TOK_REDIR_APPEND:
+    case TOK_REDIR_HEREDOC:
+    case TOK_REDIR_IN:
+    case TOK_REDIR_OUT:
+        result = true;
+        break;
+    }
+    return result;
 }
 
 Token*
@@ -344,23 +346,23 @@ lx_token(CharStream* stream) {
     arr[distance] = '\0';
     Token* tok;
     if (is_redir(type)) {
-      errno = 0;
-      char* end = nullptr;
-      long fdl = strtol(arr, &end, 10);
-      if (fdl >= INT_MAX || errno == ERANGE) {
-        errno = ERANGE;
-        return nullptr;
-      } else if (end == arr) {
-        if (type == TOK_REDIR_IN || type == TOK_REDIR_HEREDOC) {
-          fdl = 0;
-        } else if (type == TOK_REDIR_OUT || type == TOK_REDIR_APPEND) {
-          fdl = 1;
+        errno     = 0;
+        char* end = nullptr;
+        long  fdl = strtol(arr, &end, 10);
+        if (fdl >= INT_MAX || errno == ERANGE) {
+            errno = ERANGE;
+            return nullptr;
+        } else if (end == arr) {
+            if (type == TOK_REDIR_IN || type == TOK_REDIR_HEREDOC) {
+                fdl = 0;
+            } else if (type == TOK_REDIR_OUT || type == TOK_REDIR_APPEND) {
+                fdl = 1;
+            }
         }
-      }
-      int fd = (int)fdl;
-      tok = token_new(type, arr, fd);
+        int fd = (int) fdl;
+        tok    = token_new(type, arr, fd);
     } else {
-      tok    = newtok(type, arr);
+        tok = newtok(type, arr);
     }
     if (!tok) {
         return nullptr;

@@ -8,7 +8,7 @@
 size_t
 tokenlist_count(TokenList* tokens) {
     Token* iter   = tokens->head;
-    size_t    result = 0;
+    size_t result = 0;
     while (iter != nullptr) {
         ++result;
         iter = iter->next;
@@ -22,7 +22,7 @@ tokenlist_from_tokens(Token* head) {
     if (!result) {
         return nullptr;
     }
-    size_t    size = 0;
+    size_t size = 0;
     Token* iter = head;
     while (iter != nullptr) {
         ++size;
@@ -46,10 +46,10 @@ token_new(TokenType type, const char* text, int fd) {
         free(word_copy);
         return nullptr;
     }
-    result->type = type;
+    result->type  = type;
     result->value = word_copy;
     result->next  = nullptr;
-    result->fd = fd;
+    result->fd    = fd;
 
     return result;
 }
@@ -105,12 +105,12 @@ tokenlist_delete(TokenList* list) {
 }
 size_t
 token_count(Token* tok) {
-  size_t chain = 0;
-  while (tok != nullptr) {
-    tok = tok->next;
-    ++chain;
-  }
-  return chain;
+    size_t chain = 0;
+    while (tok != nullptr) {
+        tok = tok->next;
+        ++chain;
+    }
+    return chain;
 }
 
 Token*
@@ -127,28 +127,28 @@ tokenlist_append(TokenList* list, TokenType type, const char* word) {
         iter = iter->next;
     }
 
-    iter->next = new_node;
+    iter->next     = new_node;
     new_node->type = type;
     list->size++;
     return new_node;
 }
 Token*
 tokenlist_append_tok(TokenList* list, Token* token) {
-  Token* iter = list->head;
-  size_t sizeof_chain = token_count(token);
-  if (iter == nullptr) {
-    list->head = token;
+    Token* iter         = list->head;
+    size_t sizeof_chain = token_count(token);
+    if (iter == nullptr) {
+        list->head = token;
+        list->size += sizeof_chain;
+        return token;
+    }
+
+    while (iter->next != nullptr) {
+        iter = iter->next;
+    }
+
+    iter->next = token;
     list->size += sizeof_chain;
     return token;
-  }
-
-  while (iter->next != nullptr) {
-    iter = iter->next;
-  }
-
-  iter->next = token;
-  list->size += sizeof_chain;
-  return token;
 }
 
 TokenList*
@@ -156,14 +156,14 @@ tokenlist_copyof(TokenList* original) {
     Token* iter     = original->head;
     Token* new_head = token_new(iter->type, iter->value, iter->fd);
     Token* new_iter = new_head;
-    iter               = iter->next;
+    iter            = iter->next;
     while (iter != nullptr) {
         new_iter->next = token_new(iter->type, iter->value, iter->fd);
         new_iter       = new_iter->next;
         iter           = iter->next;
     }
     TokenList* newlist = tokenlist_new_empty();
-    newlist->size     = original->size;
-    newlist->head     = new_head;
+    newlist->size      = original->size;
+    newlist->head      = new_head;
     return newlist;
 }

@@ -6,6 +6,7 @@
 #include "common.h"
 #include "jobs.h"
 #include "parser.h"
+#include "path.h"
 #include <readline/history.h>
 #include <readline/readline.h>
 
@@ -14,6 +15,7 @@
 size_t
 count_command_args(const char**);
 
+/*
 // TODO: docs
 char*
 find_command(char* dest, const char* command) {
@@ -49,11 +51,11 @@ CLEANUP_WORDS:
     }
     return result;
 }
+*/
 
 int
 exec_builtin(Command* command, BuiltinCmd* cmd) {
     return 0;
-  /*
     int saved_fd    = 0;
     int fd          = 0;
     int exit_status = 0;
@@ -62,7 +64,7 @@ exec_builtin(Command* command, BuiltinCmd* cmd) {
             Redirect redirect      = command->redirs[i];
             int      redirected_fd = redirect.fd;
             saved_fd               = dup(redirected_fd);
-            unsigned truncflag     = (unsigned) redirect.mode;
+            int truncflag     = (int)redirect.mode;
             fd                     = open(redirect.target, O_WRONLY | O_CREAT | truncflag, 0644);
             dup2(fd, redirected_fd);
             close(fd);
@@ -74,6 +76,7 @@ exec_builtin(Command* command, BuiltinCmd* cmd) {
             close(saved_fd);
         }
     } else {
+        
         cmd->builtin((const int) count_command_args((const char**) command->argv), (const char**) command->argv);
     }
     return exit_status;
@@ -81,12 +84,13 @@ exec_builtin(Command* command, BuiltinCmd* cmd) {
 
 
 int
-exec_pipes(Pipeline* pipeline) {
-    pid_t pids[pipeline->ncmds];
-    int   pipes[pipeline->ncmds - 1][2];
-    int   n         = pipeline->ncmds;
-    int   num_pipes = pipeline->ncmds - 1;
-    for (int i = 0; i < pipeline->ncmds; ++i) {
+execute_pipes(Pipeline* pipeline) {
+    pid_t pids[pipeline->size];
+    int   pipes[pipeline->size - 1][2];
+    size_t   n         = pipeline->size;
+    size_t   num_pipes = pipeline->size - 1;
+    PipelineElement* iter = pipeline->head;
+    for (size_t i = 0; i < pipeline->size; ++i) {
         if (i < num_pipes) {
             pipe(pipes[i]);
         }
@@ -105,15 +109,14 @@ exec_pipes(Pipeline* pipeline) {
                 close(pipes[j][0]);
                 close(pipes[j][1]);
             }
-            Command*    command = pipeline->cmds[i];
+            Command*    command = iter->command;
             BuiltinCmd* builtin = find_builtin(command->argv[0]);
 
             if (builtin) {
                 exit(exec_builtin(command, builtin));
             }
 
-            char  cmd_path[PATH_MAX];
-            char* res = find_command(cmd_path, command->argv[0]);
+            char* res = path_find_command(command->argv[0]);
             if (res) {
                 execvp(command->argv[0], command->argv);
             } else {
@@ -126,18 +129,18 @@ exec_pipes(Pipeline* pipeline) {
         } else {
             pids[i] = pid;
         }
+      iter = iter->next;
     }
 
-    for (int j = 0; j < num_pipes; ++j) {
+    for (size_t j = 0; j < num_pipes; ++j) {
         close(pipes[j][0]);
         close(pipes[j][1]);
     }
 
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         waitpid(pids[i], nullptr, 0);
     }
     return 0;
-    */
 }
 
 
@@ -163,8 +166,8 @@ exec_pipe(Command* first, Command* second) {
         if (cmd1) {
             exit(exec_builtin(first, cmd1));
         } else {
-            char  cmd_path[PATH_MAX];
-            char* res = find_command(cmd_path, first->argv[0]);
+
+            char* res = path_find_command(first->argv[0]);
             if (res) {
                 execvp(first->argv[0], first->argv);
             } else {
@@ -185,12 +188,12 @@ exec_pipe(Command* first, Command* second) {
         if (cmd2) {
             exit(exec_builtin(second, cmd2));
         } else {
-            char  cmd_path[PATH_MAX];
-            char* res = find_command(cmd_path, second->argv[0]);
+            char* res = path_find_command(second->argv[0]);
             if (res) {
                 execvp(second->argv[0], second->argv);
             } else {
                 printf("%s: command not found\n", second->argv[0]);
+              free(res);
             }
         }
         _exit(127);
@@ -200,6 +203,81 @@ exec_pipe(Command* first, Command* second) {
     waitpid(pid_first, nullptr, 0);
     waitpid(pid_second, nullptr, 0);
     return 0;
+}
+
+int execute_pipeline(Pipeline* pipeline) {
+  int status = 0;
+
+  if (pipeline->size == 1) {
+    status = execute_command(pipeline->head->command);
+  } else {
+    status = execute_pipes(pipeline);
+  }
+
+  return status;
+}
+
+int execute_andor(AndOr* andor) {
+  int status = 0;
+
+  AndOrElement* iter = andor->head;
+  while (iter != nullptr) {
+    switch (iter->op) {
+    case AND_NONE:
+      status = execute_pipeline(iter->pipeline);
+      break;
+    case AND_AND:
+      if (status != 0) {
+        return status;
+      } else {
+        status = execute_pipeline(iter->pipeline);
+      }
+      break;
+    case AND_OR:
+      if (status == 0) {
+        return status;
+      } else {
+        status = execute_pipeline(iter->pipeline);
+      }
+      break;
+    }
+    iter = iter->next;
+  }
+
+  return status;
+}
+
+int execute_andor_bg(AndOr* andor) {
+  pid_t pid = fork();
+
+  if (pid < 0) {
+    perror("Failed to fork process.");
+    return pid;
+  } else if (pid > 0) {
+    return 0;
+  } else {
+    return execute_andor(andor);
+  }
+}
+
+int execute_list(List* list) {
+  int status = 0;
+
+  ListElement* iter = list->head;
+  while (iter != nullptr) {
+    switch (iter->sep) {
+      case SEP_SEMI:
+      case SEP_NONE:
+        status = execute_andor(iter->and_or);
+        break;
+    case SEP_AMP:
+        status = execute_andor_bg(iter->and_or);
+        break;
+    }
+    iter = iter->next;
+  }
+
+  return status;
 }
 
 int
@@ -312,7 +390,6 @@ exit_handler() {
 int
 repl() {
   return 0;
-  /*
     struct sigaction sa;
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
@@ -337,30 +414,17 @@ repl() {
         const char* input_line = readline("$ ");
         if (input_line && strlen(input_line) > 0) {
             add_history(input_line);
-            TokenList* tokens = tokenize_input(input_line);
-            if (!tokens) {
-                exit_status = -1;
-                continue;
-            }
+            List* list = lex_and_parse(input_line);
 
-            Token* iter = tokens->head;
-            while (iter != nullptr) {
-                iter = iter->next;
+            if (!list) {
+              perror("Error with parsing the input.");
             }
-            Pipeline* pipeline = parse_pipeline(tokens);
-            if (pipeline->ncmds == 0) {
-                exit_status = -1;
-                continue;
-            }
+            exit_status = execute_list(list);
 
-            exec_pipeline(pipeline);
-
-            tokenlist_delete(tokens);
-            pipeline_delete(pipeline);
+            list_delete(list);
             free((void*) input_line);
         }
     }
-    */
 }
 
 

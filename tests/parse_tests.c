@@ -11,11 +11,8 @@
 #include "../src/parser.h"
 #include "../src/parsetypes.h"
 #include "../src/tokenlist.h"
+#include "tests_common.h"
 
-#define assert(val) ck_assert((val))
-#define streq(a, b) ck_assert_str_eq((a), (b))
-#define uinteq(a, b) ck_assert_uint_eq((a), (b))
-#define inteq(a, b) ck_assert_int_eq((a), (b))
 
 static TokenList* tokenize_for_parser(const char* input) {
   CharStream* stream = cs_new(input);

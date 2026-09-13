@@ -263,7 +263,8 @@ builtin_type(const int argc, const char** argv) {
         BuiltinCmd* cmd = find_builtin(argv[1]);
         if (cmd == nullptr) {
             char  buf[PATH_MAX + 1] = {0};
-            char* executable        = find_command(buf, argv[1]);
+            //char* executable        = find_command(buf, argv[1]);
+          char* executable = nullptr;
             if (executable) {
                 printf("%s is %s\n", argv[1], buf);
             } else {

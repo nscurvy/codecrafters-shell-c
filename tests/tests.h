@@ -7,3 +7,5 @@
 
 Suite* lexer_suite();
 Suite* parser_suite();
+Suite* sb_suite();
+Suite* jobs_suite();

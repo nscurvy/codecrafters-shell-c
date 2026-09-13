@@ -48,5 +48,5 @@ target_link_libraries(shell_test PRIVATE shell_lib ${CHECK_LIBRARIES} readline)
 add_test(NAME ShellUnitTests COMMAND shell_test)
 
 target_link_libraries(shell PRIVATE readline)
-target_link_libraries(shell_lib PRIVATE readline)
+target_link_libraries(shell_lib PRIVATE readline m)
 

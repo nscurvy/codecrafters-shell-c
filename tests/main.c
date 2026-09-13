@@ -14,8 +14,12 @@ int main() {
   Suite* lexer_s = lexer_suite();
   SRunner* suite_runner = srunner_create(lexer_s);
   Suite* parser_s = parser_suite();
+  Suite* sb_s = sb_suite();
+  Suite* jobs_s = jobs_suite();
 
   srunner_add_suite(suite_runner, parser_s);
+  srunner_add_suite(suite_runner, sb_s);
+  srunner_add_suite(suite_runner, jobs_s);
 
 
 

@@ -4,11 +4,8 @@
 #include "check.h"
 #include "../src/common.h"
 #include "../src/lexer.h"
+#include "tests_common.h"
 
-#define assert(val) ck_assert((val))
-#define streq(a, b) ck_assert_str_eq((a), (b))
-#define uinteq(a,b) ck_assert_uint_eq((a),(b))
-#define inteq(a,b) ck_assert_int_eq((a), (b))
 START_TEST(test_char_stream) {
   const char* test_line = "echo \"some value\" | echo \"more\" 1>/dev/null";
 

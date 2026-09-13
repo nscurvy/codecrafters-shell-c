@@ -11,6 +11,8 @@ struct AndOr;
 struct Command;
 struct Pipeline;
 
+
+
 /**
  * @brief Locate an executable on the system PATH.
  *
@@ -29,8 +31,10 @@ struct Pipeline;
  *         if the command could not be located on @c PATH (or @c PATH is
  *         unset).
  */
+/*
 char* NULLABLE
 find_command(char* NONNULL dest, const char* NONNULL command) GCC_NONNULL(1, 2);
+*/
 
 /**
  * @brief Execute an external (non-builtin) command in a child process.

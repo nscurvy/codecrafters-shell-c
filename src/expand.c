@@ -7,6 +7,7 @@
 #include "common.h"
 
 #include "declare.h"
+#include "lexer.h"
 #include "parser.h"
 
 struct HashTable* variable_table = nullptr;

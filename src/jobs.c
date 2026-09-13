@@ -4,11 +4,122 @@
 #include "jobs.h"
 
 #include "common.h"
+#include "parser.h"
+#include "stringbuilder.h"
+#include <math.h>
 
 #include <readline/readline.h>
 
 
 volatile sig_atomic_t child_exited_flag = 0;
+
+void optostr(StringBuilder* sb, AndOrOp op) {
+  switch (op) {
+  case AND_AND:
+    sb_appends(sb, "&&");
+    break;
+  case AND_OR:
+    sb_appends(sb, "||");
+    break;
+  default:
+    break;
+  }
+}
+
+const char*
+join_andor(AndOr* and_or) {
+  char* buf[and_or->count];
+  AndOrElement* iter = and_or->head;
+  StringBuilder* sb = sb_new();
+
+  size_t totalsize = 0;
+  size_t i = 0;
+  while (iter != nullptr) {
+    optostr(sb, iter->op);
+    if (i++ > 0) {
+      sb_appendc(sb, ' ');
+    }
+    join_pipeline(iter->pipeline, sb);
+    if (iter->next != nullptr) {
+      sb_appendc(sb, ' ');
+    }
+    iter = iter->next;
+  }
+  const char* result = sb_takestring(sb);
+
+  return result;
+}
+
+void
+join_pipeline(Pipeline* pipeline, StringBuilder* sb) {
+  PipelineElement* iter = pipeline->head;
+
+  while (iter != nullptr) {
+    join_command(iter->command, sb);
+    if (iter->next != nullptr) {
+      sb_appends(sb, " | ");
+    }
+
+    iter = iter->next;
+  }
+
+}
+
+
+
+void join_args(const char** args, StringBuilder* sb) {
+  const char** aiter = args;
+  while (*aiter != nullptr) {
+    sb_appends(sb, *aiter);
+    if (*(aiter + 1) != nullptr) {
+      sb_appendc(sb, ' ');
+    }
+    ++aiter;
+  }
+}
+
+void join_redirect(Redirect* redirect, StringBuilder* sb) {
+  if (redirect->fd > 2) {
+    sb_appendl(sb, redirect->fd);
+  }
+  if (redirect->mode == REDIR_IN) {
+    sb_appendc(sb, '<');
+  } else if (redirect->mode == REDIR_APPEND) {
+    if (redirect->fd == 2) {
+      sb_appendl(sb, redirect->fd);
+    }
+    sb_appends(sb, ">>");
+  } else if (redirect->mode == REDIR_OUT) {
+    if (redirect->fd == 2) {
+      sb_appendl(sb, redirect->fd);
+    }
+    sb_appendc(sb, '>');
+  } else if (redirect->mode == REDIR_HEREDOC) {
+    sb_appends(sb, "<<");
+  }
+  sb_appendc(sb, ' ');
+  sb_appends(sb, redirect->target);
+}
+
+void
+join_command(Command* command, StringBuilder* sb) {
+  Assignment* iter = command->assignment_list;
+  while (iter != nullptr) {
+    sb_appends(sb, iter->value);
+    sb_appendc(sb, ' ');
+    iter = iter->next;
+  }
+  join_args((const char**)command->argv, sb);
+  if (command->nredirs > 0) {
+    sb_appendc(sb, ' ');
+  }
+  for (int i = 0; i < command->nredirs; ++i) {
+    join_redirect(&command->redirs[i], sb);
+    if ((size_t)i < command->nredirs - 1) {
+      sb_appendc(sb, ' ');
+    }
+  }
+}
 
 
 typedef struct JobNode {

@@ -9,6 +9,7 @@
 #include "declare.h"
 #include "lexer.h"
 #include "parser.h"
+#include "stringbuilder.h"
 
 struct HashTable* variable_table = nullptr;
 
@@ -34,6 +35,98 @@ exptilde(char* dest, QuoteFlagE* flag) {
     return chars_wrote;
 }
 
+const char*
+expand_string(char** dst, const char* src) {
+    StringBuilder* sb   = sb_new();
+    const char*    iter = src;
+    while (*iter != '\0') {
+        if (*iter == '\\') {
+            if (*(iter + 1) == '$') {
+                iter += 2;
+                continue;
+            }
+        } else if (*iter == '$') {
+            const char* start = iter;
+            const char* end   = start + 1;
+            while (true) {
+                if (variable_table == nullptr) {
+                    variable_table = ht_new();
+                }
+                char* tmp = calloc(end - start + 1, sizeof(char));
+                strncpy(tmp, start, end - start);
+                if (ht_contains(variable_table, tmp)) {
+                    break;
+                }
+            }
+        }
+        ++iter;
+    }
+}
+
+void
+assignment_split(char* namedest, char* valuedest, const char* assignment) {
+    const char* name_begin  = assignment;
+    const char* name_end    = strrchr(assignment, '=');
+    const char* value_begin = name_end + 1;
+    const char* value_end   = strrchr(assignment, '\0');
+    memcpy(namedest, assignment, (size_t) (name_end - name_begin));
+    memcpy(valuedest, assignment, (size_t) (value_end - value_begin));
+}
+
+size_t
+expand_assignment(Assignment* assignment) {
+    const char*    assignment_str = assignment->value;
+    StringBuilder* sb             = sb_new();
+    for (int i = 0; i < strlen(assignment_str); ++i) {
+        char c = assignment_str[i];
+        if (c == '\\') {
+            if (assignment_str[i + 1] == '$') {
+                sb_appendc(sb, assignment_str[i]);
+                sb_appendc(sb, assignment_str[i + 1]);
+                ++i;
+                continue;
+            }
+        }
+        if (c == '$') {
+            if (assignment_str[i + 1] == '{') {
+                ++i;
+                ++i;
+                const char* begin = &assignment_str[i];
+                const char* end   = begin;
+                while (*end != '\0' && *end != '}') {
+                    ++end;
+                    ++i;
+                }
+                if (variable_table == nullptr) {
+                    variable_table = ht_new();
+                }
+                char buf[end - begin + 1];
+                memcpy(buf, begin, end - begin);
+                buf[end - begin]      = '\0';
+                const char* expansion = "";
+                if (ht_contains(variable_table, buf)) {
+                    expansion = ht_get(variable_table, buf);
+                }
+                sb_appends(sb, expansion);
+            } else {
+                StringBuilder* tmp = sb_new();
+                ++i;
+                while (true) {
+                    sb_appendc(tmp, assignment_str[i++]);
+                    if (ht_contains(variable_table, sb->str)) {
+                        const char* expansion = ht_get(variable_table, sb->str);
+                        sb_appends(sb, expansion);
+                        sb_delete(tmp);
+                        break;
+                    }
+                }
+            }
+        } else {
+            sb_appendc(sb, c);
+        }
+    }
+}
+
 size_t
 expvar(char* dest, const char** word, QuoteFlagE* flag) {
     size_t chars_wrote   = 0;
@@ -41,7 +134,7 @@ expvar(char* dest, const char** word, QuoteFlagE* flag) {
     memcpy(variable_name, &(*word)[1], strlen(*word));
     variable_name[strlen(*word)] = '\0';
     if (variable_table == nullptr) {
-        variable_table = init_ht();
+        variable_table = ht_new();
     }
     const char* result = ht_get(variable_table, variable_name);
     if (result == nullptr) {
@@ -70,7 +163,7 @@ expvar_braced(char* dest, const char** iter, QuoteFlagE* flag) {
     memcpy(variable_name, &beginning[2], count);
     variable_name[count] = '\0';
     if (variable_table == nullptr) {
-        variable_table = init_ht();
+        variable_table = ht_new();
     }
     const char* result = ht_get(variable_table, variable_name);
     if (result == nullptr) {

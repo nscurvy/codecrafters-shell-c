@@ -81,7 +81,7 @@ builtin_declare(const int argc, const char** argv) {
             return -1;
         }
         if (variable_table == nullptr) {
-            variable_table = init_ht();
+            variable_table = ht_new();
         }
         ht_put(variable_table, name, declaration);
         free((char*) name);
@@ -89,7 +89,7 @@ builtin_declare(const int argc, const char** argv) {
         if (strncmp(argv[1], "-p", 2) == 0) {
             const char* variable_name = argv[2];
             if (variable_table == nullptr) {
-                variable_table = init_ht();
+                variable_table = ht_new();
             }
             if (!ht_contains(variable_table, argv[2])) {
                 fprintf(stderr, "declare: %s: not found\n", variable_name);
@@ -239,7 +239,7 @@ builtin_history(const int argc, const char** argv) {
 int
 builtin_exit(const int argc, const char** argv) {
     if (variable_table != nullptr) {
-        cleanup_ht(variable_table);
+        ht_delete(variable_table);
     }
     exit(EXIT_SUCCESS);
 }
@@ -262,9 +262,9 @@ builtin_type(const int argc, const char** argv) {
     if (argc >= 2) {
         BuiltinCmd* cmd = find_builtin(argv[1]);
         if (cmd == nullptr) {
-            char  buf[PATH_MAX + 1] = {0};
-            //char* executable        = find_command(buf, argv[1]);
-          char* executable = nullptr;
+            char buf[PATH_MAX + 1] = {0};
+            // char* executable        = find_command(buf, argv[1]);
+            char* executable = nullptr;
             if (executable) {
                 printf("%s is %s\n", argv[1], buf);
             } else {

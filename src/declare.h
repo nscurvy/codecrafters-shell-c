@@ -12,10 +12,10 @@ struct HashTable;
 
 
 struct HashTable*
-init_ht();
+ht_new();
 
 void
-cleanup_ht(struct HashTable* table) GCC_NONNULL(1);
+ht_delete(struct HashTable* table) GCC_NONNULL(1);
 
 int
 ht_put(struct HashTable* table, const char* key, const char* value) GCC_NONNULL(1, 2, 3);

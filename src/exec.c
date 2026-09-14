@@ -64,7 +64,7 @@ exec_builtin(Command* command, BuiltinCmd* cmd) {
             Redirect redirect      = command->redirs[i];
             int      redirected_fd = redirect.fd;
             saved_fd               = dup(redirected_fd);
-            int truncflag     = (int)redirect.mode;
+            int truncflag          = (int) redirect.mode;
             fd                     = open(redirect.target, O_WRONLY | O_CREAT | truncflag, 0644);
             dup2(fd, redirected_fd);
             close(fd);
@@ -76,7 +76,7 @@ exec_builtin(Command* command, BuiltinCmd* cmd) {
             close(saved_fd);
         }
     } else {
-        
+
         cmd->builtin((const int) count_command_args((const char**) command->argv), (const char**) command->argv);
     }
     return exit_status;
@@ -85,11 +85,11 @@ exec_builtin(Command* command, BuiltinCmd* cmd) {
 
 int
 execute_pipes(Pipeline* pipeline) {
-    pid_t pids[pipeline->size];
-    int   pipes[pipeline->size - 1][2];
-    size_t   n         = pipeline->size;
-    size_t   num_pipes = pipeline->size - 1;
-    PipelineElement* iter = pipeline->head;
+    pid_t            pids[pipeline->size];
+    int              pipes[pipeline->size - 1][2];
+    size_t           n         = pipeline->size;
+    size_t           num_pipes = pipeline->size - 1;
+    PipelineElement* iter      = pipeline->head;
     for (size_t i = 0; i < pipeline->size; ++i) {
         if (i < num_pipes) {
             pipe(pipes[i]);
@@ -129,7 +129,7 @@ execute_pipes(Pipeline* pipeline) {
         } else {
             pids[i] = pid;
         }
-      iter = iter->next;
+        iter = iter->next;
     }
 
     for (size_t j = 0; j < num_pipes; ++j) {
@@ -193,7 +193,7 @@ exec_pipe(Command* first, Command* second) {
                 execvp(second->argv[0], second->argv);
             } else {
                 printf("%s: command not found\n", second->argv[0]);
-              free(res);
+                free(res);
             }
         }
         _exit(127);
@@ -205,221 +205,226 @@ exec_pipe(Command* first, Command* second) {
     return 0;
 }
 
-int execute_pipeline(Pipeline* pipeline) {
-  int status = 0;
+int
+execute_pipeline(Pipeline* pipeline) {
+    int status = 0;
 
-  if (pipeline->size == 1) {
-    status = execute_command(pipeline->head->command);
-  } else {
-    status = execute_pipes(pipeline);
-  }
-
-  return status;
-}
-
-int execute_command(Command* command) {
-  pid_t pid = fork();
-
-  if (pid == 0) {
-    for (int i = 0; i < command->nredirs; ++i) {
-      int target_fd;
-      switch (command->redirs[i].mode) {
-      case REDIR_APPEND:
-        target_fd = open(command->redirs[i].target, O_WRONLY | O_APPEND | O_CREAT);
-        if (command->redirs[i].fd == 1) {
-          dup2(target_fd, STDOUT_FILENO);
-          close(target_fd);
-        } else if (command->redirs[i].fd == 2) {
-          dup2(target_fd, STDERR_FILENO);
-          close(target_fd);
-        }
-        break;
-      case REDIR_OUT:
-        target_fd = open(command->redirs[i].target, O_WRONLY | O_TRUNC | O_CREAT);
-        if (command->redirs[i].fd == 1) {
-          dup2(target_fd, STDOUT_FILENO);
-          close(target_fd);
-        } else if (command->redirs[i].fd == 2) {
-          dup2(target_fd, STDERR_FILENO);
-          close(target_fd);
-        }
-        break;
-      case REDIR_IN:
-        target_fd = open(command->redirs[i].target, O_RDONLY);
-        if (command->redirs[i].fd != 0) {
-          _exit(1);
-        } else {
-          dup2(target_fd, STDIN_FILENO);
-          close(target_fd);
-        }
-        break;
-      case REDIR_HEREDOC:
-      case REDIR_ERR:
-        _exit(1);
-      }
-    }
-    const char* cmd = path_find_command(command->argv[0]);
-    if (!cmd) {
-      perror("Command not found");
-      _exit(127);
+    if (pipeline->size == 1) {
+        status = execute_command(pipeline->head->command);
     } else {
-      execvp(command->argv[0], command->argv);
-      perror("execvp");
-      _exit(127);
+        status = execute_pipes(pipeline);
     }
-  } else if (pid > 0) {
-    int status;
-    waitpid(pid, &status, 0);
-    if (WIFEXITED(status)) {
-      return WEXITSTATUS(status);
-    } else if (WIFSIGNALED(status)) {
-      return 128 + WTERMSIG(status);
-    }
+
     return status;
-  } else {
-    perror("Error forking");
-    _exit(127);
-  }
-  return 0;
 }
 
-int execute_andor(AndOr* andor) {
-  int status = 0;
+int
+execute_command(Command* command) {
+    pid_t pid = fork();
 
-  AndOrElement* iter = andor->head;
-  while (iter != nullptr) {
-    switch (iter->op) {
-    case AND_NONE:
-      status = execute_pipeline(iter->pipeline);
-      break;
-    case AND_AND:
-      if (status != 0) {
+    if (pid == 0) {
+        for (int i = 0; i < command->nredirs; ++i) {
+            int target_fd;
+            switch (command->redirs[i].mode) {
+            case REDIR_APPEND:
+                target_fd = open(command->redirs[i].target, O_WRONLY | O_APPEND | O_CREAT);
+                if (command->redirs[i].fd == 1) {
+                    dup2(target_fd, STDOUT_FILENO);
+                    close(target_fd);
+                } else if (command->redirs[i].fd == 2) {
+                    dup2(target_fd, STDERR_FILENO);
+                    close(target_fd);
+                }
+                break;
+            case REDIR_OUT:
+                target_fd = open(command->redirs[i].target, O_WRONLY | O_TRUNC | O_CREAT);
+                if (command->redirs[i].fd == 1) {
+                    dup2(target_fd, STDOUT_FILENO);
+                    close(target_fd);
+                } else if (command->redirs[i].fd == 2) {
+                    dup2(target_fd, STDERR_FILENO);
+                    close(target_fd);
+                }
+                break;
+            case REDIR_IN:
+                target_fd = open(command->redirs[i].target, O_RDONLY);
+                if (command->redirs[i].fd != 0) {
+                    _exit(1);
+                } else {
+                    dup2(target_fd, STDIN_FILENO);
+                    close(target_fd);
+                }
+                break;
+            case REDIR_HEREDOC:
+            case REDIR_ERR:
+                _exit(1);
+            }
+        }
+        const char* cmd = path_find_command(command->argv[0]);
+        if (!cmd) {
+            perror("Command not found");
+            _exit(127);
+        } else {
+            execvp(command->argv[0], command->argv);
+            perror("execvp");
+            _exit(127);
+        }
+    } else if (pid > 0) {
+        int status;
+        waitpid(pid, &status, 0);
+        if (WIFEXITED(status)) {
+            return WEXITSTATUS(status);
+        } else if (WIFSIGNALED(status)) {
+            return 128 + WTERMSIG(status);
+        }
         return status;
-      } else {
-        status = execute_pipeline(iter->pipeline);
-      }
-      break;
-    case AND_OR:
-      if (status == 0) {
-        return status;
-      } else {
-        status = execute_pipeline(iter->pipeline);
-      }
-      break;
+    } else {
+        perror("Error forking");
+        _exit(127);
     }
-    iter = iter->next;
-  }
-
-  return status;
-}
-
-int execute_andor_bg(AndOr* andor) {
-  pid_t pid = fork();
-
-  if (pid < 0) {
-    perror("Failed to fork process.");
-    return pid;
-  } else if (pid > 0) {
-    const char* cmdline = join_andor(andor);
-    append_job(pid, cmdline);
-    free(cmdline);
     return 0;
-  } else {
-    return execute_andor(andor);
-  }
 }
 
-int execute_list(List* list) {
-  int status = 0;
+int
+execute_andor(AndOr* andor) {
+    int status = 0;
 
-  ListElement* iter = list->head;
-  while (iter != nullptr) {
-    switch (iter->sep) {
-      case SEP_SEMI:
-      case SEP_NONE:
-        status = execute_andor(iter->and_or);
-        break;
-    case SEP_AMP:
-        status = execute_andor_bg(iter->and_or);
-        break;
+    AndOrElement* iter = andor->head;
+    while (iter != nullptr) {
+        switch (iter->op) {
+        case AND_NONE:
+            status = execute_pipeline(iter->pipeline);
+            break;
+        case AND_AND:
+            if (status != 0) {
+                return status;
+            } else {
+                status = execute_pipeline(iter->pipeline);
+            }
+            break;
+        case AND_OR:
+            if (status == 0) {
+                return status;
+            } else {
+                status = execute_pipeline(iter->pipeline);
+            }
+            break;
+        }
+        iter = iter->next;
     }
-    iter = iter->next;
-  }
 
-  return status;
+    return status;
+}
+
+int
+execute_andor_bg(AndOr* andor) {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("Failed to fork process.");
+        return pid;
+    } else if (pid > 0) {
+        const char* cmdline = join_andor(andor);
+        append_job(pid, cmdline);
+        free(cmdline);
+        return 0;
+    } else {
+        return execute_andor(andor);
+    }
+}
+
+int
+execute_list(List* list) {
+    int status = 0;
+
+    ListElement* iter = list->head;
+    while (iter != nullptr) {
+        switch (iter->sep) {
+        case SEP_SEMI:
+        case SEP_NONE:
+            status = execute_andor(iter->and_or);
+            break;
+        case SEP_AMP:
+            status = execute_andor_bg(iter->and_or);
+            break;
+        }
+        iter = iter->next;
+    }
+
+    return status;
 }
 
 int
 exec_pipeline(Pipeline* pipeline) {
-  return 0;
-  /*
-    int exit_status = 0;
-    if (pipeline->ncmds != 0) {
-        if (pipeline->ncmds == 1) {
-            BuiltinCmd* builtin = find_builtin(pipeline->cmds[0]->argv[0]);
-            if (builtin) {
-                exit_status = exec_builtin(pipeline->cmds[0], builtin);
-            } else {
-                exit_status = execc(pipeline->cmds[0]);
-            }
-        } else {
-            if (pipeline->ncmds > 1) {
-                exit_status = exec_pipes(pipeline);
-            }
-        }
-    }
-    return exit_status;
-    */
+    return 0;
+    /*
+      int exit_status = 0;
+      if (pipeline->ncmds != 0) {
+          if (pipeline->ncmds == 1) {
+              BuiltinCmd* builtin = find_builtin(pipeline->cmds[0]->argv[0]);
+              if (builtin) {
+                  exit_status = exec_builtin(pipeline->cmds[0], builtin);
+              } else {
+                  exit_status = execc(pipeline->cmds[0]);
+              }
+          } else {
+              if (pipeline->ncmds > 1) {
+                  exit_status = exec_pipes(pipeline);
+              }
+          }
+      }
+      return exit_status;
+      */
 }
 
 
 // TODO: docs
 int
 execc(const Command* command) {
-  return 0;
-  /*
-    char  cmd_path[PATH_MAX];
-    char* res = find_command(cmd_path, command->argv[0]);
-    if (!res) {
-        printf("%s: command not found\n", command->argv[0]);
-        return -1;
-    }
-    pid_t pid = fork();
-
-    if (pid < 0) {
-        return 1;
-    } else if (pid == 0) {
-        if (command->nredirs != 0) {
-            int      redirected_fd = command->redirs[0].fd;
-            unsigned modeflag      = (unsigned) command->redirs[0].mode;
-            int      fd            = open(command->redirs[0].target, O_WRONLY | O_CREAT | modeflag, 0644);
-            if (fd < 0) {
-                return 1;
-            }
-            if (dup2(fd, redirected_fd) < 0) {
-                return 1;
-            }
-            close(fd);
-
-            execvp(command->argv[0], command->argv);
-
-            return 1;
-        } else {
-            execvp(command->argv[0], command->argv);
-            perror("execvp");
-            exit(1);
-        }
-    } else {
-        int status;
-        if (!command->bgjob) {
-            waitpid(pid, &status, 0);
-        } else {
-            append_job(pid, (const char**) command->argv);
-        }
-    }
-
     return 0;
-    */
+    /*
+      char  cmd_path[PATH_MAX];
+      char* res = find_command(cmd_path, command->argv[0]);
+      if (!res) {
+          printf("%s: command not found\n", command->argv[0]);
+          return -1;
+      }
+      pid_t pid = fork();
+
+      if (pid < 0) {
+          return 1;
+      } else if (pid == 0) {
+          if (command->nredirs != 0) {
+              int      redirected_fd = command->redirs[0].fd;
+              unsigned modeflag      = (unsigned) command->redirs[0].mode;
+              int      fd            = open(command->redirs[0].target, O_WRONLY | O_CREAT | modeflag, 0644);
+              if (fd < 0) {
+                  return 1;
+              }
+              if (dup2(fd, redirected_fd) < 0) {
+                  return 1;
+              }
+              close(fd);
+
+              execvp(command->argv[0], command->argv);
+
+              return 1;
+          } else {
+              execvp(command->argv[0], command->argv);
+              perror("execvp");
+              exit(1);
+          }
+      } else {
+          int status;
+          if (!command->bgjob) {
+              waitpid(pid, &status, 0);
+          } else {
+              append_job(pid, (const char**) command->argv);
+          }
+      }
+
+      return 0;
+      */
 }
 
 // TODO: DOdocs
@@ -427,7 +432,7 @@ BuiltinCmd*
 find_builtin(const char* name) {
     BuiltinCmd* cmd;
 
-    cmd = bsearch(&name, builtins, NUMBUILTINS, sizeof(BuiltinCmd), &pstrcmp);
+    cmd = (BuiltinCmd*) bsearch(&name, builtins, NUMBUILTINS, sizeof(BuiltinCmd), &pstrcmp);
     return cmd;
 }
 
@@ -458,7 +463,7 @@ exit_handler() {
 // TODO: DOdocs
 int
 repl() {
-  return 0;
+    return 0;
     struct sigaction sa;
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
@@ -486,7 +491,7 @@ repl() {
             List* list = lex_and_parse(input_line);
 
             if (!list) {
-              perror("Error with parsing the input.");
+                perror("Error with parsing the input.");
             }
             exit_status = execute_list(list);
 

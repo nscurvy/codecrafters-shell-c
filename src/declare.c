@@ -24,22 +24,24 @@ typedef struct BucketNode {
     const char*        key;
     const char*        value;
     struct BucketNode* next;
+    bool               exported;
 } BucketNode;
 
 BucketNode*
-init_bucketnode(const char* name, const char* value) {
+bn_new(const char* name, const char* value, bool exported) {
     BucketNode* node = malloc(sizeof(BucketNode));
     if (node == nullptr) {
         return nullptr;
     }
-    node->key   = strdup(name);
-    node->value = strdup(value);
-    node->next  = nullptr;
+    node->key      = strdup(name);
+    node->value    = strdup(value);
+    node->exported = exported;
+    node->next     = nullptr;
     return node;
 }
 
 void
-cleanup_bucketnode(BucketNode* node) {
+bn_delete(BucketNode* node) {
     free(node->key);
     free(node->value);
     free(node);
@@ -52,7 +54,7 @@ typedef struct BucketList {
 
 
 BucketList*
-init_bucketlist() {
+blist_new() {
     BucketList* list = malloc(sizeof(BucketList));
     if (list == nullptr) {
         return nullptr;
@@ -63,19 +65,19 @@ init_bucketlist() {
 }
 
 void
-cleanup_bucketlist(BucketList* bucket_list) {
+blist_delete(BucketList* bucket_list) {
     BucketNode* iter = bucket_list->head;
     while (iter != nullptr) {
         BucketNode* tmp = iter;
         iter            = iter->next;
-        cleanup_bucketnode(tmp);
+        bn_delete(tmp);
     }
     free(bucket_list);
 }
 
 bool
-bucketlist_append(BucketList* bucket_list, const char* name, const char* value) {
-    BucketNode* node = init_bucketnode(name, value);
+blist_append(BucketList* bucket_list, const char* name, const char* value, bool exported) {
+    BucketNode* node = bn_new(name, value, exported);
     if (node == nullptr) {
         return false;
     }
@@ -95,7 +97,7 @@ bucketlist_append(BucketList* bucket_list, const char* name, const char* value) 
 }
 
 const char*
-bucketlist_get(BucketList* bucket_list, const char* name) {
+blist_get(BucketList* bucket_list, const char* name) {
     BucketNode* iter = bucket_list->head;
     while (iter != nullptr) {
         if (strcmp(iter->key, name) == 0) {
@@ -107,7 +109,7 @@ bucketlist_get(BucketList* bucket_list, const char* name) {
 }
 
 bool
-bucketlist_remove(BucketList* bucket_list, const char* name) {
+blist_remove(BucketList* bucket_list, const char* name) {
     bool result = false;
 
     BucketNode* iter = bucket_list->head;
@@ -116,7 +118,7 @@ bucketlist_remove(BucketList* bucket_list, const char* name) {
         if (strcmp(iter->key, name) == 0) {
             result     = true;
             prev->next = iter->next;
-            cleanup_bucketnode(iter);
+            bn_delete(iter);
             --bucket_list->size;
         }
         prev = iter;
@@ -146,7 +148,7 @@ typedef struct HashTable {
 } HashTable;
 
 struct HashTable*
-init_ht() {
+ht_new() {
     errno                   = 0;
     struct HashTable* table = malloc(sizeof(HashTable));
     if (table == nullptr) {
@@ -165,10 +167,10 @@ init_ht() {
     table->size = 0;
     for (int i = 0; i < table->capacity; ++i) {
         errno             = 0;
-        table->buckets[i] = init_bucketlist();
+        table->buckets[i] = blist_new();
         if (table->buckets[i] == nullptr) {
             for (int j = 0; j < i; ++j) {
-                cleanup_bucketlist(table->buckets[j]);
+                blist_delete(table->buckets[j]);
             }
             free(table->buckets);
             free(table);
@@ -181,9 +183,9 @@ init_ht() {
 }
 
 void
-cleanup_ht(HashTable* table) {
+ht_delete(HashTable* table) {
     for (int i = 0; i < table->capacity; ++i) {
-        cleanup_bucketlist(table->buckets[i]);
+        blist_delete(table->buckets[i]);
     }
     free(table->buckets);
     free(table);
@@ -207,7 +209,7 @@ hashtable_resize(HashTable* table, size_t new_capacity) {
             size_t oldcap            = table->capacity;
             table->capacity          = new_capacity;
             for (size_t i = 0; i < new_capacity; ++i) {
-                tmp[i] = init_bucketlist();
+                tmp[i] = blist_new();
                 if (!tmp[i]) {
                     errno = ENOMEM;
                     succ  = -1;
@@ -220,7 +222,7 @@ hashtable_resize(HashTable* table, size_t new_capacity) {
                     ht_put(table, iter->key, iter->value);
                     iter = iter->next;
                 }
-                cleanup_bucketlist(old_buckets[i]);
+                blist_delete(old_buckets[i]);
             }
             free(old_buckets);
         }
@@ -257,10 +259,10 @@ ht_put(HashTable* table, const char* key, const char* value) {
     if (is_unique) {
         // The case where the head is a nullptr
         if (prev == nullptr) {
-            table->buckets[hash]->head = init_bucketnode(key, value);
+            table->buckets[hash]->head = bn_new(key, value);
             table->size++;
         } else {
-            prev->next = init_bucketnode(key, value);
+            prev->next = bn_new(key, value);
             table->size++;
         }
     }
@@ -292,11 +294,11 @@ ht_remove(struct HashTable* table, const char* key) {
     uint64_t hash = fnv_1a(key);
     hash %= table->capacity;
 
-    const char* member = bucketlist_get(table->buckets[hash], key);
+    const char* member = blist_get(table->buckets[hash], key);
     if (!member) {
         return -1;
     }
-    bucketlist_remove(table->buckets[hash], key);
+    blist_remove(table->buckets[hash], key);
     table->size--;
     return 0;
 }
@@ -309,7 +311,7 @@ ht_clear(struct HashTable* table) {
             while (node != nullptr) {
                 BucketNode* tmp = node;
                 node            = node->next;
-                cleanup_bucketnode(tmp);
+                bn_delete(tmp);
             }
             table->size -= table->buckets[i]->size;
             table->buckets[i]->size = 0;

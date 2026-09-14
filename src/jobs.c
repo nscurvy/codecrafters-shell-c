@@ -28,7 +28,6 @@ void optostr(StringBuilder* sb, AndOrOp op) {
 
 const char*
 join_andor(AndOr* and_or) {
-  char* buf[and_or->count];
   AndOrElement* iter = and_or->head;
   StringBuilder* sb = sb_new();
 
@@ -46,6 +45,7 @@ join_andor(AndOr* and_or) {
     iter = iter->next;
   }
   const char* result = sb_takestring(sb);
+  sb_delete(sb);
 
   return result;
 }
@@ -207,39 +207,13 @@ get_job_by_pid(JobList* list, pid_t pid) {
 }
 
 Job*
-init_job(pid_t pid, int job_number, const char** cmdline) {
+init_job(pid_t pid, int job_number, const char* cmdline) {
     Job* new_job = (Job*) malloc(sizeof(Job));
     if (!new_job) {
         return nullptr;
     }
-    const char** iter            = cmdline;
-    size_t       required_length = 0;
-    while (*iter != nullptr) {
-        required_length += strlen(*iter);
-        required_length += 1;
-        ++iter;
-    }
-
-    char* cmd = (char*) calloc(required_length, sizeof(char));
-    if (!cmd) {
-        free(new_job);
-        return nullptr;
-    }
-    iter      = cmdline;
-    char* pos = cmd;
-    while (*iter != nullptr) {
-        strcat(pos, *iter);
-        pos += strlen(*iter);
-        if (*(iter + 1) == NULL) {
-            *pos = '\0';
-        } else {
-            *pos = ' ';
-            ++pos;
-        }
-        ++iter;
-    }
     new_job->pid        = pid;
-    new_job->cmdline    = cmd;
+    new_job->cmdline    = strdup(cmdline);
     new_job->job_number = job_number;
 
     return new_job;
@@ -362,7 +336,7 @@ get_next_job_number() {
 
 
 int
-append_job(pid_t job, const char** cmdline) {
+append_job(pid_t job, const char* cmdline) {
     if (job_count == MAX_JOBS) {
         return -1;
     }

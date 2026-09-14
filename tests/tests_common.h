@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <check.h>
 #define assert(val) ck_assert((val))
 #define streq(a, b) ck_assert_str_eq((a), (b))
 #define uinteq(a, b) ck_assert_uint_eq((a), (b))

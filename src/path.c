@@ -4,6 +4,7 @@
 
 #include "path.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -44,6 +45,11 @@ path_split(const char* path_value) {
       wordlist_append(result, buf);
     }
     if (*iter == '\0') {
+      size_t distance = (size_t) (component_end - component_begin + 1);
+      char buf[distance];
+      memmove(buf, component_begin, distance - 1);
+      buf[distance - 1] = '\0';
+      wordlist_append(result, buf);
       break;
     }
 
@@ -61,7 +67,9 @@ path_getenv() {
 WordList*
 path_get_dirs() {
   const char* path = path_getenv();
-
+  if (path == nullptr) {
+    return wordlist_new_empty();
+  }
   return path_split(path);
 }
 
@@ -119,11 +127,11 @@ path_join(const char* dir, const char* name) {
   size_t numchars = strlen(dir_actual) + strlen(name) + 2;
   result = calloc(numchars, sizeof(char));
   char* destiter = result;
-  strcpy(result, dir);
+  strcpy(result, dir_actual);
   destiter += strlen(dir_actual);
   *destiter = '/';
   ++destiter;
-  memmove(destiter, name, strlen(name));
+  memcpy(destiter, name, strlen(name));
 
   return result;
 }

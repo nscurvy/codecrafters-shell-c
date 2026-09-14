@@ -16,10 +16,14 @@ int main() {
   Suite* parser_s = parser_suite();
   Suite* sb_s = sb_suite();
   Suite* jobs_s = jobs_suite();
+  Suite* exec_s = exec_suite();
+  Suite* path_s = path_suite();
 
   srunner_add_suite(suite_runner, parser_s);
   srunner_add_suite(suite_runner, sb_s);
   srunner_add_suite(suite_runner, jobs_s);
+  srunner_add_suite(suite_runner, exec_s);
+  srunner_add_suite(suite_runner, path_s);
 
 
 

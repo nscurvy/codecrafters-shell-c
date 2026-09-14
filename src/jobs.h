@@ -56,7 +56,7 @@ void join_command(struct Command* command, struct StringBuilder* sb);
 void join_redirect(struct Redirect* redirect, struct StringBuilder* sb);
 
 Job*
-init_job(pid_t pid, int job_number, const char** NONNULL cmdline) GCC_NONNULL(3);
+init_job(pid_t pid, int job_number, const char* NONNULL cmdline) GCC_NONNULL(3);
 
 void
 cleanup_job(Job* NONNULL job) GCC_NONNULL(1);
@@ -77,7 +77,7 @@ Job* NULLABLE
 get_job(pid_t pid);
 
 int
-append_job(pid_t job, const char* NONNULL cmdline[]);
+append_job(pid_t job, const char* NONNULL cmdline);
 
 int
 get_next_job_number();

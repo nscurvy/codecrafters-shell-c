@@ -10,6 +10,9 @@
 
 ASSUME_NONNULL_BEGIN
 
+bool has_path_components(const char* path)
+GCC_NONNULL(1);
+
 WordList* NULLABLE
 path_split(const char* path_value)
 GCC_NONNULL(1);

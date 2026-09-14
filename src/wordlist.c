@@ -10,10 +10,16 @@
 Word*
 wordlist_append_word(WordList* list, Word* node) {
     Word* iter = list->head;
+    if (iter == nullptr) {
+      list->head = node;
+      list->size++;
+      return list->head;
+    }
     while (iter->next != nullptr) {
         iter = iter->next;
     }
     iter->next = node;
+    list->size++;
     return node;
 }
 

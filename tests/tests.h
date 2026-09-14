@@ -9,3 +9,5 @@ Suite* lexer_suite();
 Suite* parser_suite();
 Suite* sb_suite();
 Suite* jobs_suite();
+Suite* exec_suite();
+Suite* path_suite();

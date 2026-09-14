@@ -217,6 +217,72 @@ int execute_pipeline(Pipeline* pipeline) {
   return status;
 }
 
+int execute_command(Command* command) {
+  pid_t pid = fork();
+
+  if (pid == 0) {
+    for (int i = 0; i < command->nredirs; ++i) {
+      int target_fd;
+      switch (command->redirs[i].mode) {
+      case REDIR_APPEND:
+        target_fd = open(command->redirs[i].target, O_WRONLY | O_APPEND | O_CREAT);
+        if (command->redirs[i].fd == 1) {
+          dup2(target_fd, STDOUT_FILENO);
+          close(target_fd);
+        } else if (command->redirs[i].fd == 2) {
+          dup2(target_fd, STDERR_FILENO);
+          close(target_fd);
+        }
+        break;
+      case REDIR_OUT:
+        target_fd = open(command->redirs[i].target, O_WRONLY | O_TRUNC | O_CREAT);
+        if (command->redirs[i].fd == 1) {
+          dup2(target_fd, STDOUT_FILENO);
+          close(target_fd);
+        } else if (command->redirs[i].fd == 2) {
+          dup2(target_fd, STDERR_FILENO);
+          close(target_fd);
+        }
+        break;
+      case REDIR_IN:
+        target_fd = open(command->redirs[i].target, O_RDONLY);
+        if (command->redirs[i].fd != 0) {
+          _exit(1);
+        } else {
+          dup2(target_fd, STDIN_FILENO);
+          close(target_fd);
+        }
+        break;
+      case REDIR_HEREDOC:
+      case REDIR_ERR:
+        _exit(1);
+      }
+    }
+    const char* cmd = path_find_command(command->argv[0]);
+    if (!cmd) {
+      perror("Command not found");
+      _exit(127);
+    } else {
+      execvp(command->argv[0], command->argv);
+      perror("execvp");
+      _exit(127);
+    }
+  } else if (pid > 0) {
+    int status;
+    waitpid(pid, &status, 0);
+    if (WIFEXITED(status)) {
+      return WEXITSTATUS(status);
+    } else if (WIFSIGNALED(status)) {
+      return 128 + WTERMSIG(status);
+    }
+    return status;
+  } else {
+    perror("Error forking");
+    _exit(127);
+  }
+  return 0;
+}
+
 int execute_andor(AndOr* andor) {
   int status = 0;
 
@@ -254,6 +320,9 @@ int execute_andor_bg(AndOr* andor) {
     perror("Failed to fork process.");
     return pid;
   } else if (pid > 0) {
+    const char* cmdline = join_andor(andor);
+    append_job(pid, cmdline);
+    free(cmdline);
     return 0;
   } else {
     return execute_andor(andor);

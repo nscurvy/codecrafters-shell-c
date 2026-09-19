@@ -135,7 +135,7 @@ blist_remove(BucketList* bucket_list, const char* name) {
     BucketNode* prev = nullptr;
     while (iter != nullptr) {
         if (strcmp(iter->key, name) == 0) {
-            result     = true;
+            result = true;
             if (prev != nullptr) {
                 prev->next = iter->next;
             } else {

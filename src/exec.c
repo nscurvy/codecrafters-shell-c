@@ -4,9 +4,12 @@
 
 #include "exec.h"
 #include "common.h"
+#include "expand.h"
 #include "jobs.h"
 #include "parser.h"
 #include "path.h"
+#include "vars.h"
+
 #include <readline/history.h>
 #include <readline/readline.h>
 
@@ -206,11 +209,40 @@ exec_pipe(Command* first, Command* second) {
 }
 
 int
+execute_builtin(Command* command) {
+    BuiltinCmd* becmd = find_builtin(command->argv[0]);
+    if (becmd) {
+        int argc = (int) count_command_args((const char**) command->argv);
+        return becmd->builtin(argc, (const char**) command->argv);
+    }
+    return -1;
+}
+
+bool
+is_builtin(Command* command) {
+    return find_builtin(command->argv[0]) != nullptr;
+}
+
+bool
+check_command(Command* command) {
+    if (command->argv[0] == nullptr) {
+        return false;
+    }
+    return true;
+}
+
+int
 execute_pipeline(Pipeline* pipeline) {
     int status = 0;
 
     if (pipeline->size == 1) {
-        status = execute_command(pipeline->head->command);
+        if (check_command(pipeline->head->command)) {
+            if (is_builtin(pipeline->head->command)) {
+                status = execute_builtin(pipeline->head->command);
+            } else {
+                status = execute_command(pipeline->head->command);
+            }
+        }
     } else {
         status = execute_pipes(pipeline);
     }
@@ -333,9 +365,14 @@ execute_andor_bg(AndOr* andor) {
     }
 }
 
+
+void
+expand_list(List* list);
+
 int
 execute_list(List* list) {
     int status = 0;
+    expand_list(list);
 
     ListElement* iter = list->head;
     while (iter != nullptr) {
@@ -353,6 +390,96 @@ execute_list(List* list) {
 
     return status;
 }
+
+void
+execute_assignment(Assignment* assignment) {
+    const char* val = assignment->value;
+    char*       pair[2];
+    assignment_split(pair, val);
+    var_assign(pair[0], pair[1]);
+    free(pair[0]);
+    free(pair[1]);
+}
+
+void
+expand_redirection(Redirect* redirect) {
+    const char* expansion = expand_word(redirect->target);
+    const char* old       = redirect->target;
+    redirect->target      = (char*) expansion;
+    free(old);
+}
+
+void
+expand_redirections(Redirect* redirs, size_t len) {
+    for (size_t i = 0; i < len; ++i) {
+        expand_redirection(&redirs[i]);
+    }
+}
+
+void
+expand_assignment(Assignment* item) {
+    const char* expansion = expand_word(item->value);
+    const char* old       = item->value;
+    item->value           = expansion;
+    free(old);
+}
+
+void
+expand_args(char** argv) {
+    char** iter = argv;
+    while (*iter != nullptr) {
+        char* expansion = (char*) expand_word(*iter);
+        char* old       = *iter;
+        *iter           = expansion;
+        free(old);
+        ++iter;
+    }
+}
+
+void
+expand_assignments(Assignment* list) {
+    Assignment* iter = list;
+    while (iter != nullptr) {
+        expand_assignment(iter);
+        execute_assignment(iter);
+        iter = iter->next;
+    }
+}
+
+void
+expand_command(Command* command) {
+    expand_assignments(command->assignment_list);
+    expand_redirections(command->redirs, command->nredirs);
+    expand_args(command->argv);
+}
+
+void
+expand_pipeline(Pipeline* pipeline) {
+    PipelineElement* iter = pipeline->head;
+    while (iter != nullptr) {
+        expand_command(iter->command);
+        iter = iter->next;
+    }
+}
+
+void
+expand_andor(AndOr* andor) {
+    AndOrElement* iter = andor->head;
+    while (iter != nullptr) {
+        expand_pipeline(iter->pipeline);
+        iter = iter->next;
+    }
+}
+
+void
+expand_list(List* list) {
+    ListElement* iter = list->head;
+    while (iter != nullptr) {
+        expand_andor(iter->and_or);
+        iter = iter->next;
+    }
+}
+
 
 int
 exec_pipeline(Pipeline* pipeline) {
@@ -463,13 +590,14 @@ exit_handler() {
 // TODO: DOdocs
 int
 repl() {
-    return 0;
+    // return 0;
     struct sigaction sa;
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
     sigaction(SIGCHLD, &sa, nullptr);
 
+    var_init_from_environ();
     using_history();
     atexit(exit_handler);
     rl_event_hook        = check_background_jobs;

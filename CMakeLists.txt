@@ -10,7 +10,7 @@ list(REMOVE_ITEM LIB_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
 
 enable_testing()
 find_package(PkgConfig REQUIRED)
-    pkg_check_modules(CHECK REQUIRED check)
+pkg_check_modules(CHECK REQUIRED check)
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
 
@@ -19,20 +19,20 @@ set(CMAKE_C_STANDARD 23) # Enable the C23 standard
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-if(ENABLE_ASAN)
+if (ENABLE_ASAN)
     add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g -O1 -D_FORTIFY_SOURCE=3)
     add_link_options(-fsanitize=address)
-endif()
+endif ()
 
-if(ENABLE_UBSAN)
+if (ENABLE_UBSAN)
     add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer -g -O1 -D_FORTIFY_SOURCE=3)
     add_link_options(-fsanitize=undefined)
-endif()
+endif ()
 
 add_compile_options(-Wall -Wextra -Wconversion -Wsign-conversion -Wcast-align -Wshadow -Wnull-dereference -Wdouble-promotion -Wformat=2 -Wformat-security -Wstrict-overflow=5 -Wundef -Wuninitialized -Wswitch-enum)
 
 add_executable(shell ${SOURCE_FILES}
-     )
+)
 
 add_library(shell_lib ${LIB_FILES})
 set_property(TARGET shell_lib PROPERTY OUTPUT_NAME shell)
@@ -42,11 +42,11 @@ add_executable(shell_test
 
 )
 target_include_directories(shell_test PRIVATE src
-                                      PRIVATE ${CHECK_INCLUDE_DIRS})
+        PRIVATE ${CHECK_INCLUDE_DIRS})
 
 target_link_libraries(shell_test PRIVATE shell_lib ${CHECK_LIBRARIES} readline)
 add_test(NAME ShellUnitTests COMMAND shell_test)
 
-target_link_libraries(shell PRIVATE readline)
+target_link_libraries(shell PRIVATE readline m)
 target_link_libraries(shell_lib PRIVATE readline m)
 

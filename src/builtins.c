@@ -4,9 +4,9 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include "builtins.h"
 #include "common.h"
-#include "declare.h"
 #include "exec.h"
 #include "expand.h"
+#include "hashtable.h"
 #include "parser.h"
 
 #include "completion.h"
@@ -83,7 +83,7 @@ builtin_declare(const int argc, const char** argv) {
         if (variable_table == nullptr) {
             variable_table = ht_new();
         }
-        ht_put(variable_table, name, declaration);
+        ht_put(variable_table, name, declaration, false);
         free((char*) name);
     } else if (argc == 3) {
         if (strncmp(argv[1], "-p", 2) == 0) {

@@ -973,3 +973,27 @@ tokenize_input(const char* input) {
 //   char* begin = *iter_in;
 //
 // }
+void
+assignment_split(char* dest[2], const char* assignment) {
+    const char *name_begin = assignment, *name_end = assignment, *value_begin = assignment, *value_end = assignment;
+    const char* i = assignment;
+    while (*i != '\0' && *i != '=') {
+        ++i;
+    }
+    if (*i == '=') {
+        name_end = i++;
+    }
+    value_begin = i;
+    while (*i != '\0') {
+        ++i;
+    }
+    value_end = i;
+
+    size_t name_len   = (size_t) (name_end - name_begin);
+    size_t value_len  = (size_t) (value_end - value_begin);
+    dest[0]           = malloc(sizeof(char) * name_len + 1);
+    dest[0][name_len] = '\0';
+    memcpy(dest[0], name_begin, name_len);
+    dest[1] = malloc(sizeof(char*) * value_len + 1);
+    memcpy(dest[1], value_begin, value_len);
+}

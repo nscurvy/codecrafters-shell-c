@@ -56,5 +56,7 @@ parse_redir(Redirect* dest, TokenStream* words) GCC_NONNULL(1, 2);
 Command* NULLABLE
 parse_command(TokenStream* stream) GCC_NONNULL(1);
 
+void
+assignment_split(char* dest[2], const char* assignment);
 
 ASSUME_NONNULL_END

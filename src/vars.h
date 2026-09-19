@@ -3,25 +3,26 @@
 //
 
 #pragma once
+#include <stddef.h>
 
-typedef struct Variable {
-    const char* name;
-    const char* value;
-    bool        exported;
-} Variable;
-
-
-Variable*
-var_new(const char* name, const char* value, bool exported);
-
-void
-var_delete(Variable* var);
 
 const char*
 var_lookup(const char* name);
 
 const char*
+var_lookupn(const char* name, size_t count);
+
+void
 var_assign(const char* name, const char* value);
 
-const char*
+void
 var_export(const char* name, const char* value);
+
+bool
+var_unassign(const char* name);
+
+void
+fork_exported();
+
+void
+var_init_from_environ();

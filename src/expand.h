@@ -7,7 +7,19 @@
 
 extern struct HashTable* variable_table;
 
+struct Token;
+
 ASSUME_NONNULL_BEGIN
+
+void
+expand_token(struct Token* tok);
+
+// const char*
+// expand_assignment(const char* str);
+
+const char*
+expand_word(const char* str);
+
 /**
  * Perform expansion on a token word.
  * Allocates space for the expanded string.

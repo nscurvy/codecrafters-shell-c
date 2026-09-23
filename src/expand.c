@@ -5,6 +5,7 @@
 
 #include "expand.h"
 #include "common.h"
+#include "exec.h"
 
 #include "hashtable.h"
 #include "lexer.h"
@@ -83,6 +84,7 @@ expand_loose_variable(const char** i, StringBuilder* sb) {
     }
 }
 
+
 void
 expand_variable(const char** i, StringBuilder* sb) {
     (*i)++;
@@ -91,6 +93,82 @@ expand_variable(const char** i, StringBuilder* sb) {
         expand_braced_variable(i, sb);
     } else {
         expand_loose_variable(i, sb);
+    }
+}
+
+char*
+capture_list_output(List* body) {
+    int pipefd[2];
+    if (pipe(pipefd) < 0) {
+        return strdup("");
+    }
+    pid_t pid = fork();
+    if (pid < 0) {
+        close(pipefd[0]);
+        close(pipefd[1]);
+        return strdup("");
+    }
+    if (pid == 0) {
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[0]);
+        close(pipefd[1]);
+        execute_list(body);
+        _exit(0);
+    }
+    close(pipefd[1]);
+    StringBuilder* sb = sb_new();
+    char           buf[4096];
+    ssize_t        n;
+    while ((n = read(pipefd[0], buf, sizeof(buf) - 1)) > 0) {
+        buf[n] = '\0';
+        sb_appends(sb, buf);
+    }
+    close(pipefd[0]);
+    int status;
+    waitpid(pid, &status, 0);
+    char* result = (char*) sb_takestring(sb);
+
+    sb_delete(sb);
+
+    size_t len = strlen(result);
+    while (len > 0 && result[len - 1] == '\n') {
+        result[--len] = '\0';
+    }
+
+    return result;
+}
+
+void
+expand_cmdsub(const char** i, StringBuilder* sb) {
+    *i += 2;
+    const char* begin = *i;
+    const char* end   = *i;
+    while (**i != ')' && **i != '\0') {
+        (*i)++;
+    }
+    if (**i == ')') {
+        end        = *i;
+        size_t len = (size_t) (end - begin);
+        char   buf[len + 1];
+        buf[len] = '\0';
+        memcpy(buf, begin, len);
+        List* list   = lex_and_parse(buf);
+        char* result = capture_list_output(list);
+        sb_appends(sb, result);
+        free(result);
+        (*i)++;
+    }
+}
+
+void
+expand_dollarsign(const char** i, StringBuilder* sb) {
+    switch (*(*i + 1)) {
+    case '(':
+        expand_cmdsub(i, sb);
+        break;
+    default:
+        expand_variable(i, sb);
+        break;
     }
 }
 
@@ -112,7 +190,7 @@ expand_word(const char* str) {
                 }
                 break;
             case '$':
-                expand_variable(&i, sb);
+                expand_dollarsign(&i, sb);
                 goto NOINC;
                 break;
             case '\\':
@@ -150,7 +228,7 @@ expand_word(const char* str) {
                 sb_appendc(sb, *i);
                 break;
             case '$':
-                expand_variable(&i, sb);
+                expand_dollarsign(&i, sb);
                 goto NOINC;
                 break;
             default:

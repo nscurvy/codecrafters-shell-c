@@ -8,6 +8,7 @@
 extern struct HashTable* variable_table;
 
 struct Token;
+struct StringBuilder;
 
 ASSUME_NONNULL_BEGIN
 
@@ -16,6 +17,9 @@ expand_token(struct Token* tok);
 
 // const char*
 // expand_assignment(const char* str);
+
+void
+expand_dollarsign(const char** i, struct StringBuilder* sb);
 
 const char*
 expand_word(const char* str);

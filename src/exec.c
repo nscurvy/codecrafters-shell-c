@@ -294,7 +294,7 @@ execute_command(Command* command) {
         }
         const char* cmd = path_find_command(command->argv[0]);
         if (!cmd) {
-            perror("Command not found");
+            fprintf(stderr, "Command not found: %s\n", command->argv[0]);
             _exit(127);
         } else {
             execvp(command->argv[0], command->argv);
@@ -357,7 +357,7 @@ execute_andor_bg(AndOr* andor) {
         return pid;
     } else if (pid > 0) {
         const char* cmdline = join_andor(andor);
-        append_job(pid, cmdline);
+        register_job(pid, cmdline);
         free(cmdline);
         return 0;
     } else {

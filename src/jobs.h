@@ -13,7 +13,6 @@ struct Command;
 struct Redirect;
 struct StringBuilder;
 
-#define MAX_JOBS 10
 
 typedef struct Job {
     pid_t       pid;
@@ -23,8 +22,6 @@ typedef struct Job {
 
 ASSUME_NONNULL_BEGIN
 
-extern Job* jobs[MAX_JOBS];
-extern int  job_count;
 
 extern volatile sig_atomic_t child_exited_flag;
 
@@ -35,7 +32,8 @@ extern volatile sig_atomic_t child_exited_flag;
  * @param and_or The AndOr to join
  * @return A string representing the AndOr.
  */
-const char* join_andor(struct AndOr* and_or);
+const char*
+join_andor(struct AndOr* and_or);
 
 /**
  * Join a Pipeline node into a string representing a normalized view of the cmdline text
@@ -43,7 +41,8 @@ const char* join_andor(struct AndOr* and_or);
  *
  * @param pipeline The pipeline to join
  */
-void join_pipeline(struct Pipeline* pipeline, struct StringBuilder* sb);
+void
+join_pipeline(struct Pipeline* pipeline, struct StringBuilder* sb);
 
 /**
  * Join a Command node into a string representing a normalized view of the cmdline text
@@ -51,33 +50,33 @@ void join_pipeline(struct Pipeline* pipeline, struct StringBuilder* sb);
  *
  * @param command The command to join
  */
-void join_command(struct Command* command, struct StringBuilder* sb);
+void
+join_command(struct Command* command, struct StringBuilder* sb);
 
-void join_redirect(struct Redirect* redirect, struct StringBuilder* sb);
+void
+join_redirect(struct Redirect* redirect, struct StringBuilder* sb);
 
 Job*
-init_job(pid_t pid, int job_number, const char* NONNULL cmdline) GCC_NONNULL(3);
+job_new(pid_t pid, int job_number, const char* NONNULL cmdline) GCC_NONNULL(3);
 
 void
-cleanup_job(Job* NONNULL job) GCC_NONNULL(1);
+job_delete(Job* NONNULL job) GCC_NONNULL(1);
 
 void
-print_job_imm(Job* NONNULL job) GCC_NONNULL(1);
+job_print_imm(Job* NONNULL job) GCC_NONNULL(1);
 
 void
-print_job(Job* NONNULL job) GCC_NONNULL(1);
+job_print(Job* NONNULL job) GCC_NONNULL(1);
 
 void
 print_jobs();
 
-void
-return_job_number(int job_number);
 
 Job* NULLABLE
 get_job(pid_t pid);
 
 int
-append_job(pid_t job, const char* NONNULL cmdline);
+register_job(pid_t job, const char* NONNULL cmdline);
 
 int
 get_next_job_number();

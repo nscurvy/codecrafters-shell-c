@@ -10,118 +10,6 @@
 
 #include <readline/readline.h>
 
-
-volatile sig_atomic_t child_exited_flag = 0;
-
-void optostr(StringBuilder* sb, AndOrOp op) {
-  switch (op) {
-  case AND_AND:
-    sb_appends(sb, "&&");
-    break;
-  case AND_OR:
-    sb_appends(sb, "||");
-    break;
-  default:
-    break;
-  }
-}
-
-const char*
-join_andor(AndOr* and_or) {
-  AndOrElement* iter = and_or->head;
-  StringBuilder* sb = sb_new();
-
-  size_t totalsize = 0;
-  size_t i = 0;
-  while (iter != nullptr) {
-    optostr(sb, iter->op);
-    if (i++ > 0) {
-      sb_appendc(sb, ' ');
-    }
-    join_pipeline(iter->pipeline, sb);
-    if (iter->next != nullptr) {
-      sb_appendc(sb, ' ');
-    }
-    iter = iter->next;
-  }
-  const char* result = sb_takestring(sb);
-  sb_delete(sb);
-
-  return result;
-}
-
-void
-join_pipeline(Pipeline* pipeline, StringBuilder* sb) {
-  PipelineElement* iter = pipeline->head;
-
-  while (iter != nullptr) {
-    join_command(iter->command, sb);
-    if (iter->next != nullptr) {
-      sb_appends(sb, " | ");
-    }
-
-    iter = iter->next;
-  }
-
-}
-
-
-
-void join_args(const char** args, StringBuilder* sb) {
-  const char** aiter = args;
-  while (*aiter != nullptr) {
-    sb_appends(sb, *aiter);
-    if (*(aiter + 1) != nullptr) {
-      sb_appendc(sb, ' ');
-    }
-    ++aiter;
-  }
-}
-
-void join_redirect(Redirect* redirect, StringBuilder* sb) {
-  if (redirect->fd > 2) {
-    sb_appendl(sb, redirect->fd);
-  }
-  if (redirect->mode == REDIR_IN) {
-    sb_appendc(sb, '<');
-  } else if (redirect->mode == REDIR_APPEND) {
-    if (redirect->fd == 2) {
-      sb_appendl(sb, redirect->fd);
-    }
-    sb_appends(sb, ">>");
-  } else if (redirect->mode == REDIR_OUT) {
-    if (redirect->fd == 2) {
-      sb_appendl(sb, redirect->fd);
-    }
-    sb_appendc(sb, '>');
-  } else if (redirect->mode == REDIR_HEREDOC) {
-    sb_appends(sb, "<<");
-  }
-  sb_appendc(sb, ' ');
-  sb_appends(sb, redirect->target);
-}
-
-void
-join_command(Command* command, StringBuilder* sb) {
-  Assignment* iter = command->assignment_list;
-  while (iter != nullptr) {
-    sb_appends(sb, iter->value);
-    sb_appendc(sb, ' ');
-    iter = iter->next;
-  }
-  join_args((const char**)command->argv, sb);
-  if (command->nredirs > 0) {
-    sb_appendc(sb, ' ');
-  }
-  for (int i = 0; i < command->nredirs; ++i) {
-    join_redirect(&command->redirs[i], sb);
-    if ((size_t)i < command->nredirs - 1) {
-      sb_appendc(sb, ' ');
-    }
-  }
-}
-
-
 typedef struct JobNode {
     Job*            job;
     struct JobNode* next;
@@ -133,7 +21,7 @@ typedef struct JobList {
 } JobList;
 
 JobList*
-init_job_list() {
+jl_new() {
     JobList* list = malloc(sizeof(JobList));
     list->size    = 0;
     list->head    = nullptr;
@@ -141,18 +29,17 @@ init_job_list() {
 }
 
 JobNode*
-init_job_node(Job* job) {
+jn_new(Job* job) {
     JobNode* node = malloc(sizeof(JobNode));
     node->job     = job;
     node->next    = nullptr;
     return node;
 }
 
-JobList* job_list = nullptr;
 
 void
-append_job_list(JobList* list, Job* job) {
-    JobNode* node = init_job_node(job);
+jl_append(JobList* list, Job* job) {
+    JobNode* node = jn_new(job);
     if (list->head == nullptr) {
         list->head = node;
         list->size = 1;
@@ -167,15 +54,15 @@ append_job_list(JobList* list, Job* job) {
 }
 
 void
-cleanup_job_node(JobNode* node) {
+jn_delete(JobNode* node) {
     Job* job = node->job;
 
-    cleanup_job(job);
+    job_delete(job);
     free(node);
 }
 
 void
-remove_job_node(JobList* list, pid_t pid) {
+jl_remove(JobList* list, pid_t pid) {
     JobNode* iter = list->head;
     JobNode* prev = nullptr;
     while (iter != nullptr) {
@@ -185,14 +72,127 @@ remove_job_node(JobList* list, pid_t pid) {
             } else {
                 prev->next = iter->next;
             }
-            return_job_number(iter->job->job_number);
-            cleanup_job_node(iter);
+            jn_delete(iter);
             return;
         }
         prev = iter;
         iter = iter->next;
     }
 }
+
+JobList* job_list = nullptr;
+
+volatile sig_atomic_t child_exited_flag = 0;
+
+void
+optostr(StringBuilder* sb, AndOrOp op) {
+    switch (op) {
+    case AND_AND:
+        sb_appends(sb, "&&");
+        break;
+    case AND_OR:
+        sb_appends(sb, "||");
+        break;
+    default:
+        break;
+    }
+}
+
+const char*
+join_andor(AndOr* and_or) {
+    AndOrElement*  iter = and_or->head;
+    StringBuilder* sb   = sb_new();
+
+    size_t totalsize = 0;
+    size_t i         = 0;
+    while (iter != nullptr) {
+        optostr(sb, iter->op);
+        if (i++ > 0) {
+            sb_appendc(sb, ' ');
+        }
+        join_pipeline(iter->pipeline, sb);
+        if (iter->next != nullptr) {
+            sb_appendc(sb, ' ');
+        }
+        iter = iter->next;
+    }
+    const char* result = sb_takestring(sb);
+    sb_delete(sb);
+
+    return result;
+}
+
+void
+join_pipeline(Pipeline* pipeline, StringBuilder* sb) {
+    PipelineElement* iter = pipeline->head;
+
+    while (iter != nullptr) {
+        join_command(iter->command, sb);
+        if (iter->next != nullptr) {
+            sb_appends(sb, " | ");
+        }
+
+        iter = iter->next;
+    }
+}
+
+
+void
+join_args(const char** args, StringBuilder* sb) {
+    const char** aiter = args;
+    while (*aiter != nullptr) {
+        sb_appends(sb, *aiter);
+        if (*(aiter + 1) != nullptr) {
+            sb_appendc(sb, ' ');
+        }
+        ++aiter;
+    }
+}
+
+void
+join_redirect(Redirect* redirect, StringBuilder* sb) {
+    if (redirect->fd > 2) {
+        sb_appendl(sb, redirect->fd);
+    }
+    if (redirect->mode == REDIR_IN) {
+        sb_appendc(sb, '<');
+    } else if (redirect->mode == REDIR_APPEND) {
+        if (redirect->fd == 2) {
+            sb_appendl(sb, redirect->fd);
+        }
+        sb_appends(sb, ">>");
+    } else if (redirect->mode == REDIR_OUT) {
+        if (redirect->fd == 2) {
+            sb_appendl(sb, redirect->fd);
+        }
+        sb_appendc(sb, '>');
+    } else if (redirect->mode == REDIR_HEREDOC) {
+        sb_appends(sb, "<<");
+    }
+    sb_appendc(sb, ' ');
+    sb_appends(sb, redirect->target);
+}
+
+void
+join_command(Command* command, StringBuilder* sb) {
+    Assignment* iter = command->assignment_list;
+    while (iter != nullptr) {
+        sb_appends(sb, iter->value);
+        sb_appendc(sb, ' ');
+        iter = iter->next;
+    }
+    join_args((const char**) command->argv, sb);
+    if (command->nredirs > 0) {
+        sb_appendc(sb, ' ');
+    }
+    for (int i = 0; i < command->nredirs; ++i) {
+        join_redirect(&command->redirs[i], sb);
+        if ((size_t) i < command->nredirs - 1) {
+            sb_appendc(sb, ' ');
+        }
+    }
+}
+
 
 Job*
 get_job_by_pid(JobList* list, pid_t pid) {
@@ -207,7 +207,7 @@ get_job_by_pid(JobList* list, pid_t pid) {
 }
 
 Job*
-init_job(pid_t pid, int job_number, const char* cmdline) {
+job_new(pid_t pid, int job_number, const char* cmdline) {
     Job* new_job = (Job*) malloc(sizeof(Job));
     if (!new_job) {
         return nullptr;
@@ -220,13 +220,13 @@ init_job(pid_t pid, int job_number, const char* cmdline) {
 }
 
 void
-cleanup_job(Job* job) {
+job_delete(Job* job) {
     free(job->cmdline);
     free(job);
 }
 
 void
-print_job_imm(Job* job) {
+job_print_imm(Job* job) {
     printf("[%d] %d\n", job->job_number, job->pid);
     fflush(stdout);
 }
@@ -259,19 +259,6 @@ print_job_with_status(Job* job, const char* status) {
     printf("[%d]%s  %-20s %s\n", job_num, status_symbol, status, cmdline);
 }
 
-void
-print_job(Job* job) {
-    const char* status_symbol = " ";
-    if (jobs[job_count - 1]->pid == job->pid) {
-        status_symbol = "+";
-    } else if (job_count > 1 && jobs[job_count - 2]->pid == job->pid) {
-        status_symbol = "-";
-    }
-    const char* cmdline = job->cmdline;
-    int         job_num = job->job_number;
-
-    printf("[%d]%s  %-20s %s\n", job_num, status_symbol, "Running", cmdline);
-}
 
 int
 check_and_print_job(Job* job) {
@@ -287,14 +274,14 @@ check_and_print_job(Job* job) {
 void
 print_jobs() {
     if (job_list == nullptr) {
-        job_list = init_job_list();
+        job_list = jl_new();
     }
     JobNode* iter = job_list->head;
     JobNode* prev = nullptr;
     while (iter != nullptr) {
         int res = check_and_print_job(iter->job);
         if (res) {
-            remove_job_node(job_list, iter->job->pid);
+            jl_remove(job_list, iter->job->pid);
             iter = (prev == nullptr) ? job_list->head : prev->next;
         } else {
             prev = iter;
@@ -306,63 +293,48 @@ print_jobs() {
 }
 
 
-Job* jobs[MAX_JOBS] = {0};
-int  job_count      = 0;
-
-bool job_numbers[MAX_JOBS] = {false};
-
-void
-return_job_number(int job_number) {
-    job_numbers[job_number - 1] = false;
-}
-
 int
 get_next_job_number() {
     if (job_list == nullptr) {
-        job_list = init_job_list();
-    }
-    if (job_list->size == MAX_JOBS) {
-        return -1;
+        job_list = jl_new();
     }
 
-    for (int i = 0; i < MAX_JOBS; ++i) {
-        if (!job_numbers[i]) {
-            job_numbers[i] = true;
-            return i + 1;
+    int  candidate = 1;
+    bool found;
+    do {
+        found      = false;
+        JobNode* i = job_list->head;
+        while (i != nullptr) {
+            if (i->job->job_number == candidate) {
+                found = true;
+                candidate++;
+                break;
+            }
+            i = i->next;
         }
-    }
+    } while (found);
+
+    return candidate;
+
     return -1;
 }
 
 
 int
-append_job(pid_t job, const char* cmdline) {
-    if (job_count == MAX_JOBS) {
-        return -1;
+register_job(pid_t job, const char* cmdline) {
+    if (!job_list) {
+        job_list = jl_new();
     }
-    int  ret     = job_count;
+    int  ret     = (int) job_list->size;
     int  job_num = get_next_job_number();
-    Job* new_job = init_job(job, job_num, cmdline);
-    if (job_list == nullptr) {
-        job_list = init_job_list();
-    }
-    append_job_list(job_list, new_job);
-    // jobs[job_count++] = new_job;
+    Job* new_job = job_new(job, job_num, cmdline);
+    jl_append(job_list, new_job);
 
-    print_job_imm(new_job);
+    job_print_imm(new_job);
 
     return ret;
 }
 
-Job*
-get_job(pid_t pid) {
-    for (int i = 0; i < job_count; ++i) {
-        if (jobs[i]->pid == pid) {
-            return jobs[i];
-        }
-    }
-    return nullptr;
-}
 
 void
 report_and_reap_jobs() {
@@ -382,8 +354,7 @@ report_and_reap_jobs() {
             int job_number = job->job_number;
 
             print_job_with_status(job, "Done");
-            remove_job_node(job_list, pid);
-            return_job_number(job_number);
+            jl_remove(job_list, pid);
         }
     }
 
@@ -409,23 +380,6 @@ sigchld_handler(int signum) {
     child_exited_flag = 1;
 }
 
-int
-remove_job(pid_t pid) {
-    int i = 0;
-    for (i = 0; i < job_count; ++i) {
-        if (jobs[i]->pid == pid) {
-            Job* old_job = jobs[i];
-            cleanup_job(old_job);
-            jobs[i] = nullptr;
-            break;
-        }
-    }
-    for (int j = i; j < job_count - 1; ++j) {
-        jobs[j] = jobs[j + 1];
-    }
-    --job_count;
-    return i;
-}
 
 void
 print_job_exit(pid_t pid, int job_number) {

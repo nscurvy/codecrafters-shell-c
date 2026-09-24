@@ -30,16 +30,16 @@ implement any more features. However, if I feel inspired, I might add on to it.
         - [x] Rename to hash_table
         - [x] Create variables module to handle shell variables
     - [ ] Clean the jobs module:
-        - [ ] Remove the static array and all functions that reference it.
+        - [x] Remove the static array and all functions that reference it. (? Maybe complete?)
         - [ ] Create better separation between job state and output
         - [ ] Create a more consistent way of reaping jobs
     - [ ] Split up the exec module:
         - [ ] Extract the repl function to its own module.
         - [ ] Focus exec module on command execution.
         - [ ] Remove unused redundant functions
-        - [ ] Move the facilities for finding jobs on the PATH to its own module.
+        - [x] Move the facilities for finding jobs on the PATH to its own module.
     - [ ] Reorganize expansions
-    - [ ] Create a string builder/buffer to eliminate reliance on static buffers with arbitrary limits.
+    - [x] Create a string builder/buffer to eliminate reliance on static buffers with arbitrary limits.
 - Some functions could be merged so that they are more efficient. Some functions need splitting.
 - I need to make sure that I have established a convention re: struct pointer ownership and that everything follows it.
 - exec needs to be reorganized.
@@ -47,11 +47,11 @@ implement any more features. However, if I feel inspired, I might add on to it.
 ##### Other TODO
 
 - [x] Implement basic lexer.
-- [ ] Implement other command datatypes:
-    - [ ] Implement AndOr type
-    - [ ] Implement top level list.
-- [ ] Implement ';' and connect with '&'.
-- [ ] Implement '||' and '&&' with short-circuit behavior
+- [x] Implement other command datatypes:
+    - [x] Implement AndOr type
+    - [x] Implement top level list.
+- [x] Implement ';' and connect with '&'.
+- [x] Implement '||' and '&&' with short-circuit behavior
 
 ##### Security:
 

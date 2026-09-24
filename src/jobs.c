@@ -339,31 +339,42 @@ register_job(pid_t job, const char* cmdline) {
 void
 report_and_reap_jobs() {
     // Save the current spot in readline and then get ready to display job info
-    int   saved_point = rl_point;
-    char* saved_line  = rl_copy_text(0, rl_end);
-    rl_save_prompt();
-    rl_replace_line("", 0);
-    rl_redisplay();
+    int   saved_point = -1;
+    char* saved_line  = nullptr;
+    bool  displayed   = false;
 
 
+    rl_copy_text(0, rl_end);
     int   status;
     pid_t pid;
     while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
         Job* job = get_job_by_pid(job_list, pid);
         if (job) {
-            int job_number = job->job_number;
+            if (!displayed) {
+                saved_point = rl_point;
+                saved_line  = rl_copy_text(0, rl_end);
+                rl_save_prompt();
+                rl_replace_line("", 0);
+                rl_redisplay();
+                printf("\n");
+                displayed = true;
+            }
 
             print_job_with_status(job, "Done");
             jl_remove(job_list, pid);
         }
     }
 
-    // Now restore everything to how it was.
-    rl_restore_prompt();
-    rl_replace_line(saved_line, 0);
-    rl_point = saved_point;
-    rl_redisplay();
-    free(saved_line);
+    if (displayed) {
+        // Now restore everything to how it was.
+        rl_restore_prompt();
+        rl_replace_line(saved_line, 0);
+        rl_point = saved_point;
+        rl_forced_update_display();
+        fflush(stdout);
+        // rl_redisplay();
+        free(saved_line);
+    }
 }
 
 int

@@ -255,7 +255,7 @@ execute_command(Command* command) {
     pid_t pid = fork();
 
     if (pid == 0) {
-        for (int i = 0; i < command->nredirs; ++i) {
+        for (size_t i = 0; i < command->nredirs; ++i) {
             int target_fd;
             switch (command->redirs[i].mode) {
             case REDIR_APPEND:
@@ -358,10 +358,11 @@ execute_andor_bg(AndOr* andor) {
     } else if (pid > 0) {
         const char* cmdline = join_andor(andor);
         register_job(pid, cmdline);
-        free(cmdline);
+        free((void*) cmdline);
         return 0;
     } else {
-        return execute_andor(andor);
+        int status = execute_andor(andor);
+        _exit(status);
     }
 }
 
@@ -587,6 +588,7 @@ exit_handler() {
     }
 }
 
+
 // TODO: DOdocs
 int
 repl() {
@@ -596,7 +598,6 @@ repl() {
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
     sigaction(SIGCHLD, &sa, nullptr);
-
     var_init_from_environ();
     using_history();
     atexit(exit_handler);

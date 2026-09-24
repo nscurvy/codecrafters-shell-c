@@ -13,11 +13,13 @@ struct Command;
 struct Redirect;
 struct StringBuilder;
 
+typedef enum JobStatus { JOB_RUNNING, JOB_STOPPED, JOB_DONE } JobStatus;
 
 typedef struct Job {
     pid_t       pid;
     int         job_number;
     const char* cmdline;
+    JobStatus   status;
 } Job;
 
 ASSUME_NONNULL_BEGIN

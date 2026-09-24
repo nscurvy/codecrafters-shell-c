@@ -18,7 +18,11 @@ typedef struct JobNode {
 typedef struct JobList {
     size_t   size;
     JobNode* head;
+    Job*     current;  // The '+' job
+    Job*     previous; // The '-' job
 } JobList;
+
+static const char* status_string[] = {"Running", "Stopped", "Done"};
 
 JobList*
 jl_new() {
@@ -54,6 +58,17 @@ jl_append(JobList* list, Job* job) {
 }
 
 void
+jl_mark_current(JobList* list, Job* job) {
+    if (list->current == job) {
+        return;
+    }
+    if (list->current != nullptr) {
+        list->previous = list->current;
+    }
+    list->current = job;
+}
+
+void
 jn_delete(JobNode* node) {
     Job* job = node->job;
 
@@ -65,6 +80,13 @@ void
 jl_remove(JobList* list, pid_t pid) {
     JobNode* iter = list->head;
     JobNode* prev = nullptr;
+
+    if (list->current && list->current->pid == pid) {
+        list->current  = list->previous;
+        list->previous = nullptr;
+    } else if (list->previous && list->previous->pid == pid) {
+        list->previous = nullptr;
+    }
     while (iter != nullptr) {
         if (iter->job->pid == pid) {
             if (prev == nullptr) {
@@ -215,13 +237,14 @@ job_new(pid_t pid, int job_number, const char* cmdline) {
     new_job->pid        = pid;
     new_job->cmdline    = strdup(cmdline);
     new_job->job_number = job_number;
+    new_job->status     = JOB_RUNNING;
 
     return new_job;
 }
 
 void
 job_delete(Job* job) {
-    free(job->cmdline);
+    free((void*) job->cmdline);
     free(job);
 }
 
@@ -229,6 +252,36 @@ void
 job_print_imm(Job* job) {
     printf("[%d] %d\n", job->job_number, job->pid);
     fflush(stdout);
+}
+void
+job_print(Job* job) {
+
+    const char* status_symbol = " ";
+    JobNode*    iter          = job_list->head;
+    JobNode*    prev          = nullptr;
+    /*
+      while (iter != nullptr) {
+          if (iter->next == nullptr && job->pid == iter->job->pid) {
+              status_symbol = "+";
+              break;
+          }
+          if (iter->next == nullptr && job->pid == prev->job->pid) {
+              status_symbol = "-";
+              break;
+          }
+          prev = iter;
+          iter = iter->next;
+      }
+      */
+    if (job == job_list->current) {
+        status_symbol = "+";
+    } else if (job == job_list->previous) {
+        status_symbol = "-";
+    }
+    const char* cmdline = job->cmdline;
+    int         job_num = job->job_number;
+    const char* status  = status_string[job->status];
+    printf("[%d]%s  %-20s %s\n", job_num, status_symbol, status, cmdline);
 }
 
 void
@@ -329,7 +382,7 @@ register_job(pid_t job, const char* cmdline) {
     int  job_num = get_next_job_number();
     Job* new_job = job_new(job, job_num, cmdline);
     jl_append(job_list, new_job);
-
+    jl_mark_current(job_list, new_job);
     job_print_imm(new_job);
 
     return ret;
@@ -347,9 +400,16 @@ report_and_reap_jobs() {
     rl_copy_text(0, rl_end);
     int   status;
     pid_t pid;
-    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+    while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0) {
         Job* job = get_job_by_pid(job_list, pid);
         if (job) {
+            if (WIFSTOPPED(status)) {
+
+                job->status = JOB_STOPPED;
+                jl_mark_current(job_list, job);
+            } else if (WIFEXITED(status) || WIFSIGNALED(status)) {
+                job->status = JOB_DONE;
+            }
             if (!displayed) {
                 saved_point = rl_point;
                 saved_line  = rl_copy_text(0, rl_end);
@@ -359,9 +419,10 @@ report_and_reap_jobs() {
                 printf("\n");
                 displayed = true;
             }
-
-            print_job_with_status(job, "Done");
-            jl_remove(job_list, pid);
+            job_print(job);
+            if (job->status == JOB_DONE) {
+                jl_remove(job_list, pid);
+            }
         }
     }
 

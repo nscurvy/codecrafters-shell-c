@@ -24,14 +24,6 @@ expand_dollarsign(const char** i, struct StringBuilder* sb);
 const char*
 expand_word(const char* str);
 
-/**
- * Perform expansion on a token word.
- * Allocates space for the expanded string.
- * @param word Null terminated string
- * @return a new heap allocated string with expansions performed.
- */
-char* NULLABLE
-exptok(const char* NULLABLE word) GCC_NONNULL(1);
 
 // TODO: DOCS
 char* NULLABLE

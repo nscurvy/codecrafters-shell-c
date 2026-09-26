@@ -16,16 +16,28 @@ struct StringBuilder;
 typedef enum JobStatus { JOB_RUNNING, JOB_STOPPED, JOB_DONE } JobStatus;
 
 typedef struct Job {
-    pid_t       pid;
-    int         job_number;
     const char* cmdline;
+    pid_t       pid;
+    pid_t       pgid;
+    int         job_number;
     JobStatus   status;
+    int         exit_code;
+    int         term_signal;
 } Job;
 
 ASSUME_NONNULL_BEGIN
 
+void
+init_shell_job_control();
+
+void
+job_control_child_setup(pid_t pipeline_pgid, bool foreground);
+pid_t
+job_control_parent_setup(pid_t child_pid, pid_t pipeline_pgid);
 
 extern volatile sig_atomic_t child_exited_flag;
+extern pid_t                 shell_pgid;
+extern int                   shell_terminal;
 
 /**
  * Join a AndOr node into a string representing a normalized view of the cmdline text
@@ -59,8 +71,10 @@ void
 join_redirect(struct Redirect* redirect, struct StringBuilder* sb);
 
 Job*
-job_new(pid_t pid, int job_number, const char* NONNULL cmdline) GCC_NONNULL(3);
-
+job_new(pid_t pid, pid_t pgid, int job_number, const char* cmdline, JobStatus status, int exit_code, int term_signal)
+        GCC_NONNULL(4);
+#define job_default(pid, pgid, job_number, cmdline, status)                                                            \
+    job_new((pid), (pgid), (job_number), (cmdline), (status), 0, 0)
 void
 job_delete(Job* NONNULL job) GCC_NONNULL(1);
 
@@ -77,8 +91,8 @@ print_jobs();
 Job* NULLABLE
 get_job(pid_t pid);
 
-int
-register_job(pid_t job, const char* NONNULL cmdline);
+Job*
+register_job(pid_t job, pid_t pgid, const char* NONNULL cmdline, JobStatus status);
 
 int
 get_next_job_number();

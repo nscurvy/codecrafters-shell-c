@@ -10,11 +10,13 @@
 extern struct HashTable* variable_table;
 
 enum BuiltinE {
+    BUILTIN_BG,
     BUILTIN_CD,
     BUILTIN_COMPLETE,
     BUILTIN_DECLARE,
     BUILTIN_ECHO,
     BUILTIN_EXIT,
+    BUILTIN_FG,
     BUILTIN_HISTORY,
     BUILTIN_JOBS,
     BUILTIN_PWD,

@@ -16,6 +16,11 @@
 #include <readline/history.h>
 
 
+
+int
+builtin_bg(const int argc, const char** argv);
+int
+builtin_fg(const int argc, const char** argv);
 int
 builtin_cd(const int argc, const char** argv);
 int
@@ -34,12 +39,17 @@ int
 builtin_history(const int argc, const char** argv);
 int
 builtin_declare(const int argc, const char** argv);
-const BuiltinCmd builtins[NUMBUILTINS] = {
-        {.name = "cd", .builtin = &builtin_cd},           {.name = "complete", .builtin = &builtin_complete},
-        {.name = "declare", .builtin = &builtin_declare}, {.name = "echo", .builtin = &builtin_echo},
-        {.name = "exit", .builtin = &builtin_exit},       {.name = "history", .builtin = &builtin_history},
-        {.name = "jobs", .builtin = &builtin_jobs},       {.name = "pwd", .builtin = &builtin_pwd},
-        {.name = "type", .builtin = &builtin_type}};
+const BuiltinCmd builtins[NUMBUILTINS] = {{.name = "bg", .builtin = &builtin_bg},
+                                          {.name = "cd", .builtin = &builtin_cd},
+                                          {.name = "complete", .builtin = &builtin_complete},
+                                          {.name = "declare", .builtin = &builtin_declare},
+                                          {.name = "echo", .builtin = &builtin_echo},
+                                          {.name = "exit", .builtin = &builtin_exit},
+                                          {.name = "fg", .builtin = &builtin_fg},
+                                          {.name = "history", .builtin = &builtin_history},
+                                          {.name = "jobs", .builtin = &builtin_jobs},
+                                          {.name = "pwd", .builtin = &builtin_pwd},
+                                          {.name = "type", .builtin = &builtin_type}};
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -169,6 +179,17 @@ builtin_cd(const int argc, const char** argv) {
         printf("cd: %s: %s\n", target, errmsg);
     }
     return result;
+}
+
+int
+builtin_bg(const int argc, const char** argv) {
+
+    return 0;
+}
+
+int
+builtin_fg(const int argc, const char** argv) {
+    return 0;
 }
 
 int

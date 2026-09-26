@@ -8,6 +8,7 @@
 #include "jobs.h"
 #include "parser.h"
 #include "path.h"
+#include "stringbuilder.h"
 #include "vars.h"
 
 #include <readline/history.h>
@@ -18,47 +19,10 @@
 size_t
 count_command_args(const char**);
 
-/*
-// TODO: docs
-char*
-find_command(char* dest, const char* command) {
-    const char* name   = "PATH";
-    const char* env_p  = getenv(name);
-    char*       result = nullptr;
-    if (env_p) {
-        char      path_buffer[PATH_MAX + 1];
-        TokenList* path = tokenize_path(env_p);
-        Token* p    = path->head;
-        if (p) {
-            for (int i = 0; i < path->size; ++i) {
-                memset(path_buffer, 0, sizeof(path_buffer));
-                strcpy(path_buffer, p->value);
-                strcat(path_buffer, "/");
-                strcat(path_buffer, command);
-                struct stat buffer;
-
-                if (stat(path_buffer, &buffer) == 0) {
-                    // printf("%s is %s\n", command, path_buffer);
-                    if ((buffer.st_mode & S_IXUSR) || (buffer.st_mode & S_IXGRP) || (buffer.st_mode & S_IXOTH)) {
-                        strcpy(dest, path_buffer);
-                        result = dest;
-                        goto CLEANUP_WORDS;
-                    }
-                }
-                p = p->next;
-            }
-            memset(dest, 0, 1);
-        }
-CLEANUP_WORDS:
-        tokenlist_delete(path);
-    }
-    return result;
-}
-*/
 
 int
 exec_builtin(Command* command, BuiltinCmd* cmd) {
-    return 0;
+    // return 0;
     int saved_fd    = 0;
     int fd          = 0;
     int exit_status = 0;
@@ -87,12 +51,14 @@ exec_builtin(Command* command, BuiltinCmd* cmd) {
 
 
 int
-execute_pipes(Pipeline* pipeline) {
+execute_pipes(Pipeline* pipeline, bool foreground) {
     pid_t            pids[pipeline->size];
     int              pipes[pipeline->size - 1][2];
-    size_t           n         = pipeline->size;
-    size_t           num_pipes = pipeline->size - 1;
-    PipelineElement* iter      = pipeline->head;
+    size_t           n             = pipeline->size;
+    size_t           num_pipes     = pipeline->size - 1;
+    PipelineElement* iter          = pipeline->head;
+    pid_t            pipeline_pgid = 0;
+
     for (size_t i = 0; i < pipeline->size; ++i) {
         if (i < num_pipes) {
             pipe(pipes[i]);
@@ -102,6 +68,7 @@ execute_pipes(Pipeline* pipeline) {
         pid = fork();
 
         if (pid == 0) {
+            job_control_child_setup(pipeline_pgid, foreground);
             if (i > 0) {
                 dup2(pipes[i - 1][0], STDIN_FILENO);
             }
@@ -128,9 +95,10 @@ execute_pipes(Pipeline* pipeline) {
             }
         } else if (pid < 0) {
             perror("fork");
-            return -1;
+            _exit(127);
         } else {
-            pids[i] = pid;
+            pipeline_pgid = job_control_parent_setup(pid, pipeline_pgid);
+            pids[i]       = pid;
         }
         iter = iter->next;
     }
@@ -140,10 +108,41 @@ execute_pipes(Pipeline* pipeline) {
         close(pipes[j][1]);
     }
 
+    int  last_status = 0;
+    bool stopped     = false;
+
     for (size_t i = 0; i < n; ++i) {
-        waitpid(pids[i], nullptr, 0);
+        int status;
+        waitpid(pids[i], &status, WUNTRACED);
+
+
+        if (WIFSTOPPED(status)) {
+            stopped = true;
+        } else {
+            last_status = status;
+        }
     }
-    return 0;
+
+    if (foreground) {
+        tcsetpgrp(shell_terminal, shell_pgid);
+    }
+
+    if (stopped) {
+        StringBuilder* sb = sb_new();
+        join_pipeline(pipeline, sb);
+        const char* cmdline = sb_takestring(sb);
+        sb_delete(sb);
+        Job* job = register_job(pipeline_pgid, pipeline_pgid, cmdline, JOB_STOPPED);
+        free((void*) cmdline);
+        return 128 + SIGTSTP;
+    }
+
+    if (WIFEXITED(last_status)) {
+        return WEXITSTATUS(last_status);
+    } else if (WIFSIGNALED(last_status)) {
+        return 128 + WTERMSIG(last_status);
+    }
+    return last_status;
 }
 
 
@@ -152,8 +151,9 @@ exec_pipe(Command* first, Command* second) {
     int         fds[2];
     pid_t       pid_first;
     pid_t       pid_second;
-    BuiltinCmd* cmd1 = find_builtin(first->argv[0]);
-    BuiltinCmd* cmd2 = find_builtin(second->argv[0]);
+    pid_t       pipeline_pgid = 0;
+    BuiltinCmd* cmd1          = find_builtin(first->argv[0]);
+    BuiltinCmd* cmd2          = find_builtin(second->argv[0]);
 
     pipe(fds);
 
@@ -161,8 +161,9 @@ exec_pipe(Command* first, Command* second) {
 
     if (pid_first < 0) {
         perror("fork");
-        return -1;
+        _exit(127);
     } else if (pid_first == 0) {
+
         dup2(fds[1], STDOUT_FILENO);
         close(fds[0]);
         close(fds[1]);
@@ -178,6 +179,8 @@ exec_pipe(Command* first, Command* second) {
             }
         }
         _exit(127);
+    } else {
+        pipeline_pgid = job_control_parent_setup(pid_first, pipeline_pgid);
     }
     pid_second = fork();
 
@@ -232,7 +235,7 @@ check_command(Command* command) {
 }
 
 int
-execute_pipeline(Pipeline* pipeline) {
+execute_pipeline(Pipeline* pipeline, bool foreground) {
     int status = 0;
 
     if (pipeline->size == 1) {
@@ -240,21 +243,23 @@ execute_pipeline(Pipeline* pipeline) {
             if (is_builtin(pipeline->head->command)) {
                 status = execute_builtin(pipeline->head->command);
             } else {
-                status = execute_command(pipeline->head->command);
+                status = execute_command(pipeline->head->command, foreground);
             }
         }
     } else {
-        status = execute_pipes(pipeline);
+        status = execute_pipes(pipeline, foreground);
     }
 
     return status;
 }
 
 int
-execute_command(Command* command) {
-    pid_t pid = fork();
+execute_command(Command* command, bool foreground) {
+    pid_t pid           = fork();
+    pid_t pipeline_pgid = 0;
 
     if (pid == 0) {
+        job_control_child_setup(pipeline_pgid, foreground);
         for (size_t i = 0; i < command->nredirs; ++i) {
             int target_fd;
             switch (command->redirs[i].mode) {
@@ -302,8 +307,24 @@ execute_command(Command* command) {
             _exit(127);
         }
     } else if (pid > 0) {
+        pipeline_pgid = job_control_parent_setup(pid, pipeline_pgid);
         int status;
         waitpid(pid, &status, 0);
+
+        if (foreground) {
+            tcsetpgrp(shell_terminal, shell_pgid);
+        }
+
+        if (WIFSTOPPED(status)) {
+            StringBuilder* sb = sb_new();
+            join_command(command, sb);
+            const char* cmdline = sb_takestring(sb);
+            sb_delete(sb);
+            register_job(pid, pipeline_pgid, cmdline, JOB_STOPPED);
+            free((void*) cmdline);
+            return 128 + WSTOPSIG(status);
+        }
+
         if (WIFEXITED(status)) {
             return WEXITSTATUS(status);
         } else if (WIFSIGNALED(status)) {
@@ -318,27 +339,26 @@ execute_command(Command* command) {
 }
 
 int
-execute_andor(AndOr* andor) {
+execute_andor(AndOr* andor, bool foreground) {
     int status = 0;
 
     AndOrElement* iter = andor->head;
     while (iter != nullptr) {
         switch (iter->op) {
         case AND_NONE:
-            status = execute_pipeline(iter->pipeline);
+            status = execute_pipeline(iter->pipeline, foreground);
             break;
         case AND_AND:
             if (status != 0) {
                 return status;
             } else {
-                status = execute_pipeline(iter->pipeline);
+                status = execute_pipeline(iter->pipeline, foreground);
             }
             break;
         case AND_OR:
             if (status == 0) {
-                return status;
             } else {
-                status = execute_pipeline(iter->pipeline);
+                status = execute_pipeline(iter->pipeline, foreground);
             }
             break;
         }
@@ -357,11 +377,12 @@ execute_andor_bg(AndOr* andor) {
         return pid;
     } else if (pid > 0) {
         const char* cmdline = join_andor(andor);
-        register_job(pid, cmdline);
+        register_job(pid, pid, cmdline, JOB_RUNNING);
         free((void*) cmdline);
         return 0;
     } else {
-        int status = execute_andor(andor);
+        job_control_child_setup(0, false);
+        int status = execute_andor(andor, false);
         _exit(status);
     }
 }
@@ -380,7 +401,7 @@ execute_list(List* list) {
         switch (iter->sep) {
         case SEP_SEMI:
         case SEP_NONE:
-            status = execute_andor(iter->and_or);
+            status = execute_andor(iter->and_or, true);
             break;
         case SEP_AMP:
             status = execute_andor_bg(iter->and_or);
@@ -407,7 +428,7 @@ expand_redirection(Redirect* redirect) {
     const char* expansion = expand_word(redirect->target);
     const char* old       = redirect->target;
     redirect->target      = (char*) expansion;
-    free(old);
+    free((void*) old);
 }
 
 void
@@ -422,7 +443,7 @@ expand_assignment(Assignment* item) {
     const char* expansion = expand_word(item->value);
     const char* old       = item->value;
     item->value           = expansion;
-    free(old);
+    free((void*) old);
 }
 
 void
@@ -598,6 +619,7 @@ repl() {
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
     sigaction(SIGCHLD, &sa, nullptr);
+    init_shell_job_control();
     var_init_from_environ();
     using_history();
     atexit(exit_handler);

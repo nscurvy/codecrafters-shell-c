@@ -12,7 +12,6 @@ struct Command;
 struct Pipeline;
 
 
-
 /**
  * @brief Locate an executable on the system PATH.
  *
@@ -101,16 +100,18 @@ prepare_args(char** dest, struct TokenList* words) GCC_NONNULL(1, 2);
  * @return
  */
 int
-execute_command(struct Command* command) GCC_NONNULL(1);
+execute_command(struct Command* command, bool foreground) GCC_NONNULL(1);
 
 int
 execute_list(struct List* list);
 
 int
-execute_andor(struct AndOr* andor);
+execute_andor(struct AndOr* andor, bool foreground);
 
-int execute_andor_bg(struct AndOr* andor);
+int
+execute_andor_bg(struct AndOr* andor);
 
-int execute_pipeline(struct Pipeline* pipeline);
+int
+execute_pipeline(struct Pipeline* pipeline, bool foreground);
 
 ASSUME_NONNULL_END

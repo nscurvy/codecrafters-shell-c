@@ -10,9 +10,16 @@
 
 #include <readline/readline.h>
 
+
+static const char* status_string[] = {"running", "suspended", "done"};
+pid_t              shell_pgid;
+int                shell_terminal;
+
+
 typedef struct JobNode {
     Job*            job;
     struct JobNode* next;
+
 } JobNode;
 
 typedef struct JobList {
@@ -22,7 +29,8 @@ typedef struct JobList {
     Job*     previous; // The '-' job
 } JobList;
 
-static const char* status_string[] = {"Running", "Stopped", "Done"};
+
+JobList* job_list = nullptr;
 
 JobList*
 jl_new() {
@@ -102,9 +110,49 @@ jl_remove(JobList* list, pid_t pid) {
     }
 }
 
-JobList* job_list = nullptr;
 
 volatile sig_atomic_t child_exited_flag = 0;
+
+
+void
+init_shell_job_control() {
+    shell_terminal = STDIN_FILENO;
+
+    // Ignore signals the shell shouldnt react to.
+    signal(SIGINT, SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+    signal(SIGTTIN, SIG_IGN);
+    signal(SIGTTOU, SIG_IGN);
+
+    shell_pgid = getpid();
+    setpgid(shell_pgid, shell_pgid);
+    tcsetpgrp(shell_terminal, shell_pgid);
+
+    job_list = jl_new();
+}
+void
+job_control_child_setup(pid_t pipeline_pgid, bool foreground) {
+    pid_t my_pid      = getpid();
+    pid_t target_pgid = (pipeline_pgid == 0) ? my_pid : pipeline_pgid;
+    setpgid(my_pid, target_pgid);
+
+    if (foreground) {
+        tcsetpgrp(shell_terminal, target_pgid);
+    }
+
+    signal(SIGINT, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
+    signal(SIGTSTP, SIG_DFL);
+    signal(SIGTTIN, SIG_DFL);
+    signal(SIGTTOU, SIG_DFL);
+}
+pid_t
+job_control_parent_setup(pid_t child_pid, pid_t pipeline_pgid) {
+    pid_t target_pgid = (pipeline_pgid == 0) ? child_pid : pipeline_pgid;
+    setpgid(child_pid, target_pgid);
+    return target_pgid;
+}
 
 void
 optostr(StringBuilder* sb, AndOrOp op) {
@@ -229,15 +277,18 @@ get_job_by_pid(JobList* list, pid_t pid) {
 }
 
 Job*
-job_new(pid_t pid, int job_number, const char* cmdline) {
+job_new(pid_t pid, pid_t pgid, int job_number, const char* cmdline, JobStatus status, int exit_code, int term_signal) {
     Job* new_job = (Job*) malloc(sizeof(Job));
     if (!new_job) {
         return nullptr;
     }
-    new_job->pid        = pid;
-    new_job->cmdline    = strdup(cmdline);
-    new_job->job_number = job_number;
-    new_job->status     = JOB_RUNNING;
+    new_job->pid         = pid;
+    new_job->cmdline     = strdup(cmdline);
+    new_job->job_number  = job_number;
+    new_job->status      = status;
+    new_job->exit_code   = exit_code;
+    new_job->term_signal = term_signal;
+    new_job->pgid        = pgid;
 
     return new_job;
 }
@@ -373,19 +424,17 @@ get_next_job_number() {
 }
 
 
-int
-register_job(pid_t job, const char* cmdline) {
-    if (!job_list) {
-        job_list = jl_new();
-    }
-    int  ret     = (int) job_list->size;
-    int  job_num = get_next_job_number();
-    Job* new_job = job_new(job, job_num, cmdline);
+Job*
+register_job(pid_t job, pid_t pgid, const char* cmdline, JobStatus status) {
+    int  ret        = (int) job_list->size;
+    int  job_num    = get_next_job_number();
+    Job* new_job    = job_default(job, pgid, job_num, cmdline, status);
+    new_job->status = status;
     jl_append(job_list, new_job);
     jl_mark_current(job_list, new_job);
     job_print_imm(new_job);
 
-    return ret;
+    return new_job;
 }
 
 

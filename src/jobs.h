@@ -116,6 +116,6 @@ struct JobList;
 Job*
 get_job_by_number(struct JobList* list, int n) GCC_NONNULL(1);
 Job*
-resolve_job_spec(struct JobList* list, const char* spec, ShellError* err) GCC_NONNULL(1, 2, 3);
+resolve_job_spec(struct JobList* list, const char* spec, ShellError* err) GCC_NONNULL(1, 3);
 
 ASSUME_NONNULL_END

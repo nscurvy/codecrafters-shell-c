@@ -90,8 +90,7 @@ shell_error_set(ShellError* err, ShellErrorCode code, const char* context_fmt, .
  * @param context_fmt Optional printf-style context, or nullptr.
  */
 void
-shell_error_set_errno(ShellError* err, int sys_errno, const char* context_fmt, ...)
-  GCC_NONNULL(1))
+shell_error_set_errno(ShellError* err, int sys_errno, const char* context_fmt, ...) GCC_NONNULL(1)
         __attribute__((format(printf, 3, 4)));
 
 /**

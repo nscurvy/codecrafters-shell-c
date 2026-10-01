@@ -77,7 +77,7 @@ shell_error_set(ShellError* err, ShellErrorCode code, const char* context_fmt, .
     shell_error_clear(err);
     char* context = nullptr;
     if (context_fmt) {
-        va_list args = (va_list){0};
+        va_list args;
         va_start(args, context_fmt);
         context = ctxstr_new(context_fmt, args);
         va_end(args);

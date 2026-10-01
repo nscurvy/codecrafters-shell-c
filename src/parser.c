@@ -82,7 +82,7 @@ av_new() {
  */
 void
 av_delete(ArgVector* vec) {
-    for (int i = 0; i < vec->capacity; ++i) {
+    for (size_t i = 0; i < vec->capacity; ++i) {
         if (vec->arr[i] != nullptr) {
             free(vec->arr[i]);
         }
@@ -152,7 +152,7 @@ rv_new() {
  */
 void
 rv_delete(RedirVec* vec) {
-    for (int i = 0; i < vec->size; ++i) {
+    for (size_t i = 0; i < vec->size; ++i) {
         free(vec->arr[i].target);
     }
     free(vec->arr);
@@ -247,7 +247,7 @@ lex_and_parse(const char* input) {
 
     List*      result;
     ShellError err;
-    int        tokenize_result = lx_tokenize(token_list, stream, &err);
+    lx_tokenize(token_list, stream, &err);
     if (shell_error_is_set(&err)) {
         shell_error_report(&err);
 
@@ -378,7 +378,7 @@ parse_command(TokenStream* stream) {
             /* Copying over the argument vector into a sized array. */
             const char** argv = malloc(sizeof(const char*) * av->size + 1);
             size_t       argc = av->size;
-            for (int i = 0; i < av->size; ++i) {
+            for (size_t i = 0; i < av->size; ++i) {
                 argv[i] = strdup(av->arr[i]);
             }
             argv[argc] = nullptr;
@@ -387,7 +387,7 @@ parse_command(TokenStream* stream) {
             /* Copying the redirection vector into a sized array. */
             Redirect* rvs  = malloc(sizeof(Redirect) * rv->size);
             size_t    nrvs = rv->size;
-            for (int i = 0; i < nrvs; ++i) {
+            for (size_t i = 0; i < nrvs; ++i) {
                 Redirect* redir = redir_new(rv->arr[i].fd, rv->arr[i].mode, rv->arr[i].target);
                 rvs[i]          = *redir;
             }
@@ -402,7 +402,7 @@ parse_command(TokenStream* stream) {
 void
 prepare_args(char** dest, TokenList* words) {
     Token* iter = words->head;
-    for (int i = 0; i < words->size; ++i) {
+    for (size_t i = 0; i < words->size; ++i) {
         memcpy(dest[i], iter->value, strlen(iter->value) + 1);
         iter = iter->next;
     }
@@ -507,21 +507,18 @@ ao_delete(AndOr* ao) {
 }
 bool
 split_on_pipes(TokenList* dest, TokenList* src) {
-    Token* iter     = src->head;
-    Token* prev     = nullptr;
-    size_t new_size = 0;
+    Token* iter = src->head;
+    Token* prev = nullptr;
     while (iter != nullptr) {
         if (strcmp(iter->value, "|") == 0) {
-            prev->next      = nullptr;
-            Token* tmp      = iter;
-            size_t old_size = src->size;
-            src->size       = tokenlist_count(src);
-            dest->head      = tmp->next;
-            dest->size      = tokenlist_count(dest);
+            prev->next = nullptr;
+            Token* tmp = iter;
+            src->size  = tokenlist_count(src);
+            dest->head = tmp->next;
+            dest->size = tokenlist_count(dest);
             token_delete(tmp);
             return true;
         }
-        ++new_size;
         prev = iter;
         iter = iter->next;
     }
@@ -706,14 +703,6 @@ remove_blanks(TokenList* list) {
     }
 }
 
-TokenList*
-tokenize_path(const char* path) {
-    return nullptr;
-}
-TokenList*
-tokenize_input(const char* input) {
-    return nullptr;
-}
 
 void
 assignment_split(char* dest[2], const char* assignment) {

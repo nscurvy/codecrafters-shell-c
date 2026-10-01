@@ -49,7 +49,7 @@ extern int                   shell_terminal;
  * @return A string representing the AndOr.
  */
 const char*
-join_andor(struct AndOr* and_or);
+join_andor(struct AndOr* and_or) GCC_NONNULL(1);
 
 /**
  * Join a Pipeline node into a string representing a normalized view of the cmdline text
@@ -58,7 +58,7 @@ join_andor(struct AndOr* and_or);
  * @param pipeline The pipeline to join
  */
 void
-join_pipeline(struct Pipeline* pipeline, struct StringBuilder* sb);
+join_pipeline(struct Pipeline* pipeline, struct StringBuilder* sb) GCC_NONNULL(1, 2);
 
 /**
  * Join a Command node into a string representing a normalized view of the cmdline text
@@ -67,10 +67,10 @@ join_pipeline(struct Pipeline* pipeline, struct StringBuilder* sb);
  * @param command The command to join
  */
 void
-join_command(struct Command* command, struct StringBuilder* sb);
+join_command(struct Command* command, struct StringBuilder* sb) GCC_NONNULL(1, 2);
 
 void
-join_redirect(struct Redirect* redirect, struct StringBuilder* sb);
+join_redirect(struct Redirect* redirect, struct StringBuilder* sb) GCC_NONNULL(1, 2);
 
 Job*
 job_new(pid_t pid, pid_t pgid, int job_number, const char* cmdline, JobStatus status, int exit_code, int term_signal)
@@ -94,7 +94,7 @@ Job* NULLABLE
 get_job(pid_t pid);
 
 Job*
-register_job(pid_t job, pid_t pgid, const char* NONNULL cmdline, JobStatus status);
+register_job(pid_t job, pid_t pgid, const char* NONNULL cmdline, JobStatus status) GCC_NONNULL(3);
 
 int
 get_next_job_number();
@@ -114,8 +114,8 @@ print_job_exit(pid_t pid, int job_number);
 struct JobList;
 
 Job*
-get_job_by_number(struct JobList* list, int n);
+get_job_by_number(struct JobList* list, int n) GCC_NONNULL(1);
 Job*
-resolve_job_spec(struct JobList* list, const char* spec, ShellError* err);
+resolve_job_spec(struct JobList* list, const char* spec, ShellError* err) GCC_NONNULL(1, 2, 3);
 
 ASSUME_NONNULL_END

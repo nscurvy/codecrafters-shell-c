@@ -45,7 +45,7 @@ WordList* NULLABLE
 wordlist_new(const char* text) GCC_NONNULL(1);
 
 WordList*
-wordlist_copyof(WordList* list);
+wordlist_copyof(WordList* list) GCC_NONNULL(1);
 
 void
 wordlist_delete(WordList* list) GCC_NONNULL(1);

@@ -32,7 +32,7 @@ typedef struct CharStream {
  * @return A new CharStream object if successful, nullptr otherwise.
  */
 CharStream*
-cs_new(const char* data);
+cs_new(const char* data) GCC_NONNULL(1);
 
 /**
  * Destructor for CharStream.
@@ -40,7 +40,7 @@ cs_new(const char* data);
  * @param stream The stream to delete
  */
 void
-cs_delete(CharStream* stream);
+cs_delete(CharStream* stream) GCC_NONNULL(1);
 
 /**
  * Returns the next character(or -1) without advancing the stream forward.
@@ -49,7 +49,7 @@ cs_delete(CharStream* stream);
  * @return The next character in the stream, or -1 on error or EOI
  */
 int
-cs_peek(CharStream* stream);
+cs_peek(CharStream* stream) GCC_NONNULL(1);
 
 /**
  * Peeks n chars ahead in the stream.
@@ -59,7 +59,7 @@ cs_peek(CharStream* stream);
  * @return The char(or -1) n positions ahead in the stream.
  */
 int
-cs_peek_ahead(CharStream* stream, int n);
+cs_peek_ahead(CharStream* stream, int n) GCC_NONNULL(1);
 
 /**
  * Return the next char in the stream while also advancing the stream forward.
@@ -68,7 +68,7 @@ cs_peek_ahead(CharStream* stream, int n);
  * @return The next char in the stream. Or -1 on failure.
  */
 int
-cs_read(CharStream* stream);
+cs_read(CharStream* stream) GCC_NONNULL(1);
 
 /**
  * Check if the stream is at the end.
@@ -76,7 +76,7 @@ cs_read(CharStream* stream);
  * @return True if the stream is at EOI, false otherwise.
  */
 bool
-cs_eoi(CharStream* stream);
+cs_eoi(CharStream* stream) GCC_NONNULL(1);
 
 /**
  * This checks if the next character in the stream is c. If it is, the stream is advanced
@@ -87,7 +87,7 @@ cs_eoi(CharStream* stream);
  * @return True if the stream matched and advanced forward
  */
 bool
-cs_match(CharStream* stream, int c);
+cs_match(CharStream* stream, int c) GCC_NONNULL(1);
 
 /**
  * Resets the stream back to the beginning.
@@ -95,7 +95,7 @@ cs_match(CharStream* stream, int c);
  * @param stream
  */
 void
-cs_reset(CharStream* stream);
+cs_reset(CharStream* stream) GCC_NONNULL(1);
 
 /**
  * *****************************************************************************
@@ -126,7 +126,7 @@ typedef enum QuoteFlagE {
  * at one past the stream buffer. So it is not safe to dereference end after this function is called.
  */
 TokenType
-lx_scan(CharStream* stream, char** begin, char** end);
+lx_scan(CharStream* stream, char** begin, char** end) GCC_NONNULL(1, 2, 3);
 
 /**
  * Pulls a token from the stream if it can. If the stream is at the end or it otherwise
@@ -134,7 +134,7 @@ lx_scan(CharStream* stream, char** begin, char** end);
  * allocated Token.
  */
 Token*
-lx_token(CharStream* stream);
+lx_token(CharStream* stream) GCC_NONNULL(1);
 
 /**
  * Takes an input stream and tokenizes it. The function will consume the entire stream
@@ -149,7 +149,7 @@ lx_token(CharStream* stream);
  * @return 0 upon success, anything else indicates some sort of failure.
  */
 int
-lx_tokenize(TokenList* dest, CharStream* stream, ShellError* err);
+lx_tokenize(TokenList* dest, CharStream* stream, ShellError* err) GCC_NONNULL(1, 2, 3);
 
 typedef enum CleanupPolicy { LX_CLEANUP, LX_NOCLEANUP } CleanupPolicy;
 

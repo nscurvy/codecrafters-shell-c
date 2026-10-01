@@ -10,7 +10,7 @@
 
 
 List* NULLABLE
-lex_and_parse(const char* input);
+lex_and_parse(const char* input) GCC_NONNULL(1);
 
 List* NULLABLE
 parse_list(TokenStream* tokens) GCC_NONNULL(1);
@@ -56,6 +56,6 @@ Command* NULLABLE
 parse_command(TokenStream* stream) GCC_NONNULL(1);
 
 void
-assignment_split(char* dest[2], const char* assignment);
+assignment_split(char* dest[2], const char* assignment) GCC_NONNULL(1, 2);
 
 ASSUME_NONNULL_END

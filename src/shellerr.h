@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "nullability.h"
 #include <errno.h>
 
 #define SHERR_BEGIN 256
@@ -45,6 +46,9 @@ typedef struct ShellError {
     char*          context;
 } ShellError;
 
+
+ASSUME_NONNULL_BEGIN
+
 /**
  * @brief Reset an error to the "no error" state, freeing any owned context.
  *
@@ -54,7 +58,7 @@ typedef struct ShellError {
  *            (this does not free @p err, only its contents).
  */
 void
-shell_error_clear(ShellError* error);
+shell_error_clear(ShellError* error) GCC_NONNULL(1);
 
 /**
  * @brief Set a shell-native error, with an optional formatted context
@@ -70,7 +74,7 @@ shell_error_clear(ShellError* error);
  *                    trailing varargs.
  */
 void
-shell_error_set(ShellError* err, ShellErrorCode code, const char* context_fmt, ...)
+shell_error_set(ShellError* err, ShellErrorCode code, const char* context_fmt, ...) GCC_NONNULL(1)
         __attribute__((format(printf, 3, 4)));
 
 /**
@@ -87,6 +91,7 @@ shell_error_set(ShellError* err, ShellErrorCode code, const char* context_fmt, .
  */
 void
 shell_error_set_errno(ShellError* err, int sys_errno, const char* context_fmt, ...)
+  GCC_NONNULL(1))
         __attribute__((format(printf, 3, 4)));
 
 /**
@@ -97,7 +102,8 @@ shell_error_set_errno(ShellError* err, int sys_errno, const char* context_fmt, .
  * (including most libc calls) may clobber errno first.
  */
 void
-shell_error_set_from_current_errno(ShellError* err, const char* context_fmt, ...) __attribute__((format(printf, 2, 3)));
+shell_error_set_from_current_errno(ShellError* err, const char* context_fmt, ...) __attribute__((format(printf, 2, 3)))
+GCC_NONNULL(1);
 
 /**
  * @brief Check whether an error is currently set.
@@ -105,7 +111,7 @@ shell_error_set_from_current_errno(ShellError* err, const char* context_fmt, ...
  * @return True if @p err->code != SHERR_NONE.
  */
 bool
-shell_error_is_set(const ShellError* err);
+shell_error_is_set(const ShellError* err) GCC_NONNULL(1);
 
 /**
  * @brief Render an error into a human-readable message.
@@ -120,7 +126,7 @@ shell_error_is_set(const ShellError* err);
  * @return A newly heap-allocated message string; caller must free() it.
  */
 char*
-shell_error_message(const ShellError* err);
+shell_error_message(const ShellError* err) GCC_NONNULL(1);
 
 
 /**
@@ -134,7 +140,7 @@ shell_error_message(const ShellError* err);
  * @param err Error to report and clear.
  */
 void
-shell_error_report(ShellError* err);
+shell_error_report(ShellError* err) GCC_NONNULL(1);
 
 /**
  * @brief Map an error to the shell's conventional process exit code.
@@ -147,7 +153,7 @@ shell_error_report(ShellError* err);
  * @param err Error to map. SHERR_NONE maps to 0.
  */
 int
-shell_error_exit_code(const ShellError* err);
+shell_error_exit_code(const ShellError* err) GCC_NONNULL(1);
 
 /**
  * The global error status. Used similarly to errno.
@@ -160,3 +166,5 @@ extern ShellError shell_errno;
 
 /** Convenience wrapper: shell_error_report(&shell_errno). */
 #define shell_reporterr() shell_error_report(&shell_errno)
+
+ASSUME_NONNULL_END

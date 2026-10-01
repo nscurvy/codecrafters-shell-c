@@ -13,16 +13,16 @@ struct StringBuilder;
 ASSUME_NONNULL_BEGIN
 
 void
-expand_token(struct Token* tok);
+expand_token(struct Token* tok) GCC_NONNULL(1);
 
 // const char*
 // expand_assignment(const char* str);
 
 void
-expand_dollarsign(const char** i, struct StringBuilder* sb);
+expand_dollarsign(const char** i, struct StringBuilder* sb) GCC_NONNULL(1, 2);
 
 const char*
-expand_word(const char* str);
+expand_word(const char* str) GCC_NONNULL(1);
 
 
 // TODO: DOCS

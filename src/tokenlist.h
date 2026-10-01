@@ -94,7 +94,7 @@ tokenlist_from_tokens(Token* head) GCC_NONNULL(1);
  *         @c nullptr if allocation or duplication failed.
  */
 Token* NULLABLE
-token_new(TokenType type, const char* text, int fd) GCC_NONNULL(1);
+token_new(TokenType type, const char* text, int fd) GCC_NONNULL(2);
 
 /**
  * @brief Convenience macro/overload to create new tokens in the vast majority of cases where an fd argument is
@@ -133,10 +133,10 @@ tokenlist_new_empty();
  *         allocation failed.
  */
 TokenList* NULLABLE
-tokenlist_new(TokenType type, const char* initial_word) GCC_NONNULL(1);
+tokenlist_new(TokenType type, const char* initial_word) GCC_NONNULL(2);
 
 TokenList*
-tokenlist_copyof(TokenList* list);
+tokenlist_copyof(TokenList* list) GCC_NONNULL(1);
 
 /**
  * @brief Free a TokenList and every node it contains.
@@ -156,7 +156,7 @@ tokenlist_delete(TokenList* list) GCC_NONNULL(1);
  * @return The newly appended Token, or @c nullptr if allocation failed.
  */
 Token* NULLABLE
-tokenlist_append(TokenList* list, TokenType type, const char* word) GCC_NONNULL(1, 2);
+tokenlist_append(TokenList* list, TokenType type, const char* word) GCC_NONNULL(1, 3);
 
 /**
  * @brief Appends an already constructed token to the list, rather than appending a word.
@@ -169,6 +169,6 @@ tokenlist_append(TokenList* list, TokenType type, const char* word) GCC_NONNULL(
  * @return The token which was inserted.
  */
 Token* NULLABLE
-tokenlist_append_tok(TokenList* list, Token* NULLABLE token) GCC_NONNULL(1);
+tokenlist_append_tok(TokenList* list, Token* NULLABLE token) GCC_NONNULL(1, 2);
 
 ASSUME_NONNULL_END

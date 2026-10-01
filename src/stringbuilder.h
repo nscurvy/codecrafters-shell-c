@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "nullability.h"
 #include <stddef.h>
 
 typedef struct StringBuilder {
@@ -10,6 +11,8 @@ typedef struct StringBuilder {
     size_t size;
     char*  str;
 } StringBuilder;
+
+ASSUME_NONNULL_BEGIN
 
 /**
  * Initializes a new StringBuilder with the given requested capacity.
@@ -32,7 +35,7 @@ sb_new_sized(size_t initial_capacity);
  * @param str string
  */
 void
-sb_appends(StringBuilder* sb, const char* str);
+sb_appends(StringBuilder* sb, const char* str) GCC_NONNULL(1, 2);
 /**
  * Append a char to the StringBuilder.
  *
@@ -40,7 +43,7 @@ sb_appends(StringBuilder* sb, const char* str);
  * @param c char
  */
 void
-sb_appendc(StringBuilder* sb, char c);
+sb_appendc(StringBuilder* sb, char c) GCC_NONNULL(1);
 /**
  * Append a long to the buffer.
  *
@@ -48,7 +51,7 @@ sb_appendc(StringBuilder* sb, char c);
  * @param l long
  */
 void
-sb_appendl(StringBuilder* sb, long l);
+sb_appendl(StringBuilder* sb, long l) GCC_NONNULL(1);
 /**
  * Append a format string to the back of the StringBuilder. This will resize the buffer
  * as needed to accommodate the formatted string. Unless memory allocation fails, this
@@ -61,7 +64,7 @@ sb_appendl(StringBuilder* sb, long l);
  * @return Number of written characters
  */
 int
-sb_format(StringBuilder* sb, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
+sb_format(StringBuilder* sb, const char* fmt, ...) __attribute__((format(printf, 2, 3))) GCC_NONNULL(1);
 
 /**
  * Take the stored buffer from the StringBuilder. This makes it so the stored
@@ -72,7 +75,7 @@ sb_format(StringBuilder* sb, const char* fmt, ...) __attribute__((format(printf,
  * @return The actual buffer stored in the sb
  */
 const char*
-sb_takestring(StringBuilder* sb);
+sb_takestring(StringBuilder* sb) GCC_NONNULL(1);
 
 /**
  * Delete a StringBuilder. This doesn't NULL anything.
@@ -80,4 +83,4 @@ sb_takestring(StringBuilder* sb);
  * @param sb The StringBuilder to destroy
  */
 void
-sb_delete(StringBuilder* sb);
+sb_delete(StringBuilder* sb) GCC_NONNULL(1);

@@ -5,6 +5,8 @@
 #pragma once
 #include "tokenlist.h"
 
+ASSUME_NONNULL_BEGIN
+
 /* *****************************************************************************
  * TokenStream
  * ****************************************************************************/
@@ -110,7 +112,7 @@ ts_at_end(TokenStream* stream) GCC_NONNULL(1);
  * @return The number of remaining tokens.
  */
 size_t
-ts_remaining(TokenStream* stream);
+ts_remaining(TokenStream* stream) GCC_NONNULL(1);
 
 /**
  * @brief Delete the TokenStream. This function does not delete the underlying Token objects,
@@ -191,7 +193,7 @@ typedef struct Assignment {
  * @return A new Assignment object or nullptr if it fails.
  */
 Assignment*
-ass_new(const char* value);
+ass_new(const char* value) GCC_NONNULL(1);
 
 /**
  * Append a node to the end of the given list.
@@ -200,7 +202,7 @@ ass_new(const char* value);
  * @param node The node to append
  */
 void
-ass_append(Assignment* head, Assignment* node);
+ass_append(Assignment* head, Assignment* node) GCC_NONNULL(1, 2);
 
 /**
  * Append the given string to the end of the head. This function will return the node
@@ -212,7 +214,7 @@ ass_append(Assignment* head, Assignment* node);
  * @return The appended node, or nullptr
  */
 Assignment*
-ass_append_str(Assignment* head, const char* value);
+ass_append_str(Assignment* head, const char* value) GCC_NONNULL(1, 2);
 
 /**
  * Delete this assignment node. This does not delete anything up the chain.
@@ -220,7 +222,7 @@ ass_append_str(Assignment* head, const char* value);
  * @param assignment The node to delete
  */
 void
-ass_delete(Assignment* assignment);
+ass_delete(Assignment* assignment) GCC_NONNULL(1);
 
 /**
  * Delete this assignment list, meaning the head node and every node that follows it.
@@ -228,7 +230,7 @@ ass_delete(Assignment* assignment);
  * @param head The head of the list
  */
 void
-ass_delete_all(Assignment* head);
+ass_delete_all(Assignment* head) GCC_NONNULL(1);
 
 /* *****************************************************************************
  * Command
@@ -261,7 +263,7 @@ typedef struct Command {
  */
 Command* NULLABLE
 command_new(const char* NULLABLE* argv, Assignment* NULLABLE assignments, size_t nredirs, Redirect* redirs)
-        GCC_NONNULL(4);
+        GCC_NONNULL(1, 2, 4);
 
 
 /**
@@ -319,7 +321,7 @@ pipeline_delete(Pipeline* pipeline) GCC_NONNULL(1);
  * @return A new PipelineElement, or null if it fails.
  */
 PipelineElement*
-ple_new(Command* command);
+ple_new(Command* command) GCC_NONNULL(1);
 
 /**
  * Delete a PipelineElement
@@ -327,7 +329,7 @@ ple_new(Command* command);
  * @param element The element to delete.
  */
 void
-ple_delete(PipelineElement* element);
+ple_delete(PipelineElement* element) GCC_NONNULL(1);
 
 
 /* *****************************************************************************
@@ -406,3 +408,5 @@ list_new_empty();
 
 void
 list_delete(List* list) GCC_NONNULL(1);
+
+ASSUME_NONNULL_END

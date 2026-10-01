@@ -61,15 +61,15 @@ int
 execute_command(struct Command* command, bool foreground) GCC_NONNULL(1);
 
 int
-execute_list(struct List* list);
+execute_list(struct List* list) GCC_NONNULL(1);
 
 int
-execute_andor(struct AndOr* andor, bool foreground);
+execute_andor(struct AndOr* andor, bool foreground) GCC_NONNULL(1);
 
 int
-execute_andor_bg(struct AndOr* andor);
+execute_andor_bg(struct AndOr* andor) GCC_NONNULL(1);
 
 int
-execute_pipeline(struct Pipeline* pipeline, bool foreground);
+execute_pipeline(struct Pipeline* pipeline, bool foreground) GCC_NONNULL(1);
 
 ASSUME_NONNULL_END

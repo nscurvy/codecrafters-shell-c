@@ -22,29 +22,29 @@ typedef struct ItemList {
 struct BucketNode;
 
 ItemNode*
-in_new(const char* key, const char* value, bool exported);
+in_new(const char* key, const char* value, bool exported) GCC_NONNULL(1);
 
 void
-in_delete(ItemNode* item);
+in_delete(ItemNode* item) GCC_NONNULL(1);
 
 
 ItemNode*
-from_node(struct BucketNode* node);
+from_node(struct BucketNode* node) GCC_NONNULL(1);
 
 ItemList*
 il_new();
 
 ItemNode*
-il_append(ItemList* list, const char* key, const char* value, bool exported);
+il_append(ItemList* list, const char* key, const char* value, bool exported) GCC_NONNULL(1, 2, 3);
 
 ItemNode*
-il_append_node(ItemList* list, ItemNode* node);
+il_append_node(ItemList* list, ItemNode* node) GCC_NONNULL(1, 2);
 
 ItemNode*
-il_pull(ItemList* list);
+il_pull(ItemList* list) GCC_NONNULL(1);
 
 void
-il_delete(ItemList* list);
+il_delete(ItemList* list) GCC_NONNULL(1);
 
 
 struct HashTable*
@@ -60,7 +60,7 @@ const char*
 ht_get(struct HashTable* table, const char* key) GCC_NONNULL(1, 2);
 
 const char*
-ht_getn(struct HashTable* table, const char* key, size_t count);
+ht_getn(struct HashTable* table, const char* key, size_t count) GCC_NONNULL(1, 2);
 
 int
 ht_remove(struct HashTable* table, const char* key) GCC_NONNULL(1);
@@ -72,12 +72,12 @@ bool
 ht_contains(struct HashTable* table, const char* key) GCC_NONNULL(1, 2);
 
 size_t
-ht_size(struct HashTable* table);
+ht_size(struct HashTable* table) GCC_NONNULL(1);
 
 int
-ht_get_exported(struct HashTable* table, bool* dst, const char* key);
+ht_get_exported(struct HashTable* table, bool* dst, const char* key) GCC_NONNULL(1, 2, 3);
 
 ItemList*
-ht_entryset(struct HashTable* table);
+ht_entryset(struct HashTable* table) GCC_NONNULL(1);
 
 ASSUME_NONNULL_END

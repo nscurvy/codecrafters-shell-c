@@ -50,8 +50,8 @@ bn_copyof(BucketNode* orig) {
 
 void
 bn_delete(BucketNode* node) {
-    free(node->key);
-    free(node->value);
+    free((void*) node->key);
+    free((void*) node->value);
     free(node);
 }
 

@@ -4,6 +4,8 @@
 
 #pragma once
 #include "nullability.h"
+#include "shellerr.h"
+
 #include <signal.h>
 
 
@@ -108,5 +110,12 @@ remove_job(pid_t pid);
 
 void
 print_job_exit(pid_t pid, int job_number);
+
+struct JobList;
+
+Job*
+get_job_by_number(struct JobList* list, int n);
+Job*
+resolve_job_spec(struct JobList* list, const char* spec, ShellError* err);
 
 ASSUME_NONNULL_END

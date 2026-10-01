@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "parser.h"
+#include "shellerr.h"
 #include "stringbuilder.h"
 #include <math.h>
 
@@ -173,8 +174,7 @@ join_andor(AndOr* and_or) {
     AndOrElement*  iter = and_or->head;
     StringBuilder* sb   = sb_new();
 
-    size_t totalsize = 0;
-    size_t i         = 0;
+    size_t i = 0;
     while (iter != nullptr) {
         optostr(sb, iter->op);
         if (i++ > 0) {
@@ -308,22 +308,6 @@ void
 job_print(Job* job) {
 
     const char* status_symbol = " ";
-    JobNode*    iter          = job_list->head;
-    JobNode*    prev          = nullptr;
-    /*
-      while (iter != nullptr) {
-          if (iter->next == nullptr && job->pid == iter->job->pid) {
-              status_symbol = "+";
-              break;
-          }
-          if (iter->next == nullptr && job->pid == prev->job->pid) {
-              status_symbol = "-";
-              break;
-          }
-          prev = iter;
-          iter = iter->next;
-      }
-      */
     if (job == job_list->current) {
         status_symbol = "+";
     } else if (job == job_list->previous) {
@@ -497,7 +481,7 @@ check_background_jobs() {
 }
 
 void
-sigchld_handler(int signum) {
+sigchld_handler([[maybe_unused]] int signum) {
     child_exited_flag = 1;
 }
 
@@ -533,4 +517,141 @@ print_job_exit(pid_t pid, int job_number) {
     }
 
     printf("\n");
+}
+
+Job*
+get_job_by_number(JobList* list, int n) {
+    JobNode* i = list->head;
+    while (i != nullptr) {
+        if (i->job->job_number == n) {
+            return i->job;
+        }
+        i = i->next;
+    }
+    return nullptr;
+}
+
+Job*
+resolve_job_spec(JobList* list, const char* spec, ShellError* err) {
+    if (spec == nullptr || spec[0] == '\0') {
+        if (list->current == nullptr) {
+            shell_error_set(err, SH_NO_CURRENT_JOB, nullptr);
+            return nullptr;
+        }
+        return list->current;
+    }
+    if (spec[0] != '%') {
+        shell_error_set(err, SH_NO_JOB, "%s", spec);
+        return nullptr;
+    }
+    const char* rest = spec + 1;
+
+    if (strcmp(rest, "%") == 0 || strcmp(rest, "+") == 0 || rest[0] == '\0') {
+        if (list->current == nullptr) {
+            shell_error_set(err, SH_NO_CURRENT_JOB, nullptr);
+            return nullptr;
+        }
+        return list->current;
+    }
+
+    if (strcmp(rest, "-") == 0) {
+        if (list->previous == nullptr) {
+            shell_error_set(err, SH_NO_CURRENT_JOB, nullptr);
+            return nullptr;
+        }
+
+        jl_mark_current(list, list->previous);
+        return list->previous;
+    }
+
+    errno = 0;
+    char* end;
+    long  n = strtol(rest, &end, 10);
+
+    if (*end != '\0' || errno == ERANGE || n <= 0) {
+        shell_error_set(err, SH_NO_JOB, "%s", spec);
+        return nullptr;
+    }
+
+    Job* job = get_job_by_number(list, (int) n);
+    if (job == nullptr) {
+        shell_error_set(err, SH_NO_JOB, "%s", spec);
+        return nullptr;
+    }
+
+    jl_mark_current(list, job);
+    return job;
+}
+
+int
+fg_job(Job* job) {
+    tcsetpgrp(shell_terminal, job->pgid);
+    if (kill(-job->pid, SIGCONT) < 0) {
+        shell_error_set_from_current_errno(&shell_errno, "%s", job->cmdline);
+        shell_error_report(&shell_errno);
+        tcsetpgrp(shell_terminal, shell_pgid);
+        return -1;
+    }
+    job->status = JOB_RUNNING;
+    jl_mark_current(job_list, job);
+    int status;
+    waitpid(-job->pgid, &status, WUNTRACED);
+    tcsetpgrp(shell_terminal, shell_pgid);
+    if (WIFSTOPPED((status))) {
+        job->status = JOB_STOPPED;
+        job_print(job);
+
+        return 128 + WSTOPSIG(status);
+    } else if (WIFEXITED(status)) {
+        job->status    = JOB_DONE;
+        job->exit_code = WEXITSTATUS(status);
+        int exit_code  = job->exit_code;
+        jl_remove(job_list, job->pid);
+        return exit_code;
+    } else if (WIFSIGNALED(status)) {
+        job->status      = JOB_DONE;
+        job->term_signal = WTERMSIG(status);
+        int term_signal  = job->term_signal;
+        jl_remove(job_list, job->pid);
+        return 128 + term_signal;
+    }
+    return status;
+}
+
+int
+bg_job(Job* job) {
+    if (kill(-job->pid, SIGCONT) < 0) {
+        shell_error_set_from_current_errno(&shell_errno, "%s", job->cmdline);
+        shell_error_report(&shell_errno);
+        return -1;
+    }
+    job->status = JOB_RUNNING;
+
+    job_print(job);
+    return 0;
+}
+
+int
+builtin_bg(const int argc, const char** argv) {
+    const char* spec = (argc > 1) ? argv[1] : nullptr;
+    ShellError  err;
+    Job*        job = resolve_job_spec(job_list, spec, &err);
+    if (job == nullptr) {
+        shell_error_report(&err);
+        return 1;
+    }
+
+    return bg_job(job);
+}
+
+int
+builtin_fg(const int argc, const char** argv) {
+    const char* spec = (argc > 1) ? argv[1] : nullptr;
+    ShellError  err;
+    Job*        job = resolve_job_spec(job_list, spec, &err);
+    if (job == nullptr) {
+        shell_error_report(&err);
+        return 1;
+    }
+    return fg_job(job);
 }

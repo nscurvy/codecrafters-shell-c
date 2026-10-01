@@ -245,10 +245,12 @@ lex_and_parse(const char* input) {
         return nullptr;
     }
 
-    List* result;
-    int   tokenize_result = lx_tokenize(token_list, stream);
-    if (tokenize_result != 0) {
-        fprintf(stderr, "Error tokenizing given input. Aborting!\n");
+    List*      result;
+    ShellError err;
+    int        tokenize_result = lx_tokenize(token_list, stream, &err);
+    if (shell_error_is_set(&err)) {
+        shell_error_report(&err);
+
         tokenlist_delete(token_list);
         cs_delete(stream);
         return nullptr;
@@ -466,34 +468,6 @@ split_on_separator(TokenList* dst, TokenList* src) {
 }
 
 
-// List*
-// parse_list(TokenList* tokens) {
-//   size_t nandors = count_separators(tokens);
-//   AndOr** andors = malloc(sizeof(AndOr*) * nandors);
-//   ListSep ops[nandors];
-//   ListElement elements[nandors];
-//   List* result = nullptr;
-//   TokenList* cpy = tokenlist_copyof(tokens);
-//   if (nandors > 1) {
-//     TokenList** lists = malloc(sizeof(TokenList*) * nandors);
-//     lists[0] = cpy;
-//     for (int i = 1; i < nandors; ++i) {
-//       lists[i] = tokenlist_new_empty();
-//       split_on_separator(lists[i], lists[i - 1]);
-//       andors[i - 1] = parse_and_or(lists[i - 1]);
-//       if (i == 1) {
-//         elements[0] = (ListElement){.and_or = andors[i - 1], .sep = SEP_NONE};
-//       } else {
-//         elements[i - 1] = (ListElement){.and_or = andors[i - 1], .sep = sep_from_tokentype(lists[i -
-//         1]->head->type)}; Token* tmp = lists[i - 1]->head; lists[i - 1]->head = lists[i-1]->head->next; lists[i -
-//         1]->size--; token_delete(tmp);
-//       }
-//     }
-//     elements[nandors - 1] = (ListElement){.and_or = andors[nandors - 1], sep}
-//
-//   }
-// }
-
 AndOrElement*
 aoe_new(Pipeline* pipeline, AndOrOp op) {
     AndOrElement* result = malloc(sizeof(AndOrElement));
@@ -610,124 +584,6 @@ split_on_operator(TokenList* dst, TokenList* src) {
 }
 
 
-// AndOr*
-//   parse_and_or(TokenList* tokens) {
-//   size_t npipelines = count_operators(tokens) + 1;
-//   Pipeline** pipelines = malloc(sizeof(Pipeline*) * npipelines);
-//   AndOrOp ops[npipelines];
-//   AndOrElement elements[npipelines];
-//   AndOr* result = nullptr;
-//   TokenList* cpy = tokenlist_copyof(tokens);
-//   if (npipelines > 1) {
-//       TokenList** lists = malloc(sizeof(TokenList*) * npipelines);
-//       lists[0] = cpy;
-//     for (int i = 1; i < npipelines; ++i) {
-//       lists[i] = tokenlist_new_empty();
-//       split_on_operator(lists[i], lists[i - 1]);
-//       pipelines[i - 1] = parse_pipeline(lists[i - 1]);
-//       if (i == 1) {
-//         elements[0] = (AndOrElement){.pipeline = pipelines[i - 1], .op = AND_NONE};
-//       } else {
-//         elements[i - 1] = (AndOrElement){.pipeline = pipelines[i - 1], .op = andor_from_tokentype(lists[i -
-//         1]->head->type)}; Token* tmp = lists[i - 1]->head; lists[i - 1]->head = tmp->next; lists[i - 1]->size--;
-//         token_delete(tmp);
-//       }
-//     }
-//     elements[npipelines - 1] = (AndOrElement){.pipeline = pipelines[npipelines - 1], .op =
-//     andor_from_tokentype(lists[npipelines - 1]->head->type)}; Token* tmp = lists[npipelines - 1]->head;
-//     lists[npipelines - 1]->head = tmp->next;
-//     lists[npipelines - 1]->size--;
-//     token_delete(tmp);
-//     result = ao_new(npipelines, elements);
-//     free(pipelines);
-//     free(lists);
-//     tokenlist_delete(cpy);
-//   } else {
-//     Pipeline* pipeline = parse_pipeline(cpy);
-//     elements[0] = (AndOrElement){.pipeline = pipeline, .op = AND_NONE};
-//     result = ao_new(npipelines, elements);
-//     free(pipelines);
-//     tokenlist_delete(cpy);
-//   }
-//   return result;
-// }
-
-// Pipeline*
-// parse_pipeline(TokenList* tokens) {
-//     size_t    ncmds  = count_pipes(tokens) + 1;
-//     Command** cmds   = malloc(sizeof(Command*) * ncmds);
-//     TokenList* cpy    = tokenlist_copyof(tokens);
-//     Pipeline* result = nullptr;
-//     if (ncmds > 1) {
-//         TokenList** lists = malloc(sizeof(TokenList*) * ncmds);
-//         lists[0]         = cpy;
-//         for (int i = 1; i < ncmds; ++i) {
-//             lists[i] = tokenlist_new_empty();
-//             split_on_pipes(lists[i], lists[i - 1]);
-//             cmds[i - 1] = parse_command(lists[i - 1]);
-//         }
-//         cmds[ncmds - 1] = parse_command(lists[ncmds - 1]);
-//         result          = pipeline_new(ncmds, cmds);
-//         free(cmds);
-//         tokenlist_delete(cpy);
-//         free(lists);
-//     } else {
-//         cmds[0] = parse_command(cpy);
-//         result  = pipeline_new(1, cmds);
-//         free(cmds);
-//         tokenlist_delete(cpy);
-//     }
-//     return result;
-// }
-/*
-
-bool
-is_redir(const char* str) {
-    const char* iter = str;
-    while (*iter) {
-        if (*iter == '>') {
-            if (iter != str) {
-                if (isdigit(*(iter - 1))) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return true;
-            }
-        } else {
-            ++iter;
-        }
-    }
-
-    return false;
-}
-
-*/
-// void
-// parse_redir(Redirect* dest, TokenList* words) {
-//     int         fd   = 1;
-//     RedirMode   mode = REDIR_OUT;
-//     const char* iter = words->head->value;
-//     if (isdigit(*iter)) {
-//         const char* start = iter;
-//         do {
-//             ++iter;
-//         } while (isdigit(*iter));
-//         char* endptr;
-//         fd = (int) strtol(start, &endptr, 10);
-//     }
-//     if (*(iter + 1) == '>') {
-//         mode = REDIR_APPEND;
-//     } else if (*(iter + 1) == '\0') {
-//         mode = REDIR_OUT;
-//     }
-//     char* target = strdup(words->head->next->value);
-//     dest->fd     = fd;
-//     dest->mode   = mode;
-//     dest->target = target;
-// }
-
 bool
 check_for_bg_token(TokenList* words) {
     Token* iter = words->head;
@@ -744,42 +600,6 @@ check_for_bg_token(TokenList* words) {
     }
     return false;
 }
-
-// Command*
-// parse_command(TokenList* words) {
-//     char  argbuf[50][50];
-//     char* argdest[50];
-//     for (int i = 0; i < 50; ++i) {
-//         argdest[i] = argbuf[i];
-//     }
-//     Redirect  redirs[5];
-//     TokenList* wordcopy = tokenlist_copyof(words);
-//
-//     size_t nredirs = 0;
-//
-//     bool isbg = check_for_bg_token(wordcopy);
-//
-//     Token* iter = wordcopy->head;
-//     while (iter != nullptr) {
-//         if (is_redir(iter->value)) {
-//             TokenList* redirected = tokenlist_from_tokens(iter);
-//             wordcopy->size       = wordcopy->size - redirected->size;
-//             parse_redir(&redirs[nredirs++], redirected);
-//         }
-//         iter = iter->next;
-//     }
-//     prepare_args(argdest, wordcopy);
-//     Command* result = command_new(argdest, isbg, nredirs, redirs);
-//     if (!result) {
-//         for (int i = 0; i < nredirs; ++i) {
-//             free(redirs[i].target);
-//         }
-//         tokenlist_delete(wordcopy);
-//         return nullptr;
-//     }
-//     tokenlist_delete(wordcopy);
-//     return result;
-// }
 
 
 size_t
@@ -853,11 +673,6 @@ next_token(char* dest, char* input, QuoteFlagE* flag) {
         }
     }
 
-    // while (*i != '\0' && *i != ' ' && *i != '\n' && count < 1024 - 1) {
-    //   dest[count] = *i;
-    //   ++i;
-    //   ++count;
-    // }
     if (destidx == 0) {
         return 0;
     }
@@ -866,20 +681,6 @@ next_token(char* dest, char* input, QuoteFlagE* flag) {
     return (size_t) (i - input);
 }
 
-int
-exppass(TokenList* list) {
-    Token* iter = list->head;
-
-    for (int i = 0; i < list->size; ++i) {
-        const char* s        = iter->value;
-        const char* expanded = exptok(s);
-        iter->value          = expanded;
-
-        free((void*) s);
-        iter = iter->next;
-    }
-    return 0;
-}
 
 void
 remove_blanks(TokenList* list) {
@@ -914,65 +715,6 @@ tokenize_input(const char* input) {
     return nullptr;
 }
 
-// Token* token(char** out, char** in, QuoteFlagE* flag) {
-//   return nullptr;
-// }
-// TokenList*
-// tokenize_input(const char* input) {
-//     QuoteFlagE  flag      = UNQUOTED;
-//     char        buf[1024] = {};
-//     const char* iter      = input;
-//     TokenList*   result    = tokenlist_new_empty();
-//
-//     size_t readchars;
-//
-//     do {
-//
-//         readchars = next_token(buf, iter, &flag);
-//         if (readchars > 0) {
-//             size_t jumpsize = readchars;
-//             iter += jumpsize;
-//             tokenlist_append(result, buf);
-//             memset(buf, 0, readchars);
-//         }
-//
-//     } while (readchars != 0);
-//     if (flag == SINGLE_QUOTED) {
-//         tokenlist_delete(result);
-//         fprintf(stderr, "syntax error: unterminated quote\n");
-//         return nullptr;
-//     }
-//
-//     exppass(result);
-//     remove_blanks(result);
-//     return result;
-// }
-//
-// TokenList*
-// tokenize_path(const char* path) {
-//     TokenList* result = tokenlist_new_empty();
-//     char*     tok    = calloc((strlen(path) + 1), sizeof(char));
-//
-//     const char* end            = path + strlen(path);
-//     const char* iter           = path;
-//     ptrdiff_t   bytesremaining = end - path;
-//     while (!(iter >= end)) {
-//         memset(tok, '\0', strlen(tok));
-//         memccpy(tok, iter, ':', bytesremaining);
-//         tok[strcspn(tok, ":")] = '\0';
-//         tokenlist_append(result, tok);
-//         bytesremaining = end - iter;
-//         iter           = iter + strlen(tok) + 1;
-//     }
-//
-//     free(tok);
-//     return result;
-// }
-//
-// TokenType token(char** buf, char** iter_in, QuoteFlagE* flag) {
-//   char* begin = *iter_in;
-//
-// }
 void
 assignment_split(char* dest[2], const char* assignment) {
     const char *name_begin = assignment, *name_end = assignment, *value_begin = assignment, *value_end = assignment;

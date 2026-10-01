@@ -69,14 +69,14 @@ command_new(const char** argv, Assignment* assignments, size_t nredirs, Redirect
     size_t len  = argvlen(argv);
     char** args = malloc(sizeof(char*) * len);
 
-    for (int i = 0; i < len; ++i) {
+    for (size_t i = 0; i < len; ++i) {
         if (i == len - 1) {
             args[i] = nullptr;
             break;
         }
         char* tmp = strdup(argv[i]);
         if (!tmp) {
-            for (int j = 0; j < i; ++j) {
+            for (size_t j = 0; j < i; ++j) {
                 free(args[j]);
             }
             free(args);
@@ -88,7 +88,7 @@ command_new(const char** argv, Assignment* assignments, size_t nredirs, Redirect
 
     Command* command = malloc(sizeof(Command) + (sizeof(Redirect) * nredirs));
     if (!command) {
-        for (int i = 0; i < len - 1; ++i) {
+        for (size_t i = 0; i < len - 1; ++i) {
             free(args[i]);
         }
         free(args);
@@ -157,7 +157,7 @@ ass_new(const char* value) {
     }
     Assignment* ass = malloc(sizeof(Assignment));
     if (!ass) {
-        free(cpy);
+        free((void*) cpy);
         return nullptr;
     }
 
@@ -190,7 +190,7 @@ ass_append_str(Assignment* head, const char* value) {
 
 void
 ass_delete(Assignment* assignment) {
-    free(assignment->value);
+    free((void*) assignment->value);
     free(assignment);
 }
 
@@ -216,7 +216,7 @@ ts_new(TokenList* tokens) {
         return nullptr;
     }
     Token* iter = tokens->head;
-    for (int i = 0; i < tokens->size; ++i) {
+    for (size_t i = 0; i < tokens->size; ++i) {
         result->tokens[i] = iter;
         iter              = iter->next;
     }

@@ -11,9 +11,9 @@ Word*
 wordlist_append_word(WordList* list, Word* node) {
     Word* iter = list->head;
     if (iter == nullptr) {
-      list->head = node;
-      list->size++;
-      return list->head;
+        list->head = node;
+        list->size++;
+        return list->head;
     }
     while (iter->next != nullptr) {
         iter = iter->next;
@@ -74,7 +74,7 @@ word_copyof(Word* original) {
 
 void
 word_delete(Word* word) {
-    free(word->text);
+    free((void*) word->text);
     free(word);
 }
 

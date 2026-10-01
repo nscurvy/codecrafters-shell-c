@@ -40,7 +40,7 @@ expand_braced_variable(const char** i, StringBuilder* sb) {
     if (val) {
         sb_appends(sb, val);
     }
-    free(varname);
+    free((void*) varname);
 }
 
 
@@ -234,8 +234,9 @@ expand_token(Token* tok) {
         repl       = expand_word(tok->value);
         old        = tok->value;
         tok->value = repl;
-        free(old);
+        free((void*) old);
         break;
+    default:
     }
 }
 

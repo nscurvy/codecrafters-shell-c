@@ -13,48 +13,6 @@ struct Pipeline;
 
 
 /**
- * @brief Locate an executable on the system PATH.
- *
- * Iterates over each directory listed in the @c PATH environment variable,
- * appending @p command to it, and checks whether the resulting path exists
- * and is executable by the user, group, or others. The first matching path
- * is copied into @p dest.
- *
- * @param dest    Buffer to receive the resolved absolute path. Must be large
- *                enough to hold a full path (e.g. @c PATH_MAX bytes). On
- *                failure to resolve, this buffer is left empty
- *                (null-terminated at index 0).
- * @param command Name of the command to search for (not a path).
- *
- * @return Pointer to @p dest if an executable match was found, or @c nullptr
- *         if the command could not be located on @c PATH (or @c PATH is
- *         unset).
- */
-/*
-char* NULLABLE
-find_command(char* NONNULL dest, const char* NONNULL command) GCC_NONNULL(1, 2);
-*/
-
-/**
- * @brief Execute an external (non-builtin) command in a child process.
- *
- * Forks the current process. In the child, applies the first redirect in
- * @p command (if any) via @c dup2, then replaces the process image using
- * @c execvp with @p command's argv. The parent waits for the child to exit.
- *
- * @param command Parsed command to execute, including argv and any
- *                redirections.
- *
- * @return 0 if the fork and wait succeeded (regardless of the child's exit
- *         status), or 1 if @c fork() failed.
- *
- * @note If @c execvp fails in the child, the child process exits/returns
- *       with status 1 rather than returning control to the caller.
- */
-int
-execc(const struct Command* command);
-
-/**
  * @brief Look up a shell builtin by name.
  *
  * Performs a binary search over the global @c builtins table (which must be

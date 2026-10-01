@@ -503,79 +503,6 @@ expand_list(List* list) {
 }
 
 
-int
-exec_pipeline(Pipeline* pipeline) {
-    return 0;
-    /*
-      int exit_status = 0;
-      if (pipeline->ncmds != 0) {
-          if (pipeline->ncmds == 1) {
-              BuiltinCmd* builtin = find_builtin(pipeline->cmds[0]->argv[0]);
-              if (builtin) {
-                  exit_status = exec_builtin(pipeline->cmds[0], builtin);
-              } else {
-                  exit_status = execc(pipeline->cmds[0]);
-              }
-          } else {
-              if (pipeline->ncmds > 1) {
-                  exit_status = exec_pipes(pipeline);
-              }
-          }
-      }
-      return exit_status;
-      */
-}
-
-
-// TODO: docs
-int
-execc(const Command* command) {
-    return 0;
-    /*
-      char  cmd_path[PATH_MAX];
-      char* res = find_command(cmd_path, command->argv[0]);
-      if (!res) {
-          printf("%s: command not found\n", command->argv[0]);
-          return -1;
-      }
-      pid_t pid = fork();
-
-      if (pid < 0) {
-          return 1;
-      } else if (pid == 0) {
-          if (command->nredirs != 0) {
-              int      redirected_fd = command->redirs[0].fd;
-              unsigned modeflag      = (unsigned) command->redirs[0].mode;
-              int      fd            = open(command->redirs[0].target, O_WRONLY | O_CREAT | modeflag, 0644);
-              if (fd < 0) {
-                  return 1;
-              }
-              if (dup2(fd, redirected_fd) < 0) {
-                  return 1;
-              }
-              close(fd);
-
-              execvp(command->argv[0], command->argv);
-
-              return 1;
-          } else {
-              execvp(command->argv[0], command->argv);
-              perror("execvp");
-              exit(1);
-          }
-      } else {
-          int status;
-          if (!command->bgjob) {
-              waitpid(pid, &status, 0);
-          } else {
-              append_job(pid, (const char**) command->argv);
-          }
-      }
-
-      return 0;
-      */
-}
-
 // TODO: DOdocs
 BuiltinCmd*
 find_builtin(const char* name) {
@@ -651,13 +578,3 @@ repl() {
         }
     }
 }
-
-
-// void prepare_args(char** dest, WordList* words) {
-//   WordNode* iter = words->head;
-//   for (int i = 0; i < words->size; ++i) {
-//     memcpy(dest[i], iter->value, strlen(iter->value) + 1);
-//     iter = iter->next;
-//   }
-//   dest[words->size] = nullptr;
-// }

@@ -16,7 +16,6 @@
 #include <readline/history.h>
 
 
-
 int
 builtin_bg(const int argc, const char** argv);
 int
@@ -181,16 +180,6 @@ builtin_cd(const int argc, const char** argv) {
     return result;
 }
 
-int
-builtin_bg(const int argc, const char** argv) {
-
-    return 0;
-}
-
-int
-builtin_fg(const int argc, const char** argv) {
-    return 0;
-}
 
 int
 builtin_history(const int argc, const char** argv) {

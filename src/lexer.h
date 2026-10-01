@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "shellerr.h"
 #include "tokenlist.h"
 
 
@@ -148,7 +149,7 @@ lx_token(CharStream* stream);
  * @return 0 upon success, anything else indicates some sort of failure.
  */
 int
-lx_tokenize(TokenList* dest, CharStream* stream);
+lx_tokenize(TokenList* dest, CharStream* stream, ShellError* err);
 
 typedef enum CleanupPolicy { LX_CLEANUP, LX_NOCLEANUP } CleanupPolicy;
 

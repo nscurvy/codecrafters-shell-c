@@ -8,7 +8,6 @@
 #include "tokenlist.h"
 #include <stdlib.h>
 
-#define MAX_REDIRS 10
 
 List* NULLABLE
 lex_and_parse(const char* input);

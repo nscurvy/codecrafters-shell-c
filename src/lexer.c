@@ -18,7 +18,7 @@ cs_new(const char* data) {
 
     CharStream* stream = (CharStream*) malloc(sizeof(CharStream));
     if (!stream) {
-        free(copy);
+        free((void*) copy);
         return nullptr;
     }
 
@@ -212,7 +212,7 @@ lx_scan(CharStream* stream, char** begin, char** end) {
     QuoteFlagE flag  = UNQUOTED;
     int        nextc = cs_peek(stream);
     int        c;
-    *begin = &(stream->data[stream->pos]);
+    *begin = (char*) &(stream->data[stream->pos]);
     *end   = *begin;
     if (isspace(nextc)) {
         if (nextc == '\n') {
@@ -233,12 +233,24 @@ lx_scan(CharStream* stream, char** begin, char** end) {
             if (c == '\'') {
                 toggle_flag(c, &flag);
             } else if (c == EOI) {
+                char buf[*end - *begin + 1];
+                buf[*end - *begin] = 0;
+                strncpy(buf, *begin, (size_t) (*end - *begin));
+
+                shell_seterr(SH_UNTERMINATED_SINGLE_QUOTE, "%s", buf);
+
                 return TOK_ERR;
             }
         } else if (flag == DOUBLE_QUOTED) {
             if (c == '"') {
                 toggle_flag(c, &flag);
             } else if (c == EOI) {
+
+                char buf[*end - *begin + 1];
+                buf[*end - *begin] = 0;
+                strncpy(buf, *begin, (size_t) (*end - *begin));
+
+                shell_seterr(SH_UNTERMINATED_DOUBLE_QUOTE, "%s", buf);
                 return TOK_ERR;
             }
         } else {
@@ -265,7 +277,12 @@ lx_scan(CharStream* stream, char** begin, char** end) {
                     } else if (c == '(') {
                         ++depth;
                     } else if (c == EOI) {
-                        errno = EINVAL;
+
+                        char buf[*end - *begin + 1];
+                        buf[*end - *begin] = 0;
+                        strncpy(buf, *begin, (size_t) (*end - *begin));
+
+                        shell_seterr(SH_INVALID_COMMAND_SUBSTITUTION, "%s", buf);
                         return TOK_ERR;
                     }
                     (*end)++;
@@ -293,6 +310,11 @@ SKIP_CMDSUB_LOOP:
                     (*end)++;
                     (*end)++;
                     continue;
+                } else if (nextc == EOI) {
+                    char buf[*end - *begin + 1];
+                    buf[*end - *begin] = 0;
+                    strncpy(buf, *begin, (size_t) (*end - *begin));
+                    shell_seterr(SH_TRAILING_ESCAPE, "%s", buf);
                 }
             } else if (isdigit(c) && *end == *begin) {
                 if (nextc == '<' || nextc == '>') {
@@ -310,6 +332,15 @@ SKIP_CMDSUB_LOOP:
         (*end)++;
     } while (!lx_end_of_token(nextc, flag));
     if (flag == DOUBLE_QUOTED || flag == SINGLE_QUOTED) {
+
+        char buf[*end - *begin + 1];
+        buf[*end - *begin] = 0;
+        strncpy(buf, *begin, (size_t) (*end - *begin));
+        if (SINGLE_QUOTED) {
+            shell_seterr(SH_UNTERMINATED_SINGLE_QUOTE, "%s", buf);
+        } else {
+            shell_seterr(SH_UNTERMINATED_DOUBLE_QUOTE, "%s", buf);
+        }
         return TOK_ERR;
     }
     return predicted_type;
@@ -337,20 +368,22 @@ lx_token(CharStream* stream) {
     if (type == TOK_EOF) {
         return newtok(type, "");
     } else if (type == TOK_ERR) {
-        errno = EINVAL;
         return nullptr;
     }
-    size_t distance = end - start;
+    size_t distance = (size_t) (end - start);
     char   arr[distance + 1];
     memcpy(arr, start, distance);
     arr[distance] = '\0';
     Token* tok;
     if (is_redir(type)) {
-        errno     = 0;
-        char* end = nullptr;
-        long  fdl = strtol(arr, &end, 10);
+        errno    = 0;
+        end      = nullptr;
+        long fdl = strtol(arr, &end, 10);
         if (fdl >= INT_MAX || errno == ERANGE) {
             errno = ERANGE;
+            if (!shell_error_is_set(&shell_errno)) {
+                shell_error_set_from_current_errno(&shell_errno, "%l", fdl);
+            }
             return nullptr;
         } else if (end == arr) {
             if (type == TOK_REDIR_IN || type == TOK_REDIR_HEREDOC) {
@@ -371,13 +404,18 @@ lx_token(CharStream* stream) {
 }
 
 int
-lx_tokenize(TokenList* dst, CharStream* in) {
+lx_tokenize(TokenList* dst, CharStream* in, ShellError* err) {
     errno      = 0;
     Token* tok = nullptr;
     do {
         tok = lx_token(in);
         if (tok == nullptr) {
-            perror("Failed at lexing the given input.");
+            err->code           = shell_errno.code;
+            err->context        = shell_errno.context;
+            err->sys_errno      = shell_errno.sys_errno;
+            shell_errno.context = nullptr;
+            shell_error_clear(&shell_errno);
+            shell_error_report(err);
             break;
         }
         tokenlist_append_tok(dst, tok);

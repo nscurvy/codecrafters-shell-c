@@ -70,7 +70,8 @@ shell_error_clear(ShellError* error);
  *                    trailing varargs.
  */
 void
-shell_error_set(ShellError* err, ShellErrorCode code, const char* context_fmt, ...);
+shell_error_set(ShellError* err, ShellErrorCode code, const char* context_fmt, ...)
+        __attribute__((format(printf, 3, 4)));
 
 /**
  * @brief Set an error wrapping a specific errno value.
@@ -85,7 +86,8 @@ shell_error_set(ShellError* err, ShellErrorCode code, const char* context_fmt, .
  * @param context_fmt Optional printf-style context, or nullptr.
  */
 void
-shell_error_set_errno(ShellError* err, int sys_errno, const char* context_fmt, ...);
+shell_error_set_errno(ShellError* err, int sys_errno, const char* context_fmt, ...)
+        __attribute__((format(printf, 3, 4)));
 
 /**
  * @brief Convenience: wraps the CURRENT value of the global @c errno.
@@ -95,7 +97,7 @@ shell_error_set_errno(ShellError* err, int sys_errno, const char* context_fmt, .
  * (including most libc calls) may clobber errno first.
  */
 void
-shell_error_set_from_current_errno(ShellError* err, const char* context_fmt, ...);
+shell_error_set_from_current_errno(ShellError* err, const char* context_fmt, ...) __attribute__((format(printf, 2, 3)));
 
 /**
  * @brief Check whether an error is currently set.
